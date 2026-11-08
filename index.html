@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>PROTO Web — Simulador de Circuitos Electrónicos en Tiempo Real</title>
+  <title>Ncircuitos — Simulador de Circuitos Electrónicos en Tiempo Real</title>
   <style>
 :root {
   --bg-dark: #070a10;
@@ -56,41 +56,54 @@ html, body {
   position: relative;
 }
 
-/* Top Navbar (PROTO style sleek floating/docked header) */
+/* Top Navbar (Transparent floating header with floating control islands over the canvas) */
 .topbar {
-  height: 54px;
-  background: var(--bg-panel-solid);
-  border-bottom: 1px solid var(--border-color);
+  position: absolute;
+  top: 10px;
+  left: calc(var(--left-panel-offset, 0px) + 14px);
+  right: calc(var(--right-panel-offset, 0px) + 14px);
+  height: auto;
+  background: transparent;
+  border-bottom: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
-  z-index: 30;
+  padding: 0;
+  z-index: 26;
   gap: 10px;
+  pointer-events: none;
+  transition: left 0.22s cubic-bezier(0.22, 1, 0.36, 1), right 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .brand {
+  pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 10px;
   font-weight: 800;
-  font-size: 16px;
+  font-size: 15.5px;
   letter-spacing: 0.8px;
   color: #fff;
+  background: rgba(15, 21, 33, 0.86);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 12px;
+  padding: 5px 12px 5px 7px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.48);
 }
 
 .brand-logo {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: linear-gradient(135deg, #06b6d4, #10b981);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.42);
   font-weight: 900;
   color: #041014;
-  font-size: 18px;
+  font-size: 17px;
 }
 
 .brand-subtitle {
@@ -105,15 +118,18 @@ html, body {
   text-transform: uppercase;
 }
 
-/* Transport & Simulation Controls */
+/* Transport & Simulation Controls (Floating Center Island) */
 .sim-controls {
+  pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(15, 23, 42, 0.8);
-  padding: 4px 8px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+  background: rgba(15, 21, 33, 0.88);
+  backdrop-filter: blur(12px);
+  padding: 5px 9px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .dt-control-box {
@@ -246,9 +262,16 @@ html, body {
 }
 
 .topbar-actions {
+  pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 6px;
+  background: rgba(15, 21, 33, 0.86);
+  backdrop-filter: blur(12px);
+  padding: 5px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.48);
 }
 
 .select-input {
@@ -437,6 +460,10 @@ html, body {
   gap: 7px;
 }
 
+.comp-section-grid.three-cols {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .comp-section.collapsed .comp-section-grid {
   display: none;
 }
@@ -522,6 +549,236 @@ html, body {
   flex-direction: column;
 }
 
+/* Top Expanded Precision Graph Dock (Opens on double-clicking any right-sidebar graph & pushes canvas-stage down) */
+.top-expanded-graph-dock {
+  position: relative;
+  height: 350px;
+  min-height: 210px;
+  max-height: 68vh;
+  margin-left: var(--left-panel-offset, 0px);
+  margin-right: var(--right-panel-offset, 0px);
+  background: rgba(6, 10, 19, 0.97);
+  backdrop-filter: blur(14px);
+  border-bottom: 2px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.72);
+  display: flex;
+  flex-direction: column;
+  z-index: 28;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.18s ease,
+              margin-left 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+              margin-right 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.top-expanded-graph-dock.collapsed {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  opacity: 0;
+  border-bottom-width: 0;
+  pointer-events: none;
+}
+
+body.is-resizing-panel .top-expanded-graph-dock {
+  transition: none !important;
+}
+
+.expanded-graph-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 14px;
+  background: rgba(13, 19, 33, 0.96);
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.expanded-graph-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.expanded-graph-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.38);
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+#expandedGraphTitle {
+  font-size: 13px;
+  color: #f8fafc;
+}
+
+.expanded-graph-tabs {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.expanded-tab-btn {
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: rgba(22, 31, 48, 0.75);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.14s;
+}
+
+.expanded-tab-btn:hover {
+  color: #fff;
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+.expanded-tab-btn.active {
+  background: rgba(6, 182, 212, 0.22);
+  color: #67e8f9;
+  border-color: #22d3ee;
+}
+
+.expanded-graph-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.expanded-delta-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  background: rgba(9, 14, 24, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+.delta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  background: rgba(22, 31, 48, 0.75);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.delta-pill .delta-tag {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.delta-pill strong {
+  color: #f8fafc;
+  font-size: 11.5px;
+}
+
+.delta-pill.cursor-a {
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(56, 189, 248, 0.1);
+}
+.delta-pill.cursor-a .delta-tag {
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.delta-pill.cursor-b {
+  border-color: rgba(250, 204, 21, 0.45);
+  background: rgba(250, 204, 21, 0.1);
+}
+.delta-pill.cursor-b .delta-tag {
+  color: #facc15;
+  font-weight: 700;
+}
+
+.delta-pill.highlight-cyan {
+  border-color: rgba(34, 211, 238, 0.5);
+  background: rgba(6, 182, 212, 0.14);
+}
+.delta-pill.highlight-cyan strong {
+  color: #22d3ee;
+}
+
+.delta-pill.highlight-green {
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.14);
+}
+.delta-pill.highlight-green strong {
+  color: #34d399;
+}
+
+.delta-pill.highlight-yellow strong {
+  color: #fde047;
+}
+
+.expanded-graph-canvas-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  background: #04070e;
+}
+
+#expandedGraphCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
+.expanded-graph-hint {
+  position: absolute;
+  bottom: 6px;
+  right: 12px;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.expanded-graph-resizer {
+  height: 6px;
+  width: 100%;
+  cursor: ns-resize;
+  background: rgba(15, 23, 42, 0.95);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expanded-graph-resizer:hover,
+.expanded-graph-resizer.dragging {
+  background: rgba(6, 182, 212, 0.45);
+}
+
+.expanded-graph-resizer::after {
+  content: '⋯';
+  color: rgba(148, 163, 184, 0.65);
+  font-size: 13px;
+  line-height: 1;
+  pointer-events: none;
+}
+
 .canvas-stage {
   position: relative;
   flex: 1;
@@ -533,9 +790,10 @@ html, body {
 }
 
 #circuitCanvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  flex: 1;
   display: block;
   cursor: crosshair;
   touch-action: none;
@@ -619,10 +877,10 @@ html, body {
   margin: 0 2px;
 }
 
-/* Floating Hints / Toast Banner */
+/* Floating Hints / Toast Banner (Positioned cleanly below floating topbar islands) */
 .canvas-hud-top {
   position: absolute;
-  top: 12px;
+  top: 58px;
   left: calc(var(--left-panel-offset, 0px) + 14px);
   right: calc(var(--right-panel-offset, 0px) + 14px);
   display: flex;
@@ -673,6 +931,55 @@ html, body {
 @keyframes pulseAlert {
   0%, 100% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.4); }
   50% { box-shadow: 0 0 26px rgba(239, 68, 68, 0.75); }
+}
+
+/* Drag Resizer Handle for Left Palette Sidebar */
+.left-sidebar-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 245px;
+  width: 6px;
+  cursor: ew-resize;
+  background: rgba(15, 23, 42, 0.9);
+  border-right: 1px solid var(--border-color);
+  z-index: 31;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transform: translateX(0);
+  transition: background 0.15s, transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+}
+
+.left-sidebar-resizer:hover,
+.left-sidebar-resizer.dragging {
+  background: rgba(6, 182, 212, 0.45);
+  border-right-color: #22d3ee;
+}
+
+.left-sidebar-resizer::after {
+  content: '⋮';
+  color: rgba(148, 163, 184, 0.6);
+  font-size: 13px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.left-sidebar-resizer.minimized {
+  transform: translateX(-420px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.is-resizing-panel .topbar,
+body.is-resizing-panel .canvas-hud-top,
+body.is-resizing-panel .floating-toolbar,
+body.is-resizing-panel .palette-sidebar,
+body.is-resizing-panel .left-sidebar-resizer,
+body.is-resizing-panel .inspector-sidebar,
+body.is-resizing-panel .sidebar-resizer {
+  transition: none !important;
 }
 
 /* Drag Resizer Handle for Right Sidebar */
@@ -1465,64 +1772,19 @@ html, body {
 </head>
 <body>
   <div class="app-container">
-    <!-- BARRA SUPERIOR MINIMALISTA -->
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-logo">⚡</div>
-        <span>PROTO</span>
-        <span class="brand-subtitle">Circuit Lab</span>
-      </div>
-
-      <!-- CONTROLES ESENCIALES: SIMULAR, REINICIAR Y Δt -->
-      <div class="sim-controls">
-        <button class="btn btn-primary" id="btnPlayPause" title="Pausar / Reanudar Simulación (Espacio)">
-          <span class="sim-status-dot" id="simStatusDot"></span>
-          <span id="btnPlayPauseText">⏸ Pausar</span>
-        </button>
-        <button class="btn" id="btnResetSim" title="Reiniciar simulación (Shift+R)">
-          ↺ Reiniciar
-        </button>
-
-        <div class="dt-control-box" title="Elegir Δt: velocidad con que pasa el tiempo (desde milisegundos hasta segundos)">
-          <span class="dt-label">⏱ Δt</span>
-          <select class="select-input dt-select" id="simDeltaTSelect">
-            <option value="0.001">1 ms/s</option>
-            <option value="0.005">5 ms/s</option>
-            <option value="0.01">10 ms/s</option>
-            <option value="0.02">20 ms/s</option>
-            <option value="0.05">50 ms/s</option>
-            <option value="0.1">100 ms/s</option>
-            <option value="0.2" selected>200 ms/s (Normal)</option>
-            <option value="0.5">500 ms/s</option>
-            <option value="1.0">1.0 s/s (Real)</option>
-            <option value="2.0">2.0 s/s</option>
-            <option value="5.0">5.0 s/s</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- ATAJOS Y ARCHIVO -->
-      <div class="topbar-actions">
-        <button class="btn" id="btnOpenShortcuts" title="Ver todos los Atajos de Teclado (Tecla ?)">⌨ Atajos</button>
-        <button class="btn" id="btnExportJson" title="Guardar circuito en archivo .JSON">💾 Guardar</button>
-        <button class="btn" id="btnImportJson" title="Cargar circuito desde archivo .JSON">📂 Abrir</button>
-        <input type="file" id="fileImportInput" accept=".json" style="display:none;" />
-      </div>
-    </header>
-
     <!-- ÁREA DE TRABAJO PRINCIPAL -->
     <div class="workspace">
       <!-- PANEL IZQUIERDO: CATÁLOGO DE COMPONENTES (SIEMPRE MINIMIZADO AL INICIAR) -->
       <aside class="palette-sidebar minimized" id="leftPaletteSidebar">
         <div class="palette-header">
           <div style="font-size:11px;font-weight:700;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;">
-            <span>🧩 CATÁLOGO</span>
-            <button class="unit-btn" id="btnMinimizePalette" title="Minimizar panel lateral y dejar solo el buscador (Tecla B)">
-              ◀ Ocultar
+            <span>CATÁLOGO</span>
+            <button class="unit-btn" id="btnMinimizePalette" title="Minimizar panel lateral (Tecla B)">
+              Ocultar
             </button>
           </div>
           <div class="search-wrapper">
-            <input type="text" class="search-box" id="compSearch" placeholder="🔍 Buscar y Enter... (ej: LED, NPN)" />
+            <input type="text" class="search-box" id="compSearch" placeholder="Buscar y Enter... (ej: LED, NPN)" />
             <span class="search-kbd-hint" id="searchKbdHint">/</span>
             <button class="search-clear-btn" id="btnClearSearch" title="Limpiar búsqueda">✕</button>
           </div>
@@ -1531,32 +1793,141 @@ html, body {
         <div class="component-list" id="componentList"></div>
       </aside>
 
-      <!-- CENTRO: LIENZO INTERACTIVO -->
+      <!-- DIVISOR ARRASTRABLE IZQUIERDO (OCULTO CUANDO EL CATÁLOGO ESTÁ MINIMIZADO) -->
+      <div class="left-sidebar-resizer minimized" id="leftSidebarResizer" title="Arrastrá hacia los lados para agrandar o achicar la barra de catálogo"></div>
+
+      <!-- CENTRO: VISTA SUPERIOR DE GRÁFICO AMPLIADO + LIENZO INTERACTIVO -->
       <main class="canvas-wrapper">
+        <!-- VISTA DE GRÁFICO AMPLIADA SUPERIOR (SE ABRE CON DOBLE CLIC EN EL GRÁFICO DERECHO Y DESPLAZA EL LIENZO HACIA ABAJO) -->
+        <section class="top-expanded-graph-dock collapsed" id="topExpandedGraphDock">
+          <div class="expanded-graph-header">
+            <div class="expanded-graph-title-group">
+              <span class="expanded-graph-badge">ANALIZADOR DE PRECISIÓN</span>
+              <strong id="expandedGraphTitle">Señal</strong>
+              <div class="expanded-graph-tabs" id="expandedGraphTabs"></div>
+            </div>
+
+            <div class="expanded-graph-controls">
+              <button class="btn btn-active" id="btnToggleGraphCursors" style="padding:4px 9px;font-size:11px;" title="Activar / Ocultar barras de cursores para medir ΔV y Δt (ms)">
+                Cursores ΔV / Δt
+              </button>
+              <select class="select-input" id="expandedCursorModeSelect" style="padding:3px 7px;font-size:11px;" title="Modo de cursores: acoplados a la señal o barras libres horizontales y verticales">
+                <option value="track" selected>Acoplados a Señal (A y B)</option>
+                <option value="free">Barras Libres (T1/T2 + V1/V2)</option>
+              </select>
+              <button class="btn" id="btnAutoCursorsMinMax" style="padding:4px 8px;font-size:11px;" title="Posicionar automáticamente Cursor A en el mínimo y Cursor B en el máximo">
+                Min / Máx
+              </button>
+              <button class="btn" id="btnAutoCursorsTau" style="padding:4px 8px;font-size:11px;" title="Posicionar Cursor A al inicio del escalón y Cursor B al 63.2% (1τ)">
+                Medir 1τ (63.2%)
+              </button>
+              <button class="btn btn-danger" id="btnCloseExpandedGraph" style="padding:4px 9px;font-size:11px;" title="Cerrar vista ampliada (Doble clic en el gráfico o Esc)">
+                Contraer
+              </button>
+            </div>
+          </div>
+
+          <!-- BARRA DE MEDICIÓN DE DELTAS EN TIEMPO REAL -->
+          <div class="expanded-delta-bar" id="expandedDeltaBar">
+            <div class="delta-pill cursor-a">
+              <span class="delta-tag">Cursor A (T₁)</span>
+              <strong id="expStatCA">t₁ = 0 ms · V₁ = 0 V</strong>
+            </div>
+            <div class="delta-pill cursor-b">
+              <span class="delta-tag">Cursor B (T₂)</span>
+              <strong id="expStatCB">t₂ = 0 ms · V₂ = 0 V</strong>
+            </div>
+            <div class="delta-pill highlight-cyan">
+              <span class="delta-tag">Δt = |t₂ − t₁|</span>
+              <strong id="expStatDt">0 ms</strong>
+            </div>
+            <div class="delta-pill highlight-green">
+              <span class="delta-tag">ΔV = V₂ − V₁</span>
+              <strong id="expStatDv">0 V</strong>
+            </div>
+            <div class="delta-pill highlight-yellow">
+              <span class="delta-tag">ΔI = I₂ − I₁</span>
+              <strong id="expStatDi">0 A</strong>
+            </div>
+            <div class="delta-pill">
+              <span class="delta-tag">Frec. (1/Δt)</span>
+              <strong id="expStatFreq">— Hz</strong>
+            </div>
+            <div class="delta-pill">
+              <span class="delta-tag">Pendiente (ΔV/Δt)</span>
+              <strong id="expStatSlope">0 V/s</strong>
+            </div>
+          </div>
+
+          <div class="expanded-graph-canvas-wrap" id="expandedGraphCanvasWrap">
+            <canvas id="expandedGraphCanvas"></canvas>
+            <div class="expanded-graph-hint" id="expandedGraphHint">
+              Arrastrá las barras <b>A (Celeste)</b> y <b>B (Ámbar)</b> (o <b>Clic Izq = A</b> / <b>Clic Der = B</b>) para medir <b>Δt (ms)</b> y <b>ΔV</b> • <b>Espacio</b> pausa/reanuda • Doble clic contrae
+            </div>
+          </div>
+
+          <div class="expanded-graph-resizer" id="expandedGraphResizer" title="Arrastrá hacia arriba o abajo para cambiar la altura del gráfico ampliado"></div>
+        </section>
+
         <div class="canvas-stage">
-          <!-- HUD SUPERIOR: BUSCADOR PRINCIPAL Y ESTADO -->
+          <!-- BARRA SUPERIOR TRANSPARENTE CON ISLAS DE BOTONES FLOTANTES -->
+          <header class="topbar">
+            <div class="brand">
+              <div class="brand-logo">Ω</div>
+              <span>Ncircuitos</span>
+            </div>
+
+            <!-- CONTROLES ESENCIALES: SIMULAR, REINICIAR Y Δt -->
+            <div class="sim-controls">
+              <button class="btn btn-primary" id="btnPlayPause" title="Pausar / Reanudar Simulación (Espacio)">
+                <span class="sim-status-dot" id="simStatusDot"></span>
+                <span id="btnPlayPauseText">Pausar</span>
+              </button>
+              <button class="btn" id="btnResetSim" title="Reiniciar simulación (Shift+R)">
+                Reiniciar
+              </button>
+
+              <div class="dt-control-box" title="Elegir Δt: velocidad con que pasa el tiempo (desde milisegundos hasta segundos)">
+                <span class="dt-label">Δt</span>
+                <select class="select-input dt-select" id="simDeltaTSelect">
+                  <option value="0.001">1 ms/s</option>
+                  <option value="0.005">5 ms/s</option>
+                  <option value="0.01">10 ms/s</option>
+                  <option value="0.02">20 ms/s</option>
+                  <option value="0.05">50 ms/s</option>
+                  <option value="0.1">100 ms/s</option>
+                  <option value="0.2" selected>200 ms/s (Normal)</option>
+                  <option value="0.5">500 ms/s</option>
+                  <option value="1.0">1.0 s/s (Real)</option>
+                  <option value="2.0">2.0 s/s</option>
+                  <option value="5.0">5.0 s/s</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- ATAJOS Y ARCHIVO -->
+            <div class="topbar-actions">
+              <button class="btn" id="btnOpenShortcuts" title="Ver todos los Atajos de Teclado (Tecla ?)">Atajos</button>
+              <button class="btn" id="btnExportJson" title="Guardar circuito en archivo .JSON">Guardar</button>
+              <button class="btn" id="btnImportJson" title="Cargar circuito desde archivo .JSON">Abrir</button>
+              <input type="file" id="fileImportInput" accept=".json" style="display:none;" />
+            </div>
+          </header>
+          <!-- HUD SUPERIOR: BOTÓN DE CATÁLOGO Y ALERTA DE SOBRECARGA -->
           <div class="canvas-hud-top">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <!-- BUSCADOR RÁPIDO VISIBLE POR DEFECTO -->
+              <!-- BOTÓN FLOTANTE DE CATÁLOGO (ABRE LA BARRA LATERAL IZQUIERDA) -->
               <div class="minimized-catalog-bar visible" id="minimizedCatalogBar">
-                <input type="text" class="min-search-input" id="minCatalogSearch" placeholder="🔍 Buscar componente (ej: R, LED, Fuente) + Enter ↵" />
-                <button class="btn btn-active" id="btnOpenSearchPopup" style="padding:4px 8px;font-size:11px;" title="Abrir buscador visual de componentes">
-                  ↵ Buscar
+                <button class="btn" id="btnExpandPalette" style="padding:5px 12px;font-size:11.5px;font-weight:600;" title="Abrir barra lateral de catálogo y buscador (Tecla B)">
+                  Catálogo
                 </button>
-                <button class="btn" id="btnExpandPalette" style="padding:4px 8px;font-size:11px;" title="Abrir lista lateral de catálogo si lo necesitás (Tecla B)">
-                  ☰ Catálogo
-                </button>
-              </div>
-
-              <div class="hud-badge" id="hudModeText">
-                <strong>Modo Selección:</strong> Clic en componente o nodo para ver su <b>Gráfico y Propiedades</b>
               </div>
             </div>
 
             <div class="burn-alert-banner" id="burnAlertBanner">
-              <span id="burnAlertText">💥 Componente quemado por sobrecarga</span>
+              <span id="burnAlertText">Componente quemado por sobrecarga</span>
               <button class="btn btn-primary" id="btnRepairBurned" style="padding:4px 10px;font-size:11px;">
-                🔧 Reparar Todo
+                Reparar Todo
               </button>
             </div>
           </div>
@@ -1567,36 +1938,36 @@ html, body {
           <!-- BARRA DE HERRAMIENTAS RÁPIDA FLOTANTE -->
           <div class="floating-toolbar">
             <button class="btn btn-active" id="btnToolSelect" data-tooltip="Seleccionar y mover (Esc)">
-              ↖ Seleccionar
+              Seleccionar
             </button>
             <button class="btn" id="btnToolWire" data-tooltip="Trazar cables (W)">
-              ✎ Cablear
+              Cablear
             </button>
             <div class="tool-divider"></div>
             <button class="btn" id="btnRotate" data-tooltip="Girar 90° (R)">
-              ↻ Rotar
+              Rotar
             </button>
             <button class="btn" id="btnDuplicate" data-tooltip="Duplicar selección (Ctrl+D)">
-              ⧉ Duplicar
+              Duplicar
             </button>
             <button class="btn btn-danger" id="btnDelete" data-tooltip="Eliminar selección (Supr)">
-              🗑 Borrar
+              Borrar
             </button>
             <div class="tool-divider"></div>
             <button class="btn btn-active" id="btnToggleConnectorDots" data-tooltip="Ver pines y nodos de conexión">
-              ◉ Nodos
+              Nodos
             </button>
             <button class="btn" id="btnToggleVoltages" data-tooltip="Ver tensión en cada nodo (V)">
-              ⚡ Tensión (V)
+              Tensión (V)
             </button>
             <button class="btn btn-active" id="btnToggleOverload" data-tooltip="Quemar por exceso de potencia">
-              🔥 Sobrecargas
+              Sobrecargas
             </button>
             <button class="btn" id="btnCenterCam" data-tooltip="Centrar vista (C)">
-              ⌖ Centrar
+              Centrar
             </button>
             <button class="btn" id="btnClearAll" data-tooltip="Vaciar todo el lienzo">
-              ✨ Limpiar
+              Limpiar
             </button>
           </div>
         </div>
@@ -1611,16 +1982,16 @@ html, body {
         <div class="pinned-graphs-section" id="pinnedGraphsSection">
           <div class="panel-section-header" id="secHeaderGraphs">
             <div class="inspector-title">
-              <span id="caretGraphs">▾</span> 📊 Gráfico
+              <span id="caretGraphs">▾</span> Gráfico
             </div>
             <div style="display:flex;align-items:center;gap:5px;">
               <select class="select-input" id="graphSpeedSelect" style="padding:2px 6px;font-size:11px;" title="Velocidad de avance del gráfico (Zoom horizontal para flancos)">
-                <option value="80">⚡ Ultra Rápido</option>
-                <option value="200">🔍 Muy Rápido</option>
-                <option value="420">🔍 Rápido</option>
-                <option value="800" selected>📊 Normal</option>
-                <option value="1600">🐢 Lento</option>
-                <option value="3200">🐢 Muy Lento</option>
+                <option value="80">Ultra Rápido</option>
+                <option value="200">Muy Rápido</option>
+                <option value="420">Rápido</option>
+                <option value="800" selected>Normal</option>
+                <option value="1600">Lento</option>
+                <option value="3200">Muy Lento</option>
               </select>
               <button class="unit-btn" id="btnCloseRightSidebar" title="Desmarcar y cerrar panel (Esc)">✕</button>
             </div>
@@ -1631,7 +2002,7 @@ html, body {
         <!-- VENTANA 2: PROPIEDADES DEL ELEMENTO O NODO -->
         <div class="panel-section-header" id="secHeaderProps">
           <div class="inspector-title">
-            <span id="caretProps">▾</span> <span id="inspectorTitle">⚙ Propiedades</span>
+            <span id="caretProps">▾</span> <span id="inspectorTitle">Propiedades</span>
           </div>
         </div>
         <div class="inspector-body" id="inspectorBody"></div>
@@ -1643,12 +2014,12 @@ html, body {
   <div class="modal-backdrop" id="shortcutsModal">
     <div class="shortcuts-modal">
       <div class="modal-header">
-        <span>⌨ Guía de Atajos de Teclado Rápidos</span>
-        <button class="btn" id="btnCloseShortcuts" style="padding:3px 9px;">✕ Cerrar</button>
+        <span>Guía de Atajos de Teclado Rápidos</span>
+        <button class="btn" id="btnCloseShortcuts" style="padding:3px 9px;">Cerrar</button>
       </div>
       <div class="modal-body">
         <div class="shortcut-group">
-          <div class="shortcut-group-title">⚡ Simulación y Vista</div>
+          <div class="shortcut-group-title">Simulación y Vista</div>
           <div class="shortcut-row"><span>Pausar / Reanudar física</span><span class="kbd-key">Espacio</span></div>
           <div class="shortcut-row"><span>Reiniciar desde t = 0</span><span class="kbd-key">Shift + R</span></div>
           <div class="shortcut-row"><span>Centrar cámara y zoom</span><span class="kbd-key">C</span></div>
@@ -1656,11 +2027,11 @@ html, body {
           <div class="shortcut-row"><span>Seleccionar todo el circuito</span><span class="kbd-key">Ctrl + A</span></div>
           <div class="shortcut-row"><span>Alternar ancho panel derecho</span><span class="kbd-key">Tab</span></div>
           <div class="shortcut-row"><span>Minimizar / Mostrar Catálogo Izq.</span><span class="kbd-key">B</span></div>
-          <div class="shortcut-row"><span>Buscar componente (+ Enter ↵)</span><span class="kbd-key">/ &nbsp;o&nbsp; Ctrl+F</span></div>
+          <div class="shortcut-row"><span>Buscar componente (+ Enter)</span><span class="kbd-key">/ &nbsp;o&nbsp; Ctrl+F</span></div>
         </div>
 
         <div class="shortcut-group">
-          <div class="shortcut-group-title">🛠 Edición y Gráficos</div>
+          <div class="shortcut-group-title">Edición y Gráficos</div>
           <div class="shortcut-row"><span>Modo Selección / Cancelar</span><span class="kbd-key">Esc</span></div>
           <div class="shortcut-row"><span>Modo Trazar Cable</span><span class="kbd-key">W</span></div>
           <div class="shortcut-row"><span>Rotar 90° horario</span><span class="kbd-key">R</span></div>
@@ -1671,7 +2042,7 @@ html, body {
         </div>
 
         <div class="shortcut-group" style="grid-column: span 2;">
-          <div class="shortcut-group-title">🧩 Inserción Directa de Componentes (1 Tecla)</div>
+          <div class="shortcut-group-title">Inserción Directa de Componentes (1 Tecla)</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;">
             <div class="shortcut-row"><span>Resistencia (Ω)</span><span class="kbd-key">1</span></div>
             <div class="shortcut-row"><span>Fuente DC (Batería)</span><span class="kbd-key">6</span></div>
@@ -1693,15 +2064,15 @@ html, body {
   <div class="modal-backdrop" id="catalogPopupModal">
     <div class="catalog-popup-modal">
       <div class="modal-header">
-        <span>🧩 Seleccionar Componente del Catálogo</span>
-        <button class="btn" id="btnCloseCatalogPopup" style="padding:3px 9px;">✕ Esc</button>
+        <span>Seleccionar Componente del Catálogo</span>
+        <button class="btn" id="btnCloseCatalogPopup" style="padding:3px 9px;">Esc</button>
       </div>
       <div class="catalog-popup-search-row">
-        <input type="text" class="catalog-popup-input" id="catalogPopupInput" placeholder="Escribí para filtrar (ej: resistencia, capacitor, led, npn) y pulsá Enter ↵" />
+        <input type="text" class="catalog-popup-input" id="catalogPopupInput" placeholder="Escribí para filtrar (ej: resistencia, capacitor, led, npn) y pulsá Enter" />
       </div>
       <div class="catalog-popup-grid" id="catalogPopupGrid"></div>
       <div class="catalog-popup-footer">
-        <span>💡 Usá las <b>Flechas ◀ ▶ ▲ ▼</b> y <b>Enter ↵</b> (o hacé clic) para elegir el componente</span>
+        <span>Usá las <b>Flechas</b> y <b>Enter</b> (o hacé clic) para elegir el componente</span>
         <span id="catalogPopupCount">0 resultados</span>
       </div>
     </div>
@@ -1750,13 +2121,13 @@ function formatSI(value, unit = '', decimals = 2) {
 }
 
 const CATEGORIES = [
-  { id: 'all', name: 'Todos', icon: '⚡' },
-  { id: 'sources', name: 'Fuentes', fullTitle: '⚡ Fuentes de Energía', icon: '⚡' },
-  { id: 'passives', name: 'Pasivos', fullTitle: '〰 Componentes Pasivos', icon: '〰' },
-  { id: 'semiconductors', name: 'Semicond.', fullTitle: '💎 Semiconductores', icon: '💎' },
-  { id: 'switches', name: 'Switches', fullTitle: '🔘 Interruptores y Llaves', icon: '🔘' },
-  { id: 'logic', name: 'Lógica / IC', fullTitle: '🔢 Lógica Digital', icon: '🔢' },
-  { id: 'meters', name: 'Medición', fullTitle: '📟 Instrumentos de Medición', icon: '📟' }
+  { id: 'all', name: 'Todos', icon: '' },
+  { id: 'sources', name: 'Fuentes', fullTitle: 'Fuentes de Energía', icon: '' },
+  { id: 'passives', name: 'Pasivos', fullTitle: 'Componentes Pasivos', icon: '' },
+  { id: 'semiconductors', name: 'Semicond.', fullTitle: 'Semiconductores', icon: '' },
+  { id: 'switches', name: 'Switches', fullTitle: 'Interruptores y Llaves', icon: '' },
+  { id: 'logic', name: 'Lógica / IC', fullTitle: 'Lógica Digital', icon: '' },
+  { id: 'meters', name: 'Medición', fullTitle: 'Instrumentos de Medición', icon: '' }
 ];
 
 // Mapa de atajos de teclado directos para componentes frecuentes
@@ -3054,17 +3425,86 @@ class CircuitSolver {
       if (maxDelta < 1e-4) break;
     }
 
-    // 4. Guardar tensiones de nodos resueltas
-    this.nodeVoltages.clear();
-    for (let i = 1; i <= numNodes; i++) {
-      this.nodeVoltages.set(indexKeyMap[i], V[i]);
-    }
-
-    // 5. Actualizar corrientes en cables
+    // 4. Actualizar corrientes en sub-segmentos de cables (usando la micro-caída física sobre G_WIRE)
     for (const seg of subSegments) {
       const v1 = V[seg.n1] || 0;
       const v2 = V[seg.n2] || 0;
       seg.current = (v1 - v2) * G_WIRE;
+    }
+
+    // 5. Unificar equipotencialmente todos los nodos que pertenecen al mismo cable / red conductora
+    // para que cualquier par de nodos sobre un mismo cable ideal midan exactamente la misma tensión (y 0 V exacto en redes conectadas a GND)
+    const ufParent = new Int32Array(numNodes + 1);
+    for (let i = 1; i <= numNodes; i++) ufParent[i] = i;
+    const ufFind = (i) => {
+      let root = i;
+      while (ufParent[root] !== root) root = ufParent[root];
+      let curr = i;
+      while (curr !== root) {
+        const nxt = ufParent[curr];
+        ufParent[curr] = root;
+        curr = nxt;
+      }
+      return root;
+    };
+    const ufUnion = (a, b) => {
+      const ra = ufFind(a);
+      const rb = ufFind(b);
+      if (ra !== rb) ufParent[rb] = ra;
+    };
+
+    for (const seg of subSegments) {
+      if (seg.n1 && seg.n2) {
+        ufUnion(seg.n1, seg.n2);
+      }
+    }
+
+    const gndNodeSet = new Set();
+    const pinNodeSet = new Set();
+    for (const c of components) {
+      const pm = compPinNodes.get(c.id);
+      if (!pm) continue;
+      if (c.type === 'gnd' && pm.p0) {
+        gndNodeSet.add(pm.p0);
+      } else {
+        for (const nIdx of Object.values(pm)) {
+          if (nIdx) pinNodeSet.add(nIdx);
+        }
+      }
+    }
+
+    const netGroups = new Map(); // root -> { hasGnd, pinSum, pinCount, allSum, allCount, nodes: [] }
+    for (let i = 1; i <= numNodes; i++) {
+      const r = ufFind(i);
+      let g = netGroups.get(r);
+      if (!g) {
+        g = { hasGnd: false, pinSum: 0, pinCount: 0, allSum: 0, allCount: 0, nodes: [] };
+        netGroups.set(r, g);
+      }
+      g.nodes.push(i);
+      g.allSum += V[i];
+      g.allCount++;
+      if (gndNodeSet.has(i)) g.hasGnd = true;
+      if (pinNodeSet.has(i)) {
+        g.pinSum += V[i];
+        g.pinCount++;
+      }
+    }
+
+    this.nodeVoltages.clear();
+    for (const g of netGroups.values()) {
+      let vEqui = 0;
+      if (g.hasGnd) {
+        vEqui = 0;
+      } else if (g.pinCount > 0) {
+        vEqui = g.pinSum / g.pinCount;
+      } else if (g.allCount > 0) {
+        vEqui = g.allSum / g.allCount;
+      }
+      if (Math.abs(vEqui) < 1e-11) vEqui = 0;
+      for (const nIdx of g.nodes) {
+        this.nodeVoltages.set(indexKeyMap[nIdx], vEqui);
+      }
     }
 
     for (const w of wires) {
@@ -3508,20 +3948,37 @@ class CircuitRenderer {
     this.smokeParticles = [];
   }
 
-  resize() {
-    const targetEl = this.canvas.parentElement || this.canvas;
-    const rect = targetEl.getBoundingClientRect();
+  syncSize() {
+    const cRect = this.canvas.getBoundingClientRect();
+    const pRect = this.canvas.parentElement ? this.canvas.parentElement.getBoundingClientRect() : cRect;
+    const rawW = cRect.width > 10 ? cRect.width : pRect.width;
+    const rawH = cRect.height > 10 ? cRect.height : pRect.height;
     const dpr = window.devicePixelRatio || 1;
-    const w = Math.max(100, rect.width);
-    const h = Math.max(100, rect.height);
-    this.canvas.width = w * dpr;
-    this.canvas.height = h * dpr;
-    this.width = w;
-    this.height = h;
-    this.dpr = dpr;
+    const w = Math.max(100, Math.round(rawW));
+    const h = Math.max(100, Math.round(rawH));
+    const targetW = Math.round(w * dpr);
+    const targetH = Math.round(h * dpr);
+    if (
+      this.width !== w ||
+      this.height !== h ||
+      this.dpr !== dpr ||
+      this.canvas.width !== targetW ||
+      this.canvas.height !== targetH
+    ) {
+      this.canvas.width = targetW;
+      this.canvas.height = targetH;
+      this.width = w;
+      this.height = h;
+      this.dpr = dpr;
+    }
+  }
+
+  resize() {
+    this.syncSize();
   }
 
   screenToWorld(sx, sy) {
+    this.syncSize();
     const wx = (sx - this.width / 2) / this.zoom + this.camX;
     const wy = (sy - this.height / 2) / this.zoom + this.camY;
     return {
@@ -3533,6 +3990,7 @@ class CircuitRenderer {
   }
 
   worldToScreen(wx, wy) {
+    this.syncSize();
     return {
       sx: (wx - this.camX) * this.zoom + this.width / 2,
       sy: (wy - this.camY) * this.zoom + this.height / 2
@@ -3540,6 +3998,7 @@ class CircuitRenderer {
   }
 
   render(appState) {
+    this.syncSize();
     const ctx = this.ctx;
     ctx.save();
     ctx.scale(this.dpr, this.dpr);
@@ -3993,7 +4452,7 @@ class CircuitRenderer {
       const py = hy * GRID_SIZE;
       const v = appState.solver.nodeVoltages.get(appState.hoveredNodeKey) || 0;
       const branches = degreeMap.get(appState.hoveredNodeKey) || 1;
-      const label = `◉ Nodo (${window.ProtoSim.formatSI(v, 'V', 2)}) • ${branches} conex.`;
+      const label = `Nodo (${window.ProtoSim.formatSI(v, 'V', 2)}) • ${branches} conex.`;
 
       ctx.save();
       ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
@@ -5296,6 +5755,16 @@ class Oscilloscope {
     this.followSelection = true;
     this.hoverX = null;
 
+    // Estado del Analizador Superior Ampliado y Cursores Interactivos (ΔV, Δt, 1/Δt, Pendiente)
+    this.cursorsEnabled = true;
+    this.cursorMode = 'track'; // 'track' (acoplados a V(t)) | 'free' (T1/T2 + V1/V2 libres)
+    this.cursorA = 0.28; // Posición X normalizada [0..1] para Cursor A (T1)
+    this.cursorB = 0.72; // Posición X normalizada [0..1] para Cursor B (T2)
+    this.cursorV1 = 0.72; // Posición Y normalizada [0..1] para barra horizontal V1 (modo libre)
+    this.cursorV2 = 0.28; // Posición Y normalizada [0..1] para barra horizontal V2 (modo libre)
+    this.draggingCursor = null; // 'A' | 'B' | 'V1' | 'V2' | null
+    this.expHoverX = null;
+
     if (this.canvas) {
       this.canvas.addEventListener('mousemove', (e) => {
         const rect = this.canvas.getBoundingClientRect();
@@ -5477,7 +5946,7 @@ class Oscilloscope {
         if (!includedCompIds.has(sel.id)) {
           list.push({
             id: `sel_${sel.id}`,
-            label: `🎯 ${sel.name}`,
+            label: `${sel.name}`,
             color: '#00ff9d',
             getV: () => sel.vDiff || 0,
             getI: () => sel.current || 0,
@@ -5494,6 +5963,7 @@ class Oscilloscope {
   render(appState) {
     if (!this.canvas || !this.ctx) {
       this.renderPinnedMonitors(appState);
+      this.renderExpandedGraph(appState);
       return;
     }
     if (!this.width || !this.height) this.resize();
@@ -5549,6 +6019,7 @@ class Oscilloscope {
       this.updateBadgesUI([]);
       ctx.restore();
       this.renderPinnedMonitors(appState);
+      this.renderExpandedGraph(appState);
       return;
     }
 
@@ -5683,8 +6154,9 @@ class Oscilloscope {
     this.updateBadgesUI(stats);
     ctx.restore();
 
-    // Renderizar todos los gráficos anclados en el panel derecho (independientes de qué llave o elemento se toque)
+    // Renderizar todos los gráficos anclados en el panel derecho y la vista ampliada superior si está abierta
     this.renderPinnedMonitors(appState);
+    this.renderExpandedGraph(appState);
   }
 
   // Dibuja cada uno de los gráficos en la columna derecha (#pinnedGraphsList)
@@ -5935,6 +6407,487 @@ class Oscilloscope {
     }
   }
 
+  // Posiciona automáticamente Cursor A en el mínimo y Cursor B en el máximo de la ventana visible
+  autoPlaceCursorsMinMax(compId) {
+    if (!compId) return;
+    const fullHist = this.compHistory.get(compId) || [];
+    const data = fullHist.slice(-this.viewSamples);
+    if (data.length < 2) return;
+
+    let minIdx = 0;
+    let maxIdx = 0;
+    for (let i = 1; i < data.length; i++) {
+      if (data[i].v < data[minIdx].v) minIdx = i;
+      if (data[i].v > data[maxIdx].v) maxIdx = i;
+    }
+
+    const denom = Math.max(1, data.length - 1);
+    if (minIdx <= maxIdx) {
+      this.cursorA = minIdx / denom;
+      this.cursorB = maxIdx / denom;
+    } else {
+      this.cursorA = maxIdx / denom;
+      this.cursorB = minIdx / denom;
+    }
+    this.cursorsEnabled = true;
+  }
+
+  // Posiciona automáticamente Cursor A al inicio del último flanco/escalón y Cursor B al 63.21% (1 constante de tiempo τ)
+  autoPlaceCursorsTau(compId) {
+    if (!compId) return;
+    const fullHist = this.compHistory.get(compId) || [];
+    const data = fullHist.slice(-this.viewSamples);
+    if (data.length < 4) return;
+
+    // Buscar el punto donde arranca la mayor variación (inicio de escalón exponencial)
+    let startIdx = 0;
+    let maxDiff = 0;
+    for (let i = 1; i < Math.floor(data.length * 0.85); i++) {
+      const dv = Math.abs(data[i].v - data[i - 1].v);
+      if (dv > maxDiff) {
+        maxDiff = dv;
+        startIdx = Math.max(0, i - 1);
+      }
+    }
+
+    const vStart = data[startIdx].v;
+    const vEnd = data[data.length - 1].v;
+    const targetV = vStart + (1 - Math.exp(-1)) * (vEnd - vStart); // 63.212%
+
+    let bestTauIdx = Math.min(data.length - 1, startIdx + Math.round((data.length - startIdx) * 0.35));
+    let bestErr = Infinity;
+    for (let i = startIdx + 1; i < data.length; i++) {
+      const err = Math.abs(data[i].v - targetV);
+      if (err < bestErr) {
+        bestErr = err;
+        bestTauIdx = i;
+      }
+    }
+
+    const denom = Math.max(1, data.length - 1);
+    this.cursorA = startIdx / denom;
+    this.cursorB = bestTauIdx / denom;
+    this.cursorMode = 'track';
+    this.cursorsEnabled = true;
+  }
+
+  initExpandedCanvasEvents(canvas, appState) {
+    if (!canvas || canvas._hasExpEvents) return;
+    canvas._hasExpEvents = true;
+
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    canvas.addEventListener('dblclick', () => {
+      if (typeof appState.closeExpandedGraph === 'function') {
+        appState.closeExpandedGraph();
+      }
+    });
+
+    const getRelPos = (e) => {
+      const r = canvas.getBoundingClientRect();
+      return {
+        x: Math.max(0, Math.min(r.width, e.clientX - r.left)),
+        y: Math.max(0, Math.min(r.height, e.clientY - r.top)),
+        w: Math.max(1, r.width),
+        h: Math.max(1, r.height)
+      };
+    };
+
+    canvas.addEventListener('mousedown', (e) => {
+      const { x, y, w, h } = getRelPos(e);
+      if (!this.cursorsEnabled) {
+        this.cursorsEnabled = true;
+      }
+
+      const xA = this.cursorA * w;
+      const xB = this.cursorB * w;
+      const distA = Math.abs(x - xA);
+      const distB = Math.abs(x - xB);
+
+      if (this.cursorMode === 'free') {
+        const yV1 = this.cursorV1 * h;
+        const yV2 = this.cursorV2 * h;
+        const distV1 = Math.abs(y - yV1);
+        const distV2 = Math.abs(y - yV2);
+        const minDist = Math.min(distA, distB, distV1, distV2);
+        if (minDist <= 14) {
+          if (minDist === distA) this.draggingCursor = 'A';
+          else if (minDist === distB) this.draggingCursor = 'B';
+          else if (minDist === distV1) this.draggingCursor = 'V1';
+          else this.draggingCursor = 'V2';
+          return;
+        }
+      } else {
+        if (distA <= 14 && distA <= distB) {
+          this.draggingCursor = 'A';
+          return;
+        }
+        if (distB <= 14) {
+          this.draggingCursor = 'B';
+          return;
+        }
+      }
+
+      // Si hizo clic lejos de las barras: Clic Derecho o Shift+Clic mueve B, Clic Izquierdo mueve A
+      if (e.button === 2 || e.shiftKey) {
+        this.cursorB = x / w;
+        this.draggingCursor = 'B';
+      } else {
+        this.cursorA = x / w;
+        this.draggingCursor = 'A';
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!this.draggingCursor) return;
+      const { x, y, w, h } = getRelPos(e);
+      if (this.draggingCursor === 'A') {
+        this.cursorA = Math.max(0, Math.min(1, x / w));
+      } else if (this.draggingCursor === 'B') {
+        this.cursorB = Math.max(0, Math.min(1, x / w));
+      } else if (this.draggingCursor === 'V1') {
+        this.cursorV1 = Math.max(0.04, Math.min(0.96, y / h));
+      } else if (this.draggingCursor === 'V2') {
+        this.cursorV2 = Math.max(0.04, Math.min(0.96, y / h));
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      this.draggingCursor = null;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      const { x, y, w, h } = getRelPos(e);
+      this.expHoverX = x;
+      if (this.draggingCursor) return;
+
+      const xA = this.cursorA * w;
+      const xB = this.cursorB * w;
+      if (Math.abs(x - xA) <= 12 || Math.abs(x - xB) <= 12) {
+        canvas.style.cursor = 'ew-resize';
+      } else if (
+        this.cursorMode === 'free' &&
+        (Math.abs(y - this.cursorV1 * h) <= 10 || Math.abs(y - this.cursorV2 * h) <= 10)
+      ) {
+        canvas.style.cursor = 'ns-resize';
+      } else {
+        canvas.style.cursor = 'crosshair';
+      }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      this.expHoverX = null;
+    });
+  }
+
+  // Renderiza la vista superior ampliada con grilla de alta precisión y cursores ΔV / Δt
+  renderExpandedGraph(appState) {
+    const compId = appState?.expandedMonitorId;
+    if (!compId) return;
+
+    const dock = document.getElementById('topExpandedGraphDock');
+    if (!dock || dock.classList.contains('collapsed')) return;
+
+    const canvas = document.getElementById('expandedGraphCanvas');
+    if (!canvas || !canvas.parentElement) return;
+
+    this.initExpandedCanvasEvents(canvas, appState);
+
+    const rect = canvas.parentElement.getBoundingClientRect();
+    if (rect.width < 20 || rect.height < 20) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.round(rect.width * dpr) || canvas.height !== Math.round(rect.height * dpr)) {
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+    }
+
+    const ctx = canvas.getContext('2d');
+    const w = rect.width;
+    const h = rect.height;
+    const f = window.ProtoSim.formatSI;
+
+    ctx.save();
+    ctx.scale(dpr, dpr);
+
+    ctx.fillStyle = '#04070e';
+    ctx.fillRect(0, 0, w, h);
+
+    // Grilla principal y secundaria estilo osciloscopio de banco
+    const cols = 10;
+    const rows = 6;
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 1; i < cols; i++) {
+      const x = (w / cols) * i;
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+    }
+    for (let j = 1; j < rows; j++) {
+      const y = (h / rows) * j;
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+    }
+    ctx.stroke();
+
+    const fullHist = this.compHistory.get(compId) || [];
+    const data = fullHist.slice(-this.viewSamples);
+    if (data.length < 2) {
+      ctx.restore();
+      return;
+    }
+
+    const isNodeMonitor = typeof compId === 'string' && compId.startsWith('node_');
+    let vMin = Infinity;
+    let vMax = -Infinity;
+    let iMin = Infinity;
+    let iMax = -Infinity;
+
+    for (const pt of data) {
+      if (pt.v < vMin) vMin = pt.v;
+      if (pt.v > vMax) vMax = pt.v;
+      if (pt.i < iMin) iMin = pt.i;
+      if (pt.i > iMax) iMax = pt.i;
+    }
+
+    const vPp = isFinite(vMax - vMin) ? vMax - vMin : 0;
+    const iPp = isFinite(iMax - iMin) ? iMax - iMin : 0;
+
+    let effVMin = vMin;
+    let effVMax = vMax;
+    if (vPp > 1e-5) {
+      if (vMin >= 0 && vMin <= vPp * 0.65) effVMin = 0;
+      if (vMax <= 0 && Math.abs(vMax) <= vPp * 0.65) effVMax = 0;
+    } else {
+      const absV = Math.max(Math.abs(vMin), Math.abs(vMax));
+      if (absV < 1e-4) {
+        effVMin = -1.0;
+        effVMax = 1.0;
+      } else {
+        effVMin = Math.min(0, vMin);
+        effVMax = Math.max(0, vMax);
+      }
+    }
+
+    const midY = h / 2;
+    const vCenter = (effVMax + effVMin) * 0.5;
+    const vHalfSpan = Math.max(1e-5, ((effVMax - effVMin) * 0.5) / 0.68);
+    const mapYV = (v) => midY - ((v - vCenter) / vHalfSpan) * (h * 0.5);
+    const unmapYV = (yPx) => vCenter + ((midY - yPx) / (h * 0.5)) * vHalfSpan;
+
+    let effIMin = Math.min(0, iMin);
+    let effIMax = Math.max(0, iMax);
+    const maxAbsI = Math.max(Math.abs(iMin), Math.abs(iMax));
+    if (maxAbsI < 1e-11 && iPp < 1e-11) {
+      effIMin = -1e-3;
+      effIMax = 1e-3;
+    }
+    const iCenter = (effIMax + effIMin) * 0.5;
+    const iHalfSpan = Math.max(1e-12, ((effIMax - effIMin) * 0.5) / 0.62);
+    const mapYI = (iVal) => midY - ((iVal - iCenter) / iHalfSpan) * (h * 0.5);
+
+    // Línea de 0V
+    const yZero = mapYV(0);
+    if (yZero >= 2 && yZero <= h - 2) {
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.36)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, yZero);
+      ctx.lineTo(w, yZero);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    const denom = Math.max(1, data.length - 1);
+
+    // Curva de Corriente I(t)
+    if (!isNodeMonitor) {
+      ctx.save();
+      ctx.strokeStyle = '#facc15';
+      ctx.globalAlpha = 0.78;
+      ctx.lineWidth = 1.7;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      for (let i = 0; i < data.length; i++) {
+        const x = (i / denom) * w;
+        const y = mapYI(data[i].i);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Curva de Tensión V(t)
+    ctx.save();
+    ctx.strokeStyle = '#00ff9d';
+    ctx.shadowColor = '#10b981';
+    ctx.shadowBlur = 8;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let i = 0; i < data.length; i++) {
+      const x = (i / denom) * w;
+      const y = mapYV(data[i].v);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // Etiquetas de escala vertical izquierda
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.fillStyle = 'rgba(148, 163, 184, 0.85)';
+    ctx.textAlign = 'left';
+    for (let j = 1; j < rows; j++) {
+      const y = (h / rows) * j;
+      const vAtRow = unmapYV(y);
+      ctx.fillText(f(vAtRow, 'V', 2), 6, y - 3);
+    }
+
+    // Dibujar Cursores Interactivos A (T1) y B (T2) para medir Δt (ms), ΔV, ΔI, 1/Δt y Pendiente
+    if (this.cursorsEnabled) {
+      const idxA = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorA * denom)));
+      const idxB = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorB * denom)));
+      const ptA = data[idxA];
+      const ptB = data[idxB];
+
+      const xA = (idxA / denom) * w;
+      const xB = (idxB / denom) * w;
+
+      let v1 = ptA.v;
+      let v2 = ptB.v;
+      let y1 = mapYV(v1);
+      let y2 = mapYV(v2);
+
+      if (this.cursorMode === 'free') {
+        y1 = this.cursorV1 * h;
+        y2 = this.cursorV2 * h;
+        v1 = unmapYV(y1);
+        v2 = unmapYV(y2);
+      }
+
+      const dt = Math.abs(ptB.t - ptA.t);
+      const dv = v2 - v1;
+      const di = ptB.i - ptA.i;
+      const freq = dt > 1e-9 ? 1.0 / dt : 0;
+      const slope = dt > 1e-9 ? dv / dt : 0;
+
+      // Franja sombreada entre Cursor A y Cursor B
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.055)';
+      ctx.fillRect(Math.min(xA, xB), 0, Math.abs(xB - xA), h);
+
+      // Líneas horizontales de nivel V1 y V2
+      ctx.save();
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = this.cursorMode === 'free' ? 1.7 : 1.1;
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+      ctx.beginPath();
+      ctx.moveTo(0, y1);
+      ctx.lineTo(w, y1);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(250, 204, 21, 0.6)';
+      ctx.beginPath();
+      ctx.moveTo(0, y2);
+      ctx.lineTo(w, y2);
+      ctx.stroke();
+      ctx.restore();
+
+      // Barra Vertical Cursor A (Celeste #38bdf8)
+      ctx.save();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.9;
+      ctx.beginPath();
+      ctx.moveTo(xA, 0);
+      ctx.lineTo(xA, h);
+      ctx.stroke();
+
+      // Punto de intersección A
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(xA, y1, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Etiqueta superior agarradera [A]
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(xA - 24, 3, 48, 16);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('◀ A ▶', xA, 14);
+      ctx.restore();
+
+      // Barra Vertical Cursor B (Ámbar #facc15)
+      ctx.save();
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 1.9;
+      ctx.beginPath();
+      ctx.moveTo(xB, 0);
+      ctx.lineTo(xB, h);
+      ctx.stroke();
+
+      // Punto de intersección B
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.arc(xB, y2, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Etiqueta superior agarradera [B]
+      ctx.fillStyle = '#ca8a04';
+      ctx.fillRect(xB - 24, 3, 48, 16);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('◀ B ▶', xB, 14);
+      ctx.restore();
+
+      // Cota visual en vivo entre A y B mostrando Δt y ΔV directamente sobre el gráfico
+      if (Math.abs(xB - xA) > 45) {
+        const midX = (xA + xB) * 0.5;
+        const badgeY = 30;
+        const label = `Δt = ${f(dt, 's', 2)}  |  ΔV = ${dv >= 0 ? '+' : ''}${f(dv, 'V', 2)}`;
+        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        const bw = ctx.measureText(label).width + 16;
+
+        ctx.strokeStyle = 'rgba(248, 250, 252, 0.45)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(xA, badgeY);
+        ctx.lineTo(xB, badgeY);
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+        ctx.fillRect(midX - bw / 2, badgeY - 9, bw, 18);
+        ctx.strokeRect(midX - bw / 2, badgeY - 9, bw, 18);
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, midX, badgeY + 3.5);
+      }
+
+      // Actualizar la barra superior de lectura de Deltas en el DOM
+      const elCA = document.getElementById('expStatCA');
+      const elCB = document.getElementById('expStatCB');
+      const elDt = document.getElementById('expStatDt');
+      const elDv = document.getElementById('expStatDv');
+      const elDi = document.getElementById('expStatDi');
+      const elFreq = document.getElementById('expStatFreq');
+      const elSlope = document.getElementById('expStatSlope');
+
+      if (elCA) elCA.textContent = `t₁ = ${f(ptA.t, 's', 3)} · V₁ = ${f(v1, 'V', 2)}`;
+      if (elCB) elCB.textContent = `t₂ = ${f(ptB.t, 's', 3)} · V₂ = ${f(v2, 'V', 2)}`;
+      if (elDt) elDt.textContent = f(dt, 's', 3);
+      if (elDv) elDv.textContent = `${dv >= 0 ? '+' : ''}${f(dv, 'V', 3)}`;
+      if (elDi) elDi.textContent = isNodeMonitor ? '—' : `${di >= 0 ? '+' : ''}${f(di, 'A', 2)}`;
+      if (elFreq) elFreq.textContent = dt > 1e-9 ? f(freq, 'Hz', 2) : '— Hz';
+      if (elSlope) elSlope.textContent = dt > 1e-9 ? `${f(slope, 'V/s', 2)}` : '0 V/s';
+    }
+
+    ctx.restore();
+  }
+
   updateBadgesUI(stats) {
     if (!this.channelsContainer) return;
     this._frameCnt = ((this._frameCnt || 0) + 1) % 3;
@@ -5995,7 +6948,7 @@ const EXAMPLE_CIRCUITS = {
 
   led_overload_demo: {
     id: 'led_overload_demo',
-    title: '2. LED + Resistencia y Prueba de Sobrecarga (💥)',
+    title: '2. LED + Resistencia y Prueba de Sobrecarga',
     description: 'El LED brilla protegido por R1 (220Ω). ¡Hacé clic en el interruptor SW_BYPASS arriba para puentear la resistencia y ver cómo el LED se quema por sobrecorriente!',
     components: [
       { id: 'c1', type: 'dc_voltage', name: 'V1', gx: -8, gy: 0, rotation: 90, props: { voltage: 9, maxCurrent: 5 } },
@@ -6221,7 +7174,10 @@ class ProtoSimApp {
     this.probedComponents = new Map();
     this.pinnedMonitors = [];
     this.graphSizeClass = 'size-md';
+    this.leftPanelWidth = 245;
     this.rightPanelWidth = 340;
+    this.expandedMonitorId = null;
+    this.expandedDockHeight = 350;
 
     this.hoverGrid = { gx: 0, gy: 0 };
     this.hoveredPin = null;
@@ -6421,7 +7377,7 @@ class ProtoSimApp {
     const exampleSelect = document.getElementById('exampleSelect');
     if (exampleSelect) {
       exampleSelect.innerHTML =
-        `<option value="">📂 Circuitos de Ejemplo...</option>` +
+        `<option value="">Circuitos de Ejemplo...</option>` +
         Object.values(window.ProtoSim.EXAMPLE_CIRCUITS)
           .map((ex) => `<option value="${ex.id}">${ex.title}</option>`)
           .join('');
@@ -6476,10 +7432,6 @@ class ProtoSimApp {
       this.renderPinnedMonitorsDOM();
       this.renderCircuitFinder();
       this.updateInspector();
-      const hudHint = document.getElementById('hudModeText');
-      if (hudHint) {
-        hudHint.innerHTML = `<strong>Lienzo limpio:</strong> Buscá un componente arriba o presioná <b>Ctrl+Z</b> para deshacer.`;
-      }
     });
 
     document.getElementById('btnCenterCam').addEventListener('click', () => this.centerCamera());
@@ -6546,33 +7498,102 @@ class ProtoSimApp {
     document.getElementById('fileImportInput').addEventListener('change', (e) => this.importCircuitJSON(e));
   }
 
-  // Divisor arrastrable y botones de tamaño rápido para la barra derecha
+  // Divisores arrastrables para la barra izquierda (Catálogo), barra derecha (Inspector) y gráfico expandido superior
   initSidebarResizer() {
     const resizer = document.getElementById('rightSidebarResizer');
     const rightSidebar = document.getElementById('rightSidebar');
-    if (!resizer || !rightSidebar) return;
+    const leftResizer = document.getElementById('leftSidebarResizer');
+    const leftSidebar = document.getElementById('leftPaletteSidebar');
+    const topGraphResizer = document.getElementById('expandedGraphResizer');
 
-    let isResizing = false;
+    let isResizingRight = false;
+    let isResizingLeft = false;
+    let isResizingTopDock = false;
 
-    resizer.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      isResizing = true;
-      resizer.classList.add('dragging');
-      document.body.style.cursor = 'ew-resize';
-    });
+    if (resizer && rightSidebar) {
+      resizer.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizingRight = true;
+        resizer.classList.add('dragging');
+        document.body.classList?.add('is-resizing-panel');
+        document.body.style.cursor = 'ew-resize';
+      });
+    }
+
+    if (leftResizer && leftSidebar) {
+      leftResizer.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizingLeft = true;
+        leftResizer.classList.add('dragging');
+        document.body.classList?.add('is-resizing-panel');
+        document.body.style.cursor = 'ew-resize';
+      });
+    }
+
+    if (topGraphResizer) {
+      topGraphResizer.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizingTopDock = true;
+        topGraphResizer.classList.add('dragging');
+        document.body.classList?.add('is-resizing-panel');
+        document.body.style.cursor = 'ns-resize';
+      });
+    }
 
     window.addEventListener('mousemove', (e) => {
-      if (!isResizing) return;
-      const newWidth = Math.min(720, Math.max(240, window.innerWidth - e.clientX));
-      this.setRightSidebarWidth(newWidth);
+      if (isResizingRight) {
+        const newWidth = Math.min(720, Math.max(240, window.innerWidth - e.clientX));
+        this.setRightSidebarWidth(newWidth);
+      } else if (isResizingLeft) {
+        const newWidth = Math.min(440, Math.max(200, e.clientX));
+        this.setLeftSidebarWidth(newWidth);
+      } else if (isResizingTopDock) {
+        const maxH = Math.max(300, (window.innerHeight || 800) - 240);
+        const newHeight = Math.min(maxH, Math.max(230, e.clientY));
+        this.setExpandedDockHeight(newHeight);
+      }
     });
 
     window.addEventListener('mouseup', () => {
-      if (isResizing) {
-        isResizing = false;
-        resizer.classList.remove('dragging');
+      if (isResizingRight || isResizingLeft || isResizingTopDock) {
+        isResizingRight = false;
+        isResizingLeft = false;
+        isResizingTopDock = false;
+        resizer?.classList.remove('dragging');
+        leftResizer?.classList.remove('dragging');
+        topGraphResizer?.classList.remove('dragging');
+        document.body.classList?.remove('is-resizing-panel');
         document.body.style.cursor = '';
       }
+    });
+
+    // Controles del panel superior de gráfico expandido y cursores de medición (ΔV, Δt)
+    document.getElementById('btnToggleGraphCursors')?.addEventListener('click', () => {
+      this.oscilloscope.cursorsEnabled = !this.oscilloscope.cursorsEnabled;
+      this.syncExpandedCursorControlsUI();
+    });
+
+    document.getElementById('expandedCursorModeSelect')?.addEventListener('change', (e) => {
+      this.oscilloscope.cursorMode = e.target.value;
+      this.syncExpandedCursorControlsUI();
+    });
+
+    document.getElementById('btnAutoCursorsMinMax')?.addEventListener('click', () => {
+      if (!this.expandedMonitorId) return;
+      this.oscilloscope.cursorsEnabled = true;
+      this.oscilloscope.autoPlaceCursorsMinMax(this.expandedMonitorId);
+      this.syncExpandedCursorControlsUI();
+    });
+
+    document.getElementById('btnAutoCursorsTau')?.addEventListener('click', () => {
+      if (!this.expandedMonitorId) return;
+      this.oscilloscope.cursorsEnabled = true;
+      this.oscilloscope.autoPlaceCursorsTau(this.expandedMonitorId);
+      this.syncExpandedCursorControlsUI();
+    });
+
+    document.getElementById('btnCloseExpandedGraph')?.addEventListener('click', () => {
+      this.closeExpandedGraph();
     });
 
     // Botones de ancho predefinido (Chico, Normal, Grande, XL)
@@ -6595,21 +7616,141 @@ class ProtoSimApp {
     });
   }
 
+  setExpandedDockHeight(heightPx) {
+    const maxH = Math.max(300, (window.innerHeight || 800) - 240);
+    const clamped = Math.max(230, Math.min(maxH, heightPx));
+    this.expandedDockHeight = clamped;
+    const dock = document.getElementById('topExpandedGraphDock');
+    if (dock && !dock.classList.contains('collapsed')) {
+      dock.style.height = `${clamped}px`;
+    }
+    this.renderer.resize();
+  }
+
+  getMonitorDisplayLabel(mId) {
+    if (!mId) return 'Señal';
+    if (mId.startsWith('node_')) {
+      return `Nodo (${mId.slice(5)})`;
+    }
+    if (mId.startsWith('wire_')) {
+      return 'Cable Conductor';
+    }
+    const comp = this.components.find((c) => c.id === mId);
+    if (!comp) return mId;
+    const def = window.ProtoSim.COMPONENT_LIBRARY[comp.type];
+    return `${comp.name} (${def?.name || comp.type})`;
+  }
+
+  syncExpandedCursorControlsUI() {
+    const btnToggle = document.getElementById('btnToggleGraphCursors');
+    const modeSel = document.getElementById('expandedCursorModeSelect');
+    const deltaBar = document.getElementById('expandedDeltaBar');
+    if (btnToggle) {
+      btnToggle.classList.toggle('btn-active', Boolean(this.oscilloscope.cursorsEnabled));
+    }
+    if (modeSel) {
+      modeSel.value = this.oscilloscope.cursorMode || 'track';
+    }
+    if (deltaBar) {
+      deltaBar.style.display = this.oscilloscope.cursorsEnabled ? 'flex' : 'none';
+    }
+  }
+
+  renderExpandedGraphHeader() {
+    const titleEl = document.getElementById('expandedGraphTitle');
+    const tabsEl = document.getElementById('expandedGraphTabs');
+    if (titleEl && this.expandedMonitorId) {
+      titleEl.textContent = this.getMonitorDisplayLabel(this.expandedMonitorId);
+    }
+    if (tabsEl) {
+      const monitorIds = this.getDisplayedMonitorIds();
+      if (this.expandedMonitorId && !monitorIds.includes(this.expandedMonitorId)) {
+        monitorIds.unshift(this.expandedMonitorId);
+      }
+      tabsEl.innerHTML = monitorIds
+        .map((mId) => {
+          const active = mId === this.expandedMonitorId ? 'active' : '';
+          let shortLabel = mId;
+          if (mId.startsWith('node_')) shortLabel = `Nodo (${mId.slice(5)})`;
+          else if (mId.startsWith('wire_')) shortLabel = 'Cable';
+          else {
+            const c = this.components.find((x) => x.id === mId);
+            shortLabel = c ? `${c.name}` : mId;
+          }
+          return `<button class="expanded-signal-tab ${active}" data-switch-expanded="${mId}" title="Ver ${this.getMonitorDisplayLabel(mId)} en el osciloscopio superior">${shortLabel}</button>`;
+        })
+        .join('');
+
+      tabsEl.querySelectorAll('[data-switch-expanded]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          this.openExpandedGraph(btn.dataset.switchExpanded);
+        });
+      });
+    }
+  }
+
+  openExpandedGraph(monitorId) {
+    if (!monitorId) return;
+    this.expandedMonitorId = monitorId;
+    const dock = document.getElementById('topExpandedGraphDock');
+    if (dock) {
+      dock.classList.remove('collapsed');
+      dock.style.height = `${this.expandedDockHeight || 350}px`;
+    }
+    this.oscilloscope.cursorsEnabled = true;
+    this.syncExpandedCursorControlsUI();
+    this.renderExpandedGraphHeader();
+    this.renderer.resize();
+  }
+
+  closeExpandedGraph() {
+    this.expandedMonitorId = null;
+    const dock = document.getElementById('topExpandedGraphDock');
+    if (dock) {
+      dock.classList.add('collapsed');
+    }
+    this.renderer.resize();
+  }
+
   syncFloatingToolbarOffsets() {
     if (!document.body || !document.body.style || typeof document.body.style.setProperty !== 'function') return;
     const leftSidebar = document.getElementById('leftPaletteSidebar');
     const rightSidebar = document.getElementById('rightSidebar');
     const leftOpen = leftSidebar && !leftSidebar.classList.contains('minimized');
     const rightOpen = rightSidebar && !rightSidebar.classList.contains('hidden');
-    const leftPx = leftOpen ? 245 : 0;
+    const leftPx = leftOpen ? this.leftPanelWidth || 245 : 0;
     const rightPx = rightOpen ? this.rightPanelWidth || 335 : 0;
     document.body.style.setProperty('--left-panel-offset', `${leftPx}px`);
     document.body.style.setProperty('--right-panel-offset', `${rightPx}px`);
   }
 
+  setLeftSidebarWidth(widthPx) {
+    const rightSidebar = document.getElementById('rightSidebar');
+    const rightOpen = rightSidebar && !rightSidebar.classList.contains('hidden');
+    const rightPx = rightOpen ? this.rightPanelWidth || 335 : 0;
+    const winW = window.innerWidth || 1280;
+    // Garantizar que la barra de catálogo izquierda nunca solape los controles centrales ni la barra inferior
+    const maxSafeWidth = Math.max(245, Math.min(390, winW - rightPx - 670));
+    const clampedWidth = Math.max(200, Math.min(maxSafeWidth, widthPx));
+
+    this.leftPanelWidth = clampedWidth;
+    const leftSidebar = document.getElementById('leftPaletteSidebar');
+    const leftResizer = document.getElementById('leftSidebarResizer');
+    if (leftSidebar) {
+      leftSidebar.style.width = `${clampedWidth}px`;
+    }
+    if (leftResizer) {
+      leftResizer.style.left = `${clampedWidth}px`;
+    }
+    document.querySelectorAll('.comp-section-grid').forEach((grid) => {
+      grid.classList.toggle('three-cols', clampedWidth >= 325);
+    });
+    this.syncFloatingToolbarOffsets();
+  }
+
   setRightSidebarWidth(widthPx) {
     const leftSidebar = document.getElementById('leftPaletteSidebar');
-    const leftPx = leftSidebar && !leftSidebar.classList.contains('minimized') ? 245 : 0;
+    const leftPx = leftSidebar && !leftSidebar.classList.contains('minimized') ? this.leftPanelWidth || 245 : 0;
     const winW = window.innerWidth || 1280;
     // Garantizar que el panel derecho nunca invada el espacio mínimo requerido por la barra inferior de herramientas
     const maxSafeWidth = Math.max(280, Math.min(620, winW - leftPx - 670));
@@ -6727,6 +7868,18 @@ class ProtoSimApp {
     listEl.classList.toggle('two-cols', this.rightPanelWidth >= 520 && monitorIds.length >= 2);
     this.updateAddGraphDropdown();
 
+    if (this.expandedMonitorId) {
+      const stillValid =
+        this.expandedMonitorId.startsWith('node_') ||
+        this.expandedMonitorId.startsWith('wire_') ||
+        this.components.some((c) => c.id === this.expandedMonitorId);
+      if (!stillValid) {
+        this.closeExpandedGraph();
+      } else {
+        this.renderExpandedGraphHeader();
+      }
+    }
+
     if (monitorIds.length === 0) {
       listEl.innerHTML = `
         <div class="pinned-graphs-empty">
@@ -6742,13 +7895,14 @@ class ProtoSimApp {
           const nKey = mId.slice(5);
           const isPinned = this.pinnedMonitors.includes(mId);
           return `
-            <div class="inspector-scope-card" data-monitor-id="${mId}">
+            <div class="inspector-scope-card" data-monitor-id="${mId}" title="Doble clic para ampliar este gráfico arriba y medir ΔV / Δt con cursores">
               <div class="inspector-scope-header">
                 <span style="cursor:pointer;" data-focus-node="${nKey}" title="Clic para inspeccionar el Nodo (${nKey})">
-                  ${isPinned ? '📌 ' : ''}◉ Nodo (${nKey})
+                  Nodo (${nKey})
                 </span>
-                <div style="display:flex;align-items:center;gap:6px;">
+                <div style="display:flex;align-items:center;gap:5px;">
                   <span style="font-size:9.5px;color:#94a3b8;"><span style="color:#00ff9d">―V(t)</span></span>
+                  <button class="pinned-graph-close" data-expand-monitor="${mId}" title="Ampliar gráfico en panel superior con cursores (Doble clic)">Ampliar</button>
                   ${isPinned ? `<button class="pinned-graph-close" data-close-monitor="${mId}" title="Quitar gráfico de nodo fijado">✕</button>` : ''}
                 </div>
               </div>
@@ -6767,10 +7921,13 @@ class ProtoSimApp {
 
         if (mId.startsWith('wire_')) {
           return `
-            <div class="inspector-scope-card" data-monitor-id="${mId}">
+            <div class="inspector-scope-card" data-monitor-id="${mId}" title="Doble clic para ampliar este gráfico arriba y medir ΔV / Δt con cursores">
               <div class="inspector-scope-header">
-                <span>〰 Cable Conductor</span>
-                <span style="font-size:9.5px;color:#94a3b8;"><span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span></span>
+                <span>Cable Conductor</span>
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <span style="font-size:9.5px;color:#94a3b8;"><span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span></span>
+                  <button class="pinned-graph-close" data-expand-monitor="${mId}" title="Ampliar gráfico en panel superior con cursores (Doble clic)">Ampliar</button>
+                </div>
               </div>
               <div class="inspector-scope-canvas-wrap ${this.graphSizeClass}">
                 <canvas class="inspector-scope-canvas" id="pinCanvas_${mId}"></canvas>
@@ -6790,13 +7947,14 @@ class ProtoSimApp {
         const def = window.ProtoSim.COMPONENT_LIBRARY[comp.type];
         const isPinned = this.pinnedMonitors.includes(comp.id);
         return `
-          <div class="inspector-scope-card" data-monitor-id="${comp.id}">
+          <div class="inspector-scope-card" data-monitor-id="${comp.id}" title="Doble clic para ampliar este gráfico arriba y medir ΔV / Δt con cursores">
             <div class="inspector-scope-header">
               <span style="cursor:pointer;" data-focus-comp="${comp.id}" title="Clic para editar propiedades de ${comp.name}">
-                ${isPinned ? '📌 ' : ''}📊 ${comp.name} <span style="font-weight:400;color:#94a3b8;">(${def?.name || comp.type})</span>
+                ${comp.name} <span style="font-weight:400;color:#94a3b8;">(${def?.name || comp.type})</span>
               </span>
-              <div style="display:flex;align-items:center;gap:6px;">
+              <div style="display:flex;align-items:center;gap:5px;">
                 <span style="font-size:9.5px;color:#94a3b8;"><span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span></span>
+                <button class="pinned-graph-close" data-expand-monitor="${comp.id}" title="Ampliar gráfico en panel superior con cursores (Doble clic)">Ampliar</button>
                 ${isPinned ? `<button class="pinned-graph-close" data-close-monitor="${comp.id}" title="Quitar de comparativa">✕</button>` : ''}
               </div>
             </div>
@@ -6813,6 +7971,21 @@ class ProtoSimApp {
         `;
       })
       .join('');
+
+    listEl.querySelectorAll('.inspector-scope-card').forEach((card) => {
+      card.addEventListener('dblclick', (e) => {
+        if (e.target.closest('[data-close-monitor]')) return;
+        const mId = card.dataset.monitorId;
+        if (mId) this.openExpandedGraph(mId);
+      });
+    });
+
+    listEl.querySelectorAll('[data-expand-monitor]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openExpandedGraph(btn.dataset.expandMonitor);
+      });
+    });
 
     listEl.querySelectorAll('[data-close-monitor]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
@@ -6872,7 +8045,7 @@ class ProtoSimApp {
               ${
                 canGraph
                   ? `<button class="unit-btn" data-pin-cid="${c.id}" style="${isPinned ? 'border-color:#00ff9d;color:#00ff9d;' : ''}" title="Mostrar/Ocultar gráfico de ${c.name}">
-                      ${isPinned ? '📊 Activo' : '+ Gráfico'}
+                      ${isPinned ? 'Activo' : '+ Gráfico'}
                      </button>`
                   : ''
               }
@@ -6939,7 +8112,7 @@ class ProtoSimApp {
             <span>${isCollapsed ? '▸' : '▾'} ${cat.fullTitle || cat.name}</span>
             <span class="comp-section-count">${items.length}</span>
           </div>
-          <div class="comp-section-grid">
+          <div class="comp-section-grid ${this.leftPanelWidth >= 325 ? 'three-cols' : ''}">
             ${items
               .map((def) => {
                 const kbd = shortcuts[def.type];
@@ -7037,16 +8210,6 @@ class ProtoSimApp {
     document.querySelectorAll('.comp-card').forEach((card) => {
       card.classList.toggle('selected-tool', card.dataset.type === tool);
     });
-
-    const hudHint = document.getElementById('hudModeText');
-    if (!tool) {
-      hudHint.innerHTML = `<strong>Modo Selección:</strong> Arrastrá en vacío para <b>selección múltiple</b> • <b>Ctrl+Clic</b> suma/quita • Clic en vacío desmarca • <b>Clic Derecho</b> mueve cámara`;
-    } else if (tool === 'wire') {
-      hudHint.innerHTML = `<strong>Modo Cableado (W):</strong> Hacé clic en cualquier pin o nodo de inicio y luego en el destino (Esc para salir)`;
-    } else {
-      const def = window.ProtoSim.COMPONENT_LIBRARY[tool];
-      hudHint.innerHTML = `<strong>Colocando ${def?.name || tool}:</strong> Clic en la grilla para insertar • Tecla <b>R</b> para rotar • <b>Esc</b> para cancelar`;
-    }
   }
 
   initCanvasEvents() {
@@ -7143,10 +8306,10 @@ class ProtoSimApp {
         return;
       }
 
-      const pinHit = this.findPinNearWorld(world.wx, world.wy, 13);
+      const pinHit = this.findPinNearWorld(world.wx, world.wy, 11);
       const nodeKeyHit = this.findWireNodeNearWorld(world.wx, world.wy, 11);
 
-      // 2. Si hay un cable en curso, completarlo al hacer clic
+      // 2. Si hay un cable en curso, completarlo al hacer clic (o insertar nodo si se hace clic en el mismo punto sobre un cable)
       if (this.wiringStart) {
         let target = pinHit || { gx: world.gx, gy: world.gy };
         if (!pinHit && nodeKeyHit) {
@@ -7159,18 +8322,26 @@ class ProtoSimApp {
         return;
       }
 
-      // 3. Si hizo clic sobre un pin, un nodo conector de cable o está en modo cable (y no está usando Ctrl/Shift de selección múltiple)
-      if ((!isMultiMod && (pinHit || nodeKeyHit)) || this.activeTool === 'wire') {
+      // 3a. Si está en modo Cablear (W), iniciar trazado desde el pin, nodo o grilla
+      if (this.activeTool === 'wire') {
         if (pinHit) {
           this.selectNode(`${pinHit.gx},${pinHit.gy}`);
-          this.wiringStart = { gx: pinHit.gx, gy: pinHit.gy, fromNodeClick: this.activeTool !== 'wire' };
+          this.wiringStart = { gx: pinHit.gx, gy: pinHit.gy, fromNodeClick: false };
         } else if (nodeKeyHit) {
           this.selectNode(nodeKeyHit);
           const [ngx, ngy] = nodeKeyHit.split(',').map(Number);
-          this.wiringStart = { gx: ngx, gy: ngy, fromNodeClick: this.activeTool !== 'wire' };
+          this.wiringStart = { gx: ngx, gy: ngy, fromNodeClick: false };
         } else {
           this.wiringStart = { gx: world.gx, gy: world.gy, fromNodeClick: false };
         }
+        return;
+      }
+
+      // 3b. En Modo Selección: prioridad frontal para la selección de nodos colocados en cables o pines
+      // (para que la selección del nodo nunca quede atrás del cable ni del componente y pueda borrarse directo)
+      if (!isMultiMod && (nodeKeyHit || pinHit)) {
+        const keyToSelect = nodeKeyHit || `${pinHit.gx},${pinHit.gy}`;
+        this.selectNode(keyToSelect);
         return;
       }
 
@@ -7391,12 +8562,14 @@ class ProtoSimApp {
         return;
       }
 
-      // Ctrl+F o '/' -> Enfocar barra de búsqueda activa (compacta o lateral)
+      // Ctrl+F o '/' -> Abrir catálogo izquierdo si está minimizado y enfocar buscador interno
       if ((e.ctrlKey && keyLower === 'f') || e.key === '/') {
         e.preventDefault();
         const leftSidebar = document.getElementById('leftPaletteSidebar');
-        const isMin = leftSidebar?.classList.contains('minimized');
-        const searchBox = document.getElementById(isMin ? 'minCatalogSearch' : 'compSearch');
+        if (leftSidebar?.classList.contains('minimized')) {
+          this.toggleLeftPalette(false);
+        }
+        const searchBox = document.getElementById('compSearch');
         searchBox?.focus();
         searchBox?.select();
         return;
@@ -7602,6 +8775,7 @@ class ProtoSimApp {
 
   toggleLeftPalette(forceMinimize = null) {
     const sidebar = document.getElementById('leftPaletteSidebar');
+    const leftResizer = document.getElementById('leftSidebarResizer');
     const minBar = document.getElementById('minimizedCatalogBar');
     if (!sidebar) return;
 
@@ -7609,16 +8783,23 @@ class ProtoSimApp {
       forceMinimize !== null ? Boolean(forceMinimize) : !sidebar.classList.contains('minimized');
 
     sidebar.classList.toggle('minimized', shouldMin);
+    if (leftResizer) {
+      leftResizer.classList.toggle('minimized', shouldMin);
+    }
     if (minBar) {
       minBar.classList.toggle('visible', shouldMin);
     }
 
-    this.syncFloatingToolbarOffsets();
+    if (!shouldMin) {
+      this.setLeftSidebarWidth(this.leftPanelWidth || 245);
+    } else {
+      this.syncFloatingToolbarOffsets();
+    }
 
     setTimeout(() => {
-      if (shouldMin) {
-        const minInput = document.getElementById('minCatalogSearch');
-        minInput?.focus();
+      if (!shouldMin) {
+        const searchBox = document.getElementById('compSearch');
+        searchBox?.focus();
       }
     }, 220);
   }
@@ -8043,8 +9224,170 @@ class ProtoSimApp {
     return newComp;
   }
 
+  // Elimina segmentos de cable superpuestos o duplicados colinealmente (manteniendo los nodos intermedios colocados por el usuario)
+  deduplicateOverlappingWires() {
+    if (!this.wires || this.wires.length === 0) return;
+
+    const hGroups = new Map(); // gy -> Array of { min, max }
+    const vGroups = new Map(); // gx -> Array of { min, max }
+    const otherWires = [];
+
+    for (const w of this.wires) {
+      if (w.gx1 === w.gx2 && w.gy1 === w.gy2) continue;
+      if (w.gy1 === w.gy2) {
+        const y = w.gy1;
+        if (!hGroups.has(y)) hGroups.set(y, []);
+        hGroups.get(y).push({ min: Math.min(w.gx1, w.gx2), max: Math.max(w.gx1, w.gx2), orig: w });
+      } else if (w.gx1 === w.gx2) {
+        const x = w.gx1;
+        if (!vGroups.has(x)) vGroups.set(x, []);
+        vGroups.get(x).push({ min: Math.min(w.gy1, w.gy2), max: Math.max(w.gy1, w.gy2), orig: w });
+      } else {
+        otherWires.push(w);
+      }
+    }
+
+    const rebuildLineSegments = (intervals, isHoriz, fixedCoord) => {
+      if (intervals.length <= 1) {
+        return intervals.map((it) => it.orig);
+      }
+      // Verificar si hay algún solapamiento real entre pares de intervalos en esta línea
+      let hasOverlap = false;
+      for (let i = 0; i < intervals.length && !hasOverlap; i++) {
+        for (let j = i + 1; j < intervals.length; j++) {
+          if (Math.max(intervals[i].min, intervals[j].min) < Math.min(intervals[i].max, intervals[j].max)) {
+            hasOverlap = true;
+            break;
+          }
+          if (intervals[i].min === intervals[j].min && intervals[i].max === intervals[j].max) {
+            hasOverlap = true;
+            break;
+          }
+        }
+      }
+      if (!hasOverlap) {
+        return intervals.map((it) => it.orig);
+      }
+
+      const ptsSet = new Set();
+      for (const it of intervals) {
+        ptsSet.add(it.min);
+        ptsSet.add(it.max);
+      }
+      const pts = Array.from(ptsSet).sort((a, b) => a - b);
+      const out = [];
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i];
+        const b = pts[i + 1];
+        const mid = (a + b) * 0.5;
+        const covered = intervals.some((it) => it.min <= mid && mid <= it.max);
+        if (covered) {
+          if (isHoriz) {
+            out.push({
+              gx1: a,
+              gy1: fixedCoord,
+              gx2: b,
+              gy2: fixedCoord,
+              current: 0,
+              startAnchor: `${a},${fixedCoord}`,
+              endAnchor: `${b},${fixedCoord}`
+            });
+          } else {
+            out.push({
+              gx1: fixedCoord,
+              gy1: a,
+              gx2: fixedCoord,
+              gy2: b,
+              current: 0,
+              startAnchor: `${fixedCoord},${a}`,
+              endAnchor: `${fixedCoord},${b}`
+            });
+          }
+        }
+      }
+      return out;
+    };
+
+    const result = [...otherWires];
+    for (const [y, list] of hGroups.entries()) {
+      result.push(...rebuildLineSegments(list, true, y));
+    }
+    for (const [x, list] of vGroups.entries()) {
+      result.push(...rebuildLineSegments(list, false, x));
+    }
+    this.wires = result;
+  }
+
+  // Divide un cable existente en la coordenada (gx, gy) para insertar un nodo medible sobre el cable
+  splitWireAtPoint(gx, gy) {
+    let splitDone = false;
+    const nextWires = [];
+    for (const w of this.wires) {
+      if (w.gy1 === w.gy2 && w.gy1 === gy) {
+        const minX = Math.min(w.gx1, w.gx2);
+        const maxX = Math.max(w.gx1, w.gx2);
+        if (gx > minX && gx < maxX) {
+          nextWires.push({
+            gx1: minX,
+            gy1: gy,
+            gx2: gx,
+            gy2: gy,
+            current: 0,
+            startAnchor: `${minX},${gy}`,
+            endAnchor: `${gx},${gy}`
+          });
+          nextWires.push({
+            gx1: gx,
+            gy1: gy,
+            gx2: maxX,
+            gy2: gy,
+            current: 0,
+            startAnchor: `${gx},${gy}`,
+            endAnchor: `${maxX},${gy}`
+          });
+          splitDone = true;
+          continue;
+        }
+      } else if (w.gx1 === w.gx2 && w.gx1 === gx) {
+        const minY = Math.min(w.gy1, w.gy2);
+        const maxY = Math.max(w.gy1, w.gy2);
+        if (gy > minY && gy < maxY) {
+          nextWires.push({
+            gx1: gx,
+            gy1: minY,
+            gx2: gx,
+            gy2: gy,
+            current: 0,
+            startAnchor: `${gx},${minY}`,
+            endAnchor: `${gx},${gy}`
+          });
+          nextWires.push({
+            gx1: gx,
+            gy1: gy,
+            gx2: gx,
+            gy2: maxY,
+            current: 0,
+            startAnchor: `${gx},${gy}`,
+            endAnchor: `${gx},${maxY}`
+          });
+          splitDone = true;
+          continue;
+        }
+      }
+      nextWires.push(w);
+    }
+    if (splitDone) {
+      this.wires = nextWires;
+      this.selectNode(`${gx},${gy}`);
+    }
+    return splitDone;
+  }
+
   addOrthogonalWire(gx1, gy1, gx2, gy2) {
-    if (gx1 === gx2 && gy1 === gy2) return;
+    if (gx1 === gx2 && gy1 === gy2) {
+      this.splitWireAtPoint(gx1, gy1);
+      return;
+    }
     const startKey = `${gx1},${gy1}`;
     const endKey = `${gx2},${gy2}`;
     if (gx1 === gx2 || gy1 === gy2) {
@@ -8053,6 +9396,7 @@ class ProtoSimApp {
       this.wires.push({ gx1, gy1, gx2, gy2: gy1, current: 0, startAnchor: startKey });
       this.wires.push({ gx1: gx2, gy1, gx2, gy2, current: 0, endAnchor: endKey });
     }
+    this.deduplicateOverlappingWires();
     this.trimWiresThroughComponents();
   }
 
@@ -8072,6 +9416,154 @@ class ProtoSimApp {
     }
   }
 
+  // Elimina el nodo seleccionado en (nodeKey) sin necesidad de borrar antes el cable principal o el componente subyacente
+  deleteNode(nodeKey) {
+    if (!nodeKey) return false;
+    const [ngx, ngy] = nodeKey.split(',').map(Number);
+    if (isNaN(ngx) || isNaN(ngy)) return false;
+
+    this.saveUndoSnapshot();
+    this.deduplicateOverlappingWires();
+
+    const horizIncident = [];
+    const vertIncident = [];
+    const otherIncident = [];
+
+    for (const w of this.wires) {
+      const touchesEnd = (w.gx1 === ngx && w.gy1 === ngy) || (w.gx2 === ngx && w.gy2 === ngy);
+      if (!touchesEnd) continue;
+      if (w.gy1 === w.gy2 && w.gy1 === ngy) {
+        horizIncident.push(w);
+      } else if (w.gx1 === w.gx2 && w.gx1 === ngx) {
+        vertIncident.push(w);
+      } else {
+        otherIncident.push(w);
+      }
+    }
+
+    let modified = false;
+
+    // Caso 1: El nodo divide en 2 un cable horizontal continuo -> fusionar ambos tramos en un único cable limpio
+    if (horizIncident.length === 2 && vertIncident.length === 0) {
+      const xs = [
+        horizIncident[0].gx1,
+        horizIncident[0].gx2,
+        horizIncident[1].gx1,
+        horizIncident[1].gx2
+      ];
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const toRemove = new Set(horizIncident);
+      this.wires = this.wires.filter((w) => !toRemove.has(w));
+      this.wires.push({
+        gx1: minX,
+        gy1: ngy,
+        gx2: maxX,
+        gy2: ngy,
+        current: 0,
+        startAnchor: `${minX},${ngy}`,
+        endAnchor: `${maxX},${ngy}`
+      });
+      modified = true;
+    }
+    // Caso 2: El nodo divide en 2 un cable vertical continuo -> fusionar ambos tramos en un único cable limpio
+    else if (vertIncident.length === 2 && horizIncident.length === 0) {
+      const ys = [
+        vertIncident[0].gy1,
+        vertIncident[0].gy2,
+        vertIncident[1].gy1,
+        vertIncident[1].gy2
+      ];
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      const toRemove = new Set(vertIncident);
+      this.wires = this.wires.filter((w) => !toRemove.has(w));
+      this.wires.push({
+        gx1: ngx,
+        gy1: minY,
+        gx2: ngx,
+        gy2: maxY,
+        current: 0,
+        startAnchor: `${ngx},${minY}`,
+        endAnchor: `${ngx},${maxY}`
+      });
+      modified = true;
+    }
+    // Caso 3: Unión T (2 tramos colineales + 1 o más derivaciones perpendiculares) -> quitar derivación y fusionar cable principal
+    else if (horizIncident.length === 2 && vertIncident.length >= 1) {
+      const xs = [
+        horizIncident[0].gx1,
+        horizIncident[0].gx2,
+        horizIncident[1].gx1,
+        horizIncident[1].gx2
+      ];
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const toRemove = new Set([...horizIncident, ...vertIncident]);
+      this.wires = this.wires.filter((w) => !toRemove.has(w));
+      this.wires.push({
+        gx1: minX,
+        gy1: ngy,
+        gx2: maxX,
+        gy2: ngy,
+        current: 0,
+        startAnchor: `${minX},${ngy}`,
+        endAnchor: `${maxX},${ngy}`
+      });
+      modified = true;
+    } else if (vertIncident.length === 2 && horizIncident.length >= 1) {
+      const ys = [
+        vertIncident[0].gy1,
+        vertIncident[0].gy2,
+        vertIncident[1].gy1,
+        vertIncident[1].gy2
+      ];
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      const toRemove = new Set([...vertIncident, ...horizIncident]);
+      this.wires = this.wires.filter((w) => !toRemove.has(w));
+      this.wires.push({
+        gx1: ngx,
+        gy1: minY,
+        gx2: ngx,
+        gy2: maxY,
+        current: 0,
+        startAnchor: `${ngx},${minY}`,
+        endAnchor: `${ngx},${maxY}`
+      });
+      modified = true;
+    }
+    // Caso 4: Nodo extremo o esquina (o tramo corto apoyado sobre un elemento/cable) -> eliminar el/los tramos incidentes al nodo
+    else {
+      const allIncident = [...horizIncident, ...vertIncident, ...otherIncident];
+      if (allIncident.length > 0) {
+        // Si hay un pequeño tramo residual ("stub" de 1 grilla) junto a un cable más largo, borrar primero el tramo corto
+        const wireLen = (w) => Math.hypot(w.gx2 - w.gx1, w.gy2 - w.gy1);
+        const minLen = Math.min(...allIncident.map(wireLen));
+        const maxLen = Math.max(...allIncident.map(wireLen));
+        const toRemove =
+          allIncident.length > 1 && minLen < maxLen
+            ? new Set(allIncident.filter((w) => wireLen(w) <= minLen + 0.01))
+            : new Set(allIncident);
+        this.wires = this.wires.filter((w) => !toRemove.has(w));
+        modified = true;
+      }
+    }
+
+    const nodeMonId = `node_${nodeKey}`;
+    if (this.pinnedMonitors.includes(nodeMonId)) {
+      this.pinnedMonitors = this.pinnedMonitors.filter((id) => id !== nodeMonId);
+      modified = true;
+    }
+
+    this.selectedNodeKey = null;
+    this.updateBurnBanner();
+    this.renderPinnedMonitorsDOM();
+    this.renderCircuitFinder();
+    this.updateInspector();
+    return modified;
+  }
+
   deleteSelected() {
     const compsToDelete = new Set(this.selectedComponents);
     if (this.selectedComponent) compsToDelete.add(this.selectedComponent);
@@ -8079,7 +9571,12 @@ class ProtoSimApp {
     const wiresToDelete = new Set(this.selectedWires);
     if (this.selectedWire) wiresToDelete.add(this.selectedWire);
 
-    if (compsToDelete.size === 0 && wiresToDelete.size === 0) return;
+    if (compsToDelete.size === 0 && wiresToDelete.size === 0) {
+      if (this.selectedNodeKey) {
+        this.deleteNode(this.selectedNodeKey);
+      }
+      return;
+    }
 
     this.saveUndoSnapshot();
 
@@ -8239,11 +9736,11 @@ class ProtoSimApp {
     this.isRunning = !this.isRunning;
     const labelEl = this.btnPlayPauseText || this.btnPlayPause;
     if (this.isRunning) {
-      if (labelEl) labelEl.textContent = '⏸ Pausar';
+      if (labelEl) labelEl.textContent = 'Pausar';
       this.btnPlayPause.className = 'btn btn-primary';
       if (this.simStatusDot) this.simStatusDot.className = 'sim-status-dot';
     } else {
-      if (labelEl) labelEl.textContent = '▶ Simular';
+      if (labelEl) labelEl.textContent = 'Simular';
       this.btnPlayPause.className = 'btn btn-paused';
       if (this.simStatusDot) this.simStatusDot.className = 'sim-status-dot paused';
     }
@@ -8266,14 +9763,13 @@ class ProtoSimApp {
     this.selectedWire = null;
     this.selectedNodeKey = null;
 
-    // Asegurar que la barra izquierda de catálogo siempre arranque minimizada priorizando el buscador
+    // Asegurar que la barra izquierda de catálogo siempre arranque minimizada
     this.toggleLeftPalette(true);
 
     this.solver.resetState(this.components, this.wires);
     this.oscilloscope.clear();
     this.centerCamera();
 
-    document.getElementById('hudModeText').innerHTML = `<strong>${ex.title}:</strong> Clic en cualquier componente o nodo para ver su <b>Gráfico y Propiedades</b>`;
     this.updateBurnBanner();
     this.renderPinnedMonitorsDOM();
     this.renderCircuitFinder();
@@ -8288,7 +9784,7 @@ class ProtoSimApp {
     if (burnedList.length > 0) {
       const first = burnedList[0];
       banner.classList.add('visible');
-      textEl.innerHTML = `<strong>💥 ¡${first.name} se quemó!</strong> ${first.burnReason || 'Sobrecarga eléctrica'}`;
+      textEl.innerHTML = `<strong>¡${first.name} se quemó!</strong> ${first.burnReason || 'Sobrecarga eléctrica'}`;
     } else {
       banner.classList.remove('visible');
     }
@@ -8749,7 +10245,7 @@ class ProtoSimApp {
     return `
       <div class="dynamic-metrics-card" id="dynamicCircuitMetricsCard">
         <div class="dynamic-metrics-header">
-          <div class="dynamic-metrics-title">🔬 ${metrics.title}</div>
+          <div class="dynamic-metrics-title">${metrics.title}</div>
           <span class="dynamic-metrics-badge" id="dynamicMetricsBadge">${metrics.badge}</span>
         </div>
         <div class="dynamic-metrics-grid" id="dynamicMetricsGrid">
@@ -8792,7 +10288,7 @@ class ProtoSimApp {
     const totalSelected = this.selectedComponents.size + this.selectedWires.size;
 
     if (totalSelected > 1) {
-      titleEl.textContent = `⚙ Selección Múltiple (${totalSelected})`;
+      titleEl.textContent = `Selección Múltiple (${totalSelected})`;
       const compNames = Array.from(this.selectedComponents)
         .map((c) => c.name)
         .join(', ');
@@ -8816,11 +10312,11 @@ class ProtoSimApp {
         }
         <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
           <button class="btn btn-danger" id="btnInspDelMulti" style="width:100%;">
-            🗑 Eliminar Seleccionados (${totalSelected})
+            Eliminar Seleccionados (${totalSelected})
           </button>
           <div style="display:flex;gap:6px;">
-            <button class="btn" id="btnInspDupMulti" style="flex:1;">⧉ Duplicar (${totalSelected})</button>
-            <button class="btn" id="btnInspClearSel" style="flex:1;">✖ Desmarcar</button>
+            <button class="btn" id="btnInspDupMulti" style="flex:1;">Duplicar (${totalSelected})</button>
+            <button class="btn" id="btnInspClearSel" style="flex:1;">Desmarcar</button>
           </div>
         </div>
       `;
@@ -8835,7 +10331,7 @@ class ProtoSimApp {
       const v = this.solver.nodeVoltages.get(this.selectedNodeKey) || 0;
       const nodeMonId = `node_${this.selectedNodeKey}`;
       const isPinnedNode = this.pinnedMonitors.includes(nodeMonId);
-      titleEl.textContent = `⚙ Nodo (${this.selectedNodeKey})`;
+      titleEl.textContent = `Nodo (${this.selectedNodeKey})`;
       body.innerHTML = `
         <div class="telemetry-grid">
           <div class="telemetry-box" style="grid-column: span 2;">
@@ -8845,9 +10341,12 @@ class ProtoSimApp {
         </div>
         <div style="display:flex;gap:6px;">
           <button class="btn ${isPinnedNode ? 'btn-active' : ''}" id="btnPinNodeGraph" style="flex:1;" title="Mantener este gráfico de nodo fijo para ver cómo cambia al accionar llaves o editar otros elementos (Tecla G)">
-            ${isPinnedNode ? '📌 Gráfico Fijado (Quitar)' : '📌 Fijar para comparar (G)'}
+            ${isPinnedNode ? 'Gráfico Fijado (Quitar)' : 'Fijar para comparar (G)'}
           </button>
         </div>
+        <button class="btn btn-danger" id="btnDelNodeInspector" style="width:100%;margin-top:6px;" title="Eliminar este nodo sin borrar los componentes ni cortar el cable continuo (Supr)">
+          Eliminar Nodo (Supr)
+        </button>
         ${this.renderDynamicCircuitMetricsHTML(null)}
         <div class="prop-group" style="font-size:11.5px;color:var(--text-secondary);">
           <div>• Coordenada de red: <b>(${this.selectedNodeKey})</b></div>
@@ -8861,11 +10360,14 @@ class ProtoSimApp {
           this.addPinnedMonitor(nodeMonId, false);
         }
       });
+      document.getElementById('btnDelNodeInspector')?.addEventListener('click', () => {
+        this.deleteNode(this.selectedNodeKey);
+      });
       return;
     }
 
     if (!this.selectedComponent && !this.selectedWire) {
-      titleEl.textContent = '⚙ Propiedades';
+      titleEl.textContent = 'Propiedades';
       body.innerHTML =
         this.pinnedMonitors.length > 0
           ? `<div class="pinned-graphs-empty">Seleccioná cualquier elemento, llave o nodo en el circuito para ver y editar sus propiedades mientras observás los gráficos fijados arriba.</div>`
@@ -8876,7 +10378,7 @@ class ProtoSimApp {
     if (this.selectedWire) {
       const w = this.selectedWire;
       const f = window.ProtoSim.formatSI;
-      titleEl.textContent = '⚙ Cable Conductor';
+      titleEl.textContent = 'Cable Conductor';
       body.innerHTML = `
         <div class="telemetry-grid">
           <div class="telemetry-box">
@@ -8889,7 +10391,7 @@ class ProtoSimApp {
           </div>
         </div>
         ${this.renderDynamicCircuitMetricsHTML(null)}
-        <button class="btn btn-danger" id="btnDelWireInspector" style="width:100%;margin-top:8px;">🗑 Eliminar Cable</button>
+        <button class="btn btn-danger" id="btnDelWireInspector" style="width:100%;margin-top:8px;">Eliminar Cable</button>
       `;
       document.getElementById('btnDelWireInspector').addEventListener('click', () => this.deleteSelected());
       return;
@@ -8900,7 +10402,7 @@ class ProtoSimApp {
     const f = window.ProtoSim.formatSI;
     const isPinnedRight = this.pinnedMonitors.includes(comp.id);
 
-    titleEl.textContent = `⚙ ${comp.name} (${def.name})`;
+    titleEl.textContent = `${comp.name} (${def.name})`;
 
     let html = `
       <div class="telemetry-grid">
@@ -8919,7 +10421,7 @@ class ProtoSimApp {
         <div class="telemetry-box">
           <div class="telemetry-label">Estado Térmico</div>
           <div class="telemetry-value ${comp.burned ? 'danger' : ''}" id="telCompStatus">
-            ${comp.burned ? '💥 QUEMADO' : `${Math.round((comp.heat || 0) * 100)}%`}
+            ${comp.burned ? 'QUEMADO' : `${Math.round((comp.heat || 0) * 100)}%`}
           </div>
         </div>
       </div>
@@ -8930,7 +10432,7 @@ class ProtoSimApp {
       html += `
         <div style="display:flex;gap:6px;">
           <button class="btn ${isPinnedRight ? 'btn-active' : ''}" id="btnAddRightGraph" style="flex:1;" title="Mantener este gráfico fijo para compararlo al seleccionar otro elemento (Tecla G)">
-            ${isPinnedRight ? '📌 Gráfico Fijado (Quitar)' : '📌 Fijar para comparar (G)'}
+            ${isPinnedRight ? 'Gráfico Fijado (Quitar)' : 'Fijar para comparar (G)'}
           </button>
         </div>
       `;
@@ -8940,7 +10442,7 @@ class ProtoSimApp {
       html += `
         <div class="prop-group" style="border-color:#ef4444;background:rgba(127,29,29,0.25);">
           <div style="color:#fca5a5;font-size:11.5px;"><b>Causa del fallo:</b> ${comp.burnReason}</div>
-          <button class="btn btn-primary" id="btnRepairSingle" style="margin-top:4px;">🔧 Reparar ${comp.name}</button>
+          <button class="btn btn-primary" id="btnRepairSingle" style="margin-top:4px;">Reparar ${comp.name}</button>
         </div>
       `;
     }
@@ -9011,9 +10513,9 @@ class ProtoSimApp {
 
     html += `
       <div style="display:flex;gap:6px;margin-top:auto;">
-        <button class="btn" id="btnInspRotate" style="flex:1;">↻ Rotar (R)</button>
-        <button class="btn" id="btnInspDup" style="flex:1;">⧉ Duplicar</button>
-        <button class="btn btn-danger" id="btnInspDelete">🗑</button>
+        <button class="btn" id="btnInspRotate" style="flex:1;">Rotar (R)</button>
+        <button class="btn" id="btnInspDup" style="flex:1;">Duplicar</button>
+        <button class="btn btn-danger" id="btnInspDelete">Borrar</button>
       </div>
     `;
 
@@ -9131,7 +10633,7 @@ class ProtoSimApp {
       if (elI) elI.textContent = f(c.current || 0, 'A');
       if (elP) elP.textContent = f(c.power || 0, 'W');
       if (elS) {
-        elS.textContent = c.burned ? '💥 QUEMADO' : `${Math.round((c.heat || 0) * 100)}%`;
+        elS.textContent = c.burned ? 'QUEMADO' : `${Math.round((c.heat || 0) * 100)}%`;
       }
       this.updateDynamicMetricsDOM(c);
     } else if (this.selectedWire) {
