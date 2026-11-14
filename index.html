@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -1887,6 +1887,250 @@ body.is-resizing-panel .sidebar-resizer {
   color: var(--text-muted);
 }
 
+/* Controles de Sincronización de Señal (Trigger) del Osciloscopio */
+.osc-trigger-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 7px 10px;
+  background: rgba(10, 15, 26, 0.92);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.osc-trigger-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.osc-trig-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.osc-trig-edge-field {
+  flex: 0 0 92px;
+}
+
+.osc-trig-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #94a3b8;
+}
+
+.osc-trig-select,
+.osc-trig-edge {
+  width: 100%;
+  padding: 3px 6px;
+  font-size: 11px;
+}
+
+.osc-trig-level-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.osc-trig-input {
+  width: 68px;
+  flex: 1;
+  min-width: 52px;
+  padding: 3px 6px;
+  font-size: 11px;
+  height: 24px;
+}
+
+.osc-trig-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #f97316;
+}
+
+.osc-trig-status-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.4px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  background: rgba(16, 185, 129, 0.14);
+  color: #34d399;
+}
+
+.osc-trig-status-badge.status-trig {
+  border-color: rgba(52, 211, 153, 0.45);
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+}
+
+.osc-trig-status-badge.status-auto {
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.osc-trig-status-badge.status-free {
+  border-color: rgba(148, 163, 184, 0.3);
+  background: rgba(51, 65, 85, 0.35);
+  color: #94a3b8;
+}
+
+/* Grupo compacto de Trigger en el Analizador de Precisión superior */
+.exp-trigger-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.exp-trig-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #fb923c;
+  letter-spacing: 0.4px;
+}
+
+.exp-trig-select {
+  padding: 2px 5px;
+  font-size: 11px;
+  max-width: 135px;
+}
+
+.exp-trig-level-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.exp-trig-sublabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.exp-trig-input {
+  width: 56px;
+  padding: 2px 5px;
+  font-size: 11px;
+  height: 22px;
+}
+
+.exp-trig-edge {
+  padding: 2px 5px;
+  font-size: 11px;
+}
+
+/* Modal Gigante de Diagrama de Bode Interactivo (Análisis AC) */
+.bode-modal {
+  background: #0b111e;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: 12px;
+  width: 92vw;
+  max-width: 1180px;
+  height: 84vh;
+  max-height: 780px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+}
+
+.bode-badge {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 10.5px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
+}
+
+.bode-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bode-ctrl-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #cbd5e1;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+.bode-ctrl-input,
+.bode-ctrl-select {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 6px;
+  color: #f8fafc;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  outline: none;
+}
+
+.bode-ctrl-input {
+  width: 78px;
+}
+
+.bode-ctrl-input:focus,
+.bode-ctrl-select:focus {
+  border-color: #38bdf8;
+}
+
+.bode-subheader {
+  padding: 7px 14px;
+  background: #070b14;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+.bode-cursor-readout {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.bode-canvas-wrap {
+  flex: 1;
+  position: relative;
+  min-height: 360px;
+  background: #050811;
+  overflow: hidden;
+}
+
+#bodeCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
 /* Responsive adjustments */
 @media (max-width: 960px) {
   .palette-sidebar {
@@ -1941,6 +2185,23 @@ body.is-resizing-panel .sidebar-resizer {
             </div>
 
             <div class="expanded-graph-controls">
+              <div class="exp-trigger-group" id="expTriggerGroup">
+                <span class="exp-trig-tag">TRIGGER</span>
+                <select class="select-input exp-trig-select" id="expTriggerSource" title="Trigger Source (elegir canal)">
+                  <option value="auto">Auto (Canal activo)</option>
+                  <option value="off">Off (Libre)</option>
+                </select>
+                <div class="exp-trig-level-box" title="Trigger Level en Voltios (V)">
+                  <span class="exp-trig-sublabel">Lvl</span>
+                  <input type="number" class="prop-input exp-trig-input" id="expTriggerLevel" value="0" step="0.5" />
+                  <span class="exp-trig-sublabel">V</span>
+                  <button type="button" class="unit-btn" id="btnExpTrig50" title="Centrar Trigger Level al 50% de la onda">50%</button>
+                </div>
+                <select class="select-input exp-trig-edge" id="expTriggerEdge" title="Edge: Pendiente Rising (Subida) o Falling (Bajada)">
+                  <option value="rising" selected>↑ Rising</option>
+                  <option value="falling">↓ Falling</option>
+                </select>
+              </div>
               <button class="btn btn-active" id="btnToggleGraphCursors" style="padding:4px 9px;font-size:11px;" title="Activar / Ocultar barras de cursores para medir ΔV y Δt (ms)">
                 Cursores ΔV / Δt
               </button>
@@ -2040,7 +2301,9 @@ body.is-resizing-panel .sidebar-resizer {
 
             <!-- ATAJOS Y ARCHIVO -->
             <div class="topbar-actions">
-              <button class="btn" id="btnOpPoint" title="Tabla de punto de operación DC: tensiones de nodo y corrientes (Tecla P)">Punto DC</button>
+              <button class="btn" id="btnBodePlot" title="Ejecutar Análisis AC (Barrido en Frecuencia) y ver tabla de Magnitud (dB) y Fase (°) en Consola (F12)">Bode Plot (AC)</button>
+              <button class="btn" id="btnToggleProMode" title="Alternar Modo SPICE / PRO: esquemático técnico limpio estilo LTSpice / KiCad">Modo SPICE</button>
+              <button class="btn" id="btnOpPoint" title="Tabla de punto de operación DC: tensiones de nodo y corrientes (Shift + P)">Punto DC</button>
               <button class="btn" id="btnShareLink" title="Copiar un link que abre este mismo circuito">Compartir</button>
               <button class="btn" id="btnOpenShortcuts" title="Ver todos los Atajos de Teclado (Tecla ?)">Atajos</button>
               <button class="btn" id="btnExportJson" title="Guardar circuito en archivo .JSON">Guardar</button>
@@ -2077,6 +2340,9 @@ body.is-resizing-panel .sidebar-resizer {
             </button>
             <button class="btn" id="btnToolWire" data-tooltip="Trazar cables (W)">
               Cablear
+            </button>
+            <button class="btn" id="btnToolProbe" data-tooltip="Medir con Sonda (P): Clic en nodo/pin = V(t) • Clic en componente = V+I • Alt+Clic = I(t)">
+              Medir
             </button>
             <div class="tool-divider"></div>
             <button class="btn" id="btnRotate" data-tooltip="Girar 90° (R)">
@@ -2131,6 +2397,39 @@ body.is-resizing-panel .sidebar-resizer {
               <button class="unit-btn" id="btnCloseRightSidebar" title="Desmarcar y cerrar panel (Esc)">✕</button>
             </div>
           </div>
+          <!-- CONTROLES DE TRIGGER DEL OSCILOSCOPIO -->
+          <div class="osc-trigger-bar" id="oscTriggerBar">
+            <div class="osc-trigger-row">
+              <div class="osc-trig-field" title="Trigger Source: Elegir canal de referencia para sincronizar la señal">
+                <label class="osc-trig-label" for="oscTriggerSource">Trigger Source</label>
+                <select class="select-input osc-trig-select" id="oscTriggerSource">
+                  <option value="auto">Auto (Canal activo)</option>
+                  <option value="off">Off (Libre)</option>
+                </select>
+              </div>
+              <div class="osc-trig-field osc-trig-edge-field" title="Edge: Pendiente del flanco de disparo (Rising / Falling)">
+                <label class="osc-trig-label" for="oscTriggerEdge">Edge</label>
+                <select class="select-input osc-trig-edge" id="oscTriggerEdge">
+                  <option value="rising" selected>↑ Rising</option>
+                  <option value="falling">↓ Falling</option>
+                </select>
+              </div>
+            </div>
+            <div class="osc-trigger-row">
+              <div class="osc-trig-field osc-trig-level-field" title="Trigger Level: Nivel de disparo en Voltios (V)">
+                <label class="osc-trig-label" for="oscTriggerLevel">Trigger Level (V)</label>
+                <div class="osc-trig-level-wrap">
+                  <input type="number" class="prop-input osc-trig-input" id="oscTriggerLevel" value="0" step="0.5" />
+                  <span class="osc-trig-unit">V</span>
+                  <button type="button" class="unit-btn" id="btnOscTrig50" title="Ajustar Trigger Level al 50% (punto medio) de la señal actual">50%</button>
+                  <button type="button" class="unit-btn" id="btnOscTrigZero" title="Fijar Trigger Level en 0 V">0V</button>
+                </div>
+              </div>
+              <div class="osc-trig-status-badge status-trig" id="oscTriggerStatus" title="Estado del Trigger: TRIG'D (Sincronizado) / AUTO (Esperando cruce) / FREE (Desactivado)">
+                TRIG'D
+              </div>
+            </div>
+          </div>
           <div class="pinned-graphs-list" id="pinnedGraphsList"></div>
         </div>
 
@@ -2159,7 +2458,7 @@ body.is-resizing-panel .sidebar-resizer {
           <div class="shortcut-row"><span>Reiniciar desde t = 0</span><span class="kbd-key">Shift + R</span></div>
           <div class="shortcut-row"><span>Centrar cámara y zoom</span><span class="kbd-key">C</span></div>
           <div class="shortcut-row"><span>Mostrar tensión en nodos</span><span class="kbd-key">V</span></div>
-          <div class="shortcut-row"><span>Tabla de punto de operación (.op)</span><span class="kbd-key">P</span></div>
+          <div class="shortcut-row"><span>Tabla de punto de operación (.op)</span><span class="kbd-key">Shift + P</span></div>
           <div class="shortcut-row"><span>Seleccionar todo el circuito</span><span class="kbd-key">Ctrl + A</span></div>
           <div class="shortcut-row"><span>Alternar ancho panel derecho</span><span class="kbd-key">Tab</span></div>
           <div class="shortcut-row"><span>Minimizar / Mostrar Catálogo Izq.</span><span class="kbd-key">B</span></div>
@@ -2170,6 +2469,7 @@ body.is-resizing-panel .sidebar-resizer {
           <div class="shortcut-group-title">Edición y Gráficos</div>
           <div class="shortcut-row"><span>Modo Selección / Cancelar</span><span class="kbd-key">Esc</span></div>
           <div class="shortcut-row"><span>Modo Trazar Cable</span><span class="kbd-key">W</span></div>
+          <div class="shortcut-row"><span>Herramienta Medir (Sonda V / Alt=I)</span><span class="kbd-key">P</span></div>
           <div class="shortcut-row"><span>Rotar 90° horario</span><span class="kbd-key">R</span></div>
           <div class="shortcut-row"><span>Anclar/Quitar Gráfico Derecho</span><span class="kbd-key">G</span></div>
           <div class="shortcut-row"><span>Duplicar seleccionado</span><span class="kbd-key">Ctrl + D</span></div>
@@ -2212,6 +2512,49 @@ body.is-resizing-panel .sidebar-resizer {
     </div>
   </div>
 
+  <!-- MODAL: DIAGRAMA DE BODE INTERACTIVO (ANÁLISIS AC) -->
+  <div class="modal-backdrop" id="bodeModal">
+    <div class="bode-modal">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="color:#38bdf8;font-weight:700;">Diagrama de Bode — Análisis AC (Barrido en Frecuencia)</span>
+          <span id="bodeStimulusBadge" class="bode-badge">Estímulo AC: 1∠0° V</span>
+        </div>
+        <div class="bode-controls">
+          <label class="bode-ctrl-label">Eje Y Izq.
+            <select id="bodeYAxisMode" class="bode-ctrl-select" title="Alternar entre Magnitud en Decibelios (dB) o Tensión Lineal (V)">
+              <option value="db" selected>Magnitud (dB)</option>
+              <option value="linear">Tensión Lineal (V)</option>
+            </select>
+          </label>
+          <label class="bode-ctrl-label">f<sub>min</sub> (Hz)
+            <input type="number" id="bodeFMin" class="bode-ctrl-input" value="1" min="0.01" step="any" />
+          </label>
+          <label class="bode-ctrl-label">f<sub>max</sub> (Hz)
+            <input type="number" id="bodeFMax" class="bode-ctrl-input" value="100000" min="1" step="any" />
+          </label>
+          <label class="bode-ctrl-label">Pts/década
+            <select id="bodePtsDec" class="bode-ctrl-select">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="40">40</option>
+              <option value="80">80</option>
+            </select>
+          </label>
+          <button class="btn" id="btnRecalcBode" style="padding:4px 10px;font-size:11px;">Recalcular</button>
+          <button class="btn" id="btnCloseBodeModal" style="padding:4px 10px;font-size:11px;">Cerrar</button>
+        </div>
+      </div>
+      <div class="bode-subheader" id="bodeModalMeta">
+        <span id="bodeTraceSummary">Sondas medidas: —</span>
+        <span id="bodeCursorReadout" class="bode-cursor-readout">Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Magnitud (dB) y Fase (°)</span>
+      </div>
+      <div class="bode-canvas-wrap">
+        <canvas id="bodeCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- POP-UP MODAL SELECTOR RÁPIDO DE COMPONENTES (AL BUSCAR Y DARLE ENTER) -->
   <div class="modal-backdrop" id="catalogPopupModal">
     <div class="catalog-popup-modal">
@@ -2230,9 +2573,8 @@ body.is-resizing-panel .sidebar-resizer {
     </div>
   </div>
 
+  <!-- SCRIPTS MODULARES DE PROTO-SIM -->
   <script>
-
-// === components.js ===
 // ============================================================================
 // PROTO-SIM: Catálogo de Componentes Electrónicos, Pines y Utilidades SI
 // ============================================================================
@@ -3191,13 +3533,135 @@ window.ProtoSim.COMPONENT_SHORTCUTS = COMPONENT_SHORTCUTS;
 window.ProtoSim.COMPONENT_LIBRARY = COMPONENT_LIBRARY;
 window.ProtoSim.getPinWorldGrid = getPinWorldGrid;
 
-
-// === solver.js ===
+</script>
+  <script>
 // ============================================================================
 // PROTO-SIM: Motor MNA (Modified Nodal Analysis) en Tiempo Real + Newton-Raphson
 // ============================================================================
 
 window.ProtoSim = window.ProtoSim || {};
+
+// Clase auxiliar para aritmética de Números Complejos (Análisis AC / Respuesta en Frecuencia)
+class Complex {
+  constructor(re = 0, im = 0) {
+    this.re = Number(re) || 0;
+    this.im = Number(im) || 0;
+  }
+
+  get real() {
+    return this.re;
+  }
+  set real(val) {
+    this.re = Number(val) || 0;
+  }
+
+  get imag() {
+    return this.im;
+  }
+  set imag(val) {
+    this.im = Number(val) || 0;
+  }
+
+  static from(val, im = 0) {
+    if (val instanceof Complex) return new Complex(val.re, val.im);
+    if (val && typeof val === 'object') {
+      const r = val.re !== undefined ? val.re : val.real;
+      const i = val.im !== undefined ? val.im : val.imag;
+      return new Complex(r, i);
+    }
+    return new Complex(val, im);
+  }
+
+  static fromPolar(mag, phaseRad) {
+    return new Complex(mag * Math.cos(phaseRad), mag * Math.sin(phaseRad));
+  }
+
+  clone() {
+    return new Complex(this.re, this.im);
+  }
+
+  add(other) {
+    const b = Complex.from(other);
+    return new Complex(this.re + b.re, this.im + b.im);
+  }
+
+  sub(other) {
+    const b = Complex.from(other);
+    return new Complex(this.re - b.re, this.im - b.im);
+  }
+
+  mul(other) {
+    const b = Complex.from(other);
+    return new Complex(
+      this.re * b.re - this.im * b.im,
+      this.re * b.im + this.im * b.re
+    );
+  }
+
+  div(other) {
+    const b = Complex.from(other);
+    const denom = b.re * b.re + b.im * b.im;
+    if (denom < 1e-36) {
+      return new Complex(0, 0);
+    }
+    return new Complex(
+      (this.re * b.re + this.im * b.im) / denom,
+      (this.im * b.re - this.re * b.im) / denom
+    );
+  }
+
+  conj() {
+    return new Complex(this.re, -this.im);
+  }
+
+  magnitude() {
+    return Math.hypot(this.re, this.im);
+  }
+
+  phase() {
+    return Math.atan2(this.im, this.re);
+  }
+
+  phaseDeg() {
+    return (Math.atan2(this.im, this.re) * 180) / Math.PI;
+  }
+
+  db() {
+    return 20 * Math.log10(Math.max(1e-18, this.magnitude()));
+  }
+
+  static add(a, b) {
+    return Complex.from(a).add(b);
+  }
+
+  static sub(a, b) {
+    return Complex.from(a).sub(b);
+  }
+
+  static mul(a, b) {
+    return Complex.from(a).mul(b);
+  }
+
+  static div(a, b) {
+    return Complex.from(a).div(b);
+  }
+
+  static magnitude(re, im = 0) {
+    if (re instanceof Complex || (re && typeof re === 'object')) {
+      const c = Complex.from(re);
+      return Math.hypot(c.re, c.im);
+    }
+    return Math.hypot(re, im);
+  }
+
+  static phase(re, im = 0) {
+    if (re instanceof Complex || (re && typeof re === 'object')) {
+      const c = Complex.from(re);
+      return Math.atan2(c.im, c.re);
+    }
+    return Math.atan2(im, re);
+  }
+}
 
 class CircuitSolver {
   constructor() {
@@ -4646,12 +5110,637 @@ class CircuitSolver {
 
     return x;
   }
+
+  // Resuelve el sistema complejo A * x = b mediante eliminación Gaussiana con pivoteo parcial por magnitud.
+  // Soporta indexación 1..n (estándar MNA de CircuitSolver) o 0..n-1, y vector independiente b_real/b_imag
+  // explícito o integrado en la columna n+1 de la matriz aumentada.
+  solveLinearSystemComplex(
+    A_real,
+    A_imag,
+    n,
+    stride,
+    outX_real = null,
+    outX_imag = null,
+    b_real = null,
+    b_imag = null
+  ) {
+    const isOneBased =
+      A_real.length >= (n + 1) * stride &&
+      (!b_real || b_real.length >= n + 1) &&
+      (!outX_real || outX_real.length >= n + 1);
+    const startIdx = isOneBased ? 1 : 0;
+    const endIdx = isOneBased ? n : n - 1;
+    const vecLen = isOneBased ? n + 1 : n;
+
+    const xR = outX_real && outX_real.length >= vecLen ? outX_real : new Float64Array(vecLen);
+    const xI = outX_imag && outX_imag.length >= vecLen ? outX_imag : new Float64Array(vecLen);
+    xR.fill(0);
+    xI.fill(0);
+
+    const rhsR = new Float64Array(vecLen);
+    const rhsI = new Float64Array(vecLen);
+    const useAugmentedCol = !b_real && stride >= endIdx + 2;
+
+    for (let i = startIdx; i <= endIdx; i++) {
+      if (b_real) {
+        rhsR[i] = b_real[i] || 0;
+        rhsI[i] = b_imag ? b_imag[i] || 0 : 0;
+      } else if (useAugmentedCol) {
+        rhsR[i] = A_real[i * stride + (endIdx + 1)] || 0;
+        rhsI[i] = A_imag[i * stride + (endIdx + 1)] || 0;
+      }
+    }
+
+    for (let k = startIdx; k <= endIdx; k++) {
+      // 1. Pivoteo parcial comparando magnitudes complejas |A[i, k]| = hypot(re, im)
+      let maxRow = k;
+      let maxMag = Math.hypot(A_real[k * stride + k], A_imag[k * stride + k]);
+      for (let i = k + 1; i <= endIdx; i++) {
+        const mag = Math.hypot(A_real[i * stride + k], A_imag[i * stride + k]);
+        if (mag > maxMag) {
+          maxMag = mag;
+          maxRow = i;
+        }
+      }
+
+      if (maxMag < 1e-18) continue;
+
+      // 2. Intercambio de filas en A_real, A_imag y vector independiente rhs
+      if (maxRow !== k) {
+        for (let j = k; j <= endIdx; j++) {
+          const idxK = k * stride + j;
+          const idxM = maxRow * stride + j;
+
+          const tmpR = A_real[idxK];
+          A_real[idxK] = A_real[idxM];
+          A_real[idxM] = tmpR;
+
+          const tmpI = A_imag[idxK];
+          A_imag[idxK] = A_imag[idxM];
+          A_imag[idxM] = tmpI;
+        }
+
+        const tmpBr = rhsR[k];
+        rhsR[k] = rhsR[maxRow];
+        rhsR[maxRow] = tmpBr;
+
+        const tmpBi = rhsI[k];
+        rhsI[k] = rhsI[maxRow];
+        rhsI[maxRow] = tmpBi;
+      }
+
+      // 3. Eliminación hacia adelante con división y multiplicación compleja
+      const pivR = A_real[k * stride + k];
+      const pivI = A_imag[k * stride + k];
+      const pivDenom = pivR * pivR + pivI * pivI;
+      if (pivDenom < 1e-36) continue;
+
+      for (let i = k + 1; i <= endIdx; i++) {
+        const aR = A_real[i * stride + k];
+        const aI = A_imag[i * stride + k];
+        if (aR === 0 && aI === 0) continue;
+
+        // factor = (aR + j*aI) / (pivR + j*pivI)
+        const fR = (aR * pivR + aI * pivI) / pivDenom;
+        const fI = (aI * pivR - aR * pivI) / pivDenom;
+
+        A_real[i * stride + k] = 0;
+        A_imag[i * stride + k] = 0;
+
+        for (let j = k + 1; j <= endIdx; j++) {
+          const kj = k * stride + j;
+          const ij = i * stride + j;
+          const akR = A_real[kj];
+          const akI = A_imag[kj];
+          // A[i,j] -= factor * A[k,j]
+          A_real[ij] -= fR * akR - fI * akI;
+          A_imag[ij] -= fR * akI + fI * akR;
+        }
+
+        // rhs[i] -= factor * rhs[k]
+        const rkR = rhsR[k];
+        const rkI = rhsI[k];
+        rhsR[i] -= fR * rkR - fI * rkI;
+        rhsI[i] -= fR * rkI + fI * rkR;
+      }
+    }
+
+    // 4. Sustitución hacia atrás compleja
+    for (let i = endIdx; i >= startIdx; i--) {
+      let sumR = rhsR[i];
+      let sumI = rhsI[i];
+
+      for (let j = i + 1; j <= endIdx; j++) {
+        const ij = i * stride + j;
+        const aR = A_real[ij];
+        const aI = A_imag[ij];
+        const xjR = xR[j];
+        const xjI = xI[j];
+        // sum -= A[i,j] * x[j]
+        sumR -= aR * xjR - aI * xjI;
+        sumI -= aR * xjI + aI * xjR;
+      }
+
+      const dR = A_real[i * stride + i];
+      const dI = A_imag[i * stride + i];
+      const dDenom = dR * dR + dI * dI;
+      if (dDenom > 1e-36) {
+        xR[i] = (sumR * dR + sumI * dI) / dDenom;
+        xI[i] = (sumI * dR - sumR * dI) / dDenom;
+      } else {
+        xR[i] = 0;
+        xI[i] = 0;
+      }
+
+      if (useAugmentedCol) {
+        A_real[i * stride + (endIdx + 1)] = xR[i];
+        A_imag[i * stride + (endIdx + 1)] = xI[i];
+      }
+    }
+
+    return { real: xR, imag: xI };
+  }
+
+  // Auto-test matemático de la clase Complex y del solver lineal complejo con pivoteo parcial
+  verifyComplexSolver() {
+    // 1. Prueba de operaciones de la clase Complex
+    const z1 = new Complex(3, 4); // |z1| = 5
+    const z2 = new Complex(1, -2);
+    const sum = z1.add(z2); // 4 + j2
+    const diff = z1.sub(z2); // 2 + j6
+    const prod = z1.mul(z2); // (3+8) + j(-6+4) = 11 - j2
+    const quot = prod.div(z2); // debe recuperar z1 = 3 + j4
+
+    const opsOk =
+      Math.abs(z1.magnitude() - 5) < 1e-12 &&
+      Math.abs(sum.re - 4) < 1e-12 &&
+      Math.abs(sum.im - 2) < 1e-12 &&
+      Math.abs(diff.re - 2) < 1e-12 &&
+      Math.abs(diff.im - 6) < 1e-12 &&
+      Math.abs(prod.re - 11) < 1e-12 &&
+      Math.abs(prod.im - -2) < 1e-12 &&
+      Math.abs(quot.re - 3) < 1e-12 &&
+      Math.abs(quot.im - 4) < 1e-12;
+
+    // 2. Prueba de solveLinearSystemComplex con pivoteo parcial forzado (A[1,1] = 0 + j0)
+    // Sistema 2x2 (1-based, n = 2, stride = 4):
+    // Fila 1: (0 + j0)*x1 + (2 + j1)*x2 = (1 + j7)
+    // Fila 2: (1 + j1)*x1 + (1 - j1)*x2 = (2 + j4)
+    // Solución exacta: x1 = 1 + j2, x2 = 1 + j3
+    const n = 2;
+    const stride = 4;
+    const Ar = new Float64Array((n + 1) * stride);
+    const Ai = new Float64Array((n + 1) * stride);
+    const br = new Float64Array([0, 1, 2]);
+    const bi = new Float64Array([0, 7, 4]);
+    const xr = new Float64Array(n + 1);
+    const xi = new Float64Array(n + 1);
+
+    // Fila 1: A[1,1] = 0, A[1,2] = 2 + j1
+    Ar[1 * stride + 1] = 0;
+    Ai[1 * stride + 1] = 0;
+    Ar[1 * stride + 2] = 2;
+    Ai[1 * stride + 2] = 1;
+
+    // Fila 2: A[2,1] = 1 + j1, A[2,2] = 1 - j1
+    Ar[2 * stride + 1] = 1;
+    Ai[2 * stride + 1] = 1;
+    Ar[2 * stride + 2] = 1;
+    Ai[2 * stride + 2] = -1;
+
+    this.solveLinearSystemComplex(Ar, Ai, n, stride, xr, xi, br, bi);
+
+    const solverOk =
+      Math.abs(xr[1] - 1) < 1e-11 &&
+      Math.abs(xi[1] - 2) < 1e-11 &&
+      Math.abs(xr[2] - 1) < 1e-11 &&
+      Math.abs(xi[2] - 3) < 1e-11;
+
+    return { ok: opsOk && solverOk, opsOk, solverOk, x1: new Complex(xr[1], xi[1]), x2: new Complex(xr[2], xi[2]) };
+  }
+
+  // ============================================================================
+  // ANÁLISIS AC EN FRECUENCIA (Barrido de Bode en Pequeña Señal: Y(jω) * V = I)
+  // ============================================================================
+  runACSweep(components, wires, fMin = 1, fMax = 100000, pointsPerDecade = 20, extraTargets = []) {
+    if (!components || components.length === 0) return [];
+    const topo = this.buildTopology(components, wires);
+    if (!topo || topo.numNodes === 0) return [];
+
+    const {
+      numNodes,
+      stride,
+      indexKeyMap,
+      compPinNodes,
+      subSegments,
+      netLinks,
+      groundNodes
+    } = topo;
+
+    // 1. Identificar la primera fuente AC activa como estímulo (Vin = 1 ∠ 0° V)
+    let stimulusComp = components.find((c) => !c.burned && c.type === 'ac_voltage') || null;
+    if (!stimulusComp) {
+      // Fallback amigable si el usuario probó un circuito sin cambiar la fuente DC por AC
+      stimulusComp = components.find((c) => !c.burned && c.type === 'dc_voltage') || null;
+    }
+
+    // 2. Identificar las sondas de medición (osc_probe) y objetivos adicionales (nodos/componentes fijados)
+    const keyToNodeIdx = new Map();
+    for (let idx = 1; idx <= numNodes; idx++) {
+      keyToNodeIdx.set(indexKeyMap[idx], idx);
+    }
+
+    const targets = [];
+    const seenNodeIdx = new Set();
+
+    // 2a. Prioridad #1: Componentes explícitos osc_probe colocados en el circuito
+    for (const c of components) {
+      if (c.type !== 'osc_probe') continue;
+      const pm = compPinNodes.get(c.id);
+      if (pm && pm.tip) {
+        seenNodeIdx.add(pm.tip);
+        targets.push({
+          id: c.id,
+          label: c.name || 'CH',
+          nodeIdx: pm.tip,
+          nodeKey: indexKeyMap[pm.tip],
+          isOscProbe: true
+        });
+      }
+    }
+
+    // 2b. Prioridad #2: Nodos o componentes fijados con la herramienta Sonda ('Medir') o seleccionados
+    if (Array.isArray(extraTargets)) {
+      for (const t of extraTargets) {
+        if (!t) continue;
+        if (typeof t === 'string' && t.startsWith('node_')) {
+          const nKey = t.slice(5);
+          const nIdx = keyToNodeIdx.get(nKey);
+          if (nIdx && !groundNodes.has(nIdx) && !seenNodeIdx.has(nIdx)) {
+            seenNodeIdx.add(nIdx);
+            targets.push({
+              id: t,
+              label: `Nodo (${nKey})`,
+              nodeIdx: nIdx,
+              nodeKey: nKey,
+              isOscProbe: false
+            });
+          }
+        } else if (typeof t === 'string') {
+          const comp = components.find((c) => c.id === t);
+          const pm = comp ? compPinNodes.get(comp.id) : null;
+          if (comp && pm) {
+            const pinIds = Object.keys(pm);
+            // Elegir el pin que no sea tierra (priorizando nodo de salida/intermedio)
+            const chosenPin = pinIds.find((pId) => !groundNodes.has(pm[pId])) || pinIds[0];
+            const nIdx = pm[chosenPin];
+            if (nIdx && !seenNodeIdx.has(nIdx)) {
+              seenNodeIdx.add(nIdx);
+              targets.push({
+                id: comp.id,
+                label: comp.name || comp.id,
+                nodeIdx: nIdx,
+                nodeKey: indexKeyMap[nIdx],
+                isOscProbe: false
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // 2c. Fallback automático: si no hay osc_probe ni monitor fijado, elegir el primer nodo intermedio (no GND, no fuente directa)
+    if (targets.length === 0) {
+      const stimPm = stimulusComp ? compPinNodes.get(stimulusComp.id) : null;
+      const stimPosIdx = stimPm ? stimPm.pos : -1;
+      for (let idx = 1; idx <= numNodes; idx++) {
+        if (!groundNodes.has(idx) && idx !== stimPosIdx) {
+          targets.push({
+            id: `node_${indexKeyMap[idx]}`,
+            label: `Nodo (${indexKeyMap[idx]})`,
+            nodeIdx: idx,
+            nodeKey: indexKeyMap[idx],
+            isOscProbe: false
+          });
+          break;
+        }
+      }
+    }
+
+    // 3. Construir el vector de frecuencias logarítmicas desde fMin hasta fMax
+    const safeFMin = Math.max(1e-3, Number(fMin) || 1);
+    const safeFMax = Math.max(safeFMin * 1.01, Number(fMax) || 100000);
+    const ptsDec = Math.max(2, Number(pointsPerDecade) || 20);
+    const logMin = Math.log10(safeFMin);
+    const logMax = Math.log10(safeFMax);
+    const totalDecades = logMax - logMin;
+    const totalSteps = Math.max(2, Math.round(totalDecades * ptsDec));
+
+    const frequencies = [];
+    for (let s = 0; s <= totalSteps; s++) {
+      const exp = logMin + (s / totalSteps) * totalDecades;
+      frequencies.push(Math.pow(10, exp));
+    }
+
+    // Buffers reutilizables para el sistema complejo Y(jω) * V = b
+    const A_real = new Float64Array((numNodes + 1) * stride);
+    const A_imag = new Float64Array((numNodes + 1) * stride);
+    const b_real = new Float64Array(numNodes + 1);
+    const b_imag = new Float64Array(numNodes + 1);
+    const outX_real = new Float64Array(numNodes + 1);
+    const outX_imag = new Float64Array(numNodes + 1);
+
+    const G_WIRE = 100000.0; // Conductancia de cables ideales
+    const G_MIN = 1e-12; // Conductancia mínima a tierra para estabilidad MNA
+    const G_PARASITIC = 1e-7; // 10 MOhm para modelar semiconductores en circuito abierto de pequeña señal
+
+    const probeTraces = targets.map((t) => ({
+      ...t,
+      magnitudesLinear: [],
+      magnitudesDb: [],
+      phasesDeg: [],
+      cutoffHz: null
+    }));
+
+    const sweepRows = [];
+
+    // 4. Barrido en frecuencia: ensamblar Y(jω) y resolver para cada frecuencia
+    for (let fi = 0; fi < frequencies.length; fi++) {
+      const freq = frequencies[fi];
+      const w = 2 * Math.PI * freq;
+
+      A_real.fill(0);
+      A_imag.fill(0);
+      b_real.fill(0);
+      b_imag.fill(0);
+
+      const stampAdmittance = (n1, n2, gReal, bImag) => {
+        if (n1 > 0) {
+          A_real[n1 * stride + n1] += gReal;
+          A_imag[n1 * stride + n1] += bImag;
+        }
+        if (n2 > 0) {
+          A_real[n2 * stride + n2] += gReal;
+          A_imag[n2 * stride + n2] += bImag;
+        }
+        if (n1 > 0 && n2 > 0) {
+          A_real[n1 * stride + n2] -= gReal;
+          A_imag[n1 * stride + n2] -= bImag;
+          A_real[n2 * stride + n1] -= gReal;
+          A_imag[n2 * stride + n1] -= bImag;
+        }
+      };
+
+      // Corriente compleja saliendo de n1 y entrando a n2
+      const stampCurrentSourceComplex = (n1, n2, iReal, iImag = 0) => {
+        if (n1 > 0) {
+          b_real[n1] -= iReal;
+          b_imag[n1] -= iImag;
+        }
+        if (n2 > 0) {
+          b_real[n2] += iReal;
+          b_imag[n2] += iImag;
+        }
+      };
+
+      // Equivalente Norton de fuente de tensión compleja con resistencia interna rInt
+      const stampVoltageNortonComplex = (nPos, nNeg, vReal, vImag = 0, rInt = 0.005) => {
+        const g = 1.0 / rInt;
+        stampAdmittance(nPos, nNeg, g, 0);
+        stampCurrentSourceComplex(nNeg, nPos, vReal * g, vImag * g);
+      };
+
+      // Estabilidad G_MIN en la diagonal real
+      for (let i = 1; i <= numNodes; i++) {
+        A_real[i * stride + i] += G_MIN;
+      }
+
+      // Estampar cables y puentes equipotenciales de etiquetas de red
+      for (const seg of subSegments) {
+        stampAdmittance(seg.n1, seg.n2, G_WIRE, 0);
+      }
+      if (netLinks) {
+        for (const link of netLinks) {
+          stampAdmittance(link.n1, link.n2, G_WIRE, 0);
+        }
+      }
+
+      // Estampar componentes según su admitancia compleja en frecuencia ω
+      for (const c of components) {
+        if (c.burned) continue;
+        const pm = compPinNodes.get(c.id);
+        if (!pm) continue;
+        const p = c.props || {};
+
+        switch (c.type) {
+          case 'gnd':
+          case 'net_label':
+          case 'osc_probe':
+            break;
+
+          case 'resistor': {
+            const r = Math.max(0.01, Number(p.resistance) || 220);
+            stampAdmittance(pm.a, pm.b, 1.0 / r, 0);
+            break;
+          }
+
+          case 'potentiometer': {
+            const rTot = Math.max(1, Number(p.resistance) || 10000);
+            const pos = Math.min(0.999, Math.max(0.001, Number(p.position) || 0.5));
+            const r1 = Math.max(0.1, rTot * pos);
+            const r2 = Math.max(0.1, rTot * (1 - pos));
+            stampAdmittance(pm.a, pm.wiper, 1.0 / r1, 0);
+            stampAdmittance(pm.wiper, pm.b, 1.0 / r2, 0);
+            break;
+          }
+
+          case 'lamp': {
+            const vNom = Math.max(1, Number(p.nominalVoltage) || 12);
+            const pNom = Math.max(0.1, Number(p.nominalPower) || 6);
+            const rLamp = (vNom * vNom) / pNom;
+            stampAdmittance(pm.a, pm.b, 1.0 / rLamp, 0);
+            break;
+          }
+
+          case 'ldr': {
+            const rLdr = this.computeLdrResistance(p);
+            stampAdmittance(pm.a, pm.b, 1.0 / rLdr, 0);
+            break;
+          }
+
+          case 'thermistor': {
+            const rNtc = this.computeNtcResistance(p);
+            stampAdmittance(pm.a, pm.b, 1.0 / rNtc, 0);
+            break;
+          }
+
+          case 'buzzer': {
+            const rBz = Math.max(10, Number(p.resistance) || 150);
+            stampAdmittance(pm.pos, pm.neg, 1.0 / rBz, 0);
+            break;
+          }
+
+          case 'capacitor': {
+            const cap = Math.max(1e-12, Number(p.capacitance) || 47e-6);
+            // Y_C = 0 + j * (ω * C)
+            stampAdmittance(pm.a, pm.b, 0, w * cap);
+            break;
+          }
+
+          case 'inductor': {
+            const ind = Math.max(1e-6, Number(p.inductance) || 0.05);
+            // Y_L = g_int - j / (ω * L), con conductancia real ínfima para evitar singularidades
+            const bInd = -1.0 / Math.max(1e-12, w * ind);
+            stampAdmittance(pm.a, pm.b, 1e-7, bInd);
+            break;
+          }
+
+          case 'ac_voltage': {
+            // La primera fuente AC actúa como estímulo (Vin = 1∠0° V, rInt = 0.005 Ω); el resto se apaga (0 V)
+            const vStim = c === stimulusComp ? 1.0 : 0.0;
+            stampVoltageNortonComplex(pm.pos, pm.neg, vStim, 0, 0.005);
+            break;
+          }
+
+          case 'dc_voltage': {
+            // Las fuentes DC se apagan en AC (0 V = cortocircuito AC con rInt = 0.005 Ω), salvo que sea fallback único
+            const vStim = c === stimulusComp ? 1.0 : 0.0;
+            stampVoltageNortonComplex(pm.pos, pm.neg, vStim, 0, 0.005);
+            break;
+          }
+
+          case 'current_source': {
+            // Fuente de corriente DC apagada en pequeña señal AC (circuito abierto con 10 MΩ)
+            stampAdmittance(pm.in, pm.out, G_PARASITIC, 0);
+            break;
+          }
+
+          case 'switch_spst':
+          case 'push_button': {
+            const closed = p.closed === true || p.closed === 'true';
+            stampAdmittance(pm.a, pm.b, closed ? 50000.0 : 1e-12, 0);
+            break;
+          }
+
+          case 'switch_spdt': {
+            const pos = Number(p.position) === 1 ? 1 : 0;
+            stampAdmittance(pm.com, pm.b1, pos === 0 ? 50000.0 : 1e-12, 0);
+            stampAdmittance(pm.com, pm.b2, pos === 1 ? 50000.0 : 1e-12, 0);
+            break;
+          }
+
+          case 'voltmeter': {
+            stampAdmittance(pm.pos, pm.neg, G_PARASITIC, 0); // 10 MΩ
+            break;
+          }
+
+          case 'ammeter': {
+            stampAdmittance(pm.pos, pm.neg, 1000.0, 0); // 1 mΩ
+            break;
+          }
+
+          // Semiconductores y bloques no lineales: resistencias parásitas de 10 MΩ para mantener matriz estable
+          default: {
+            const pinIndices = Object.values(pm).filter((idx) => idx > 0);
+            for (let a = 0; a < pinIndices.length; a++) {
+              stampAdmittance(pinIndices[a], 0, G_PARASITIC, 0);
+              for (let b = a + 1; b < pinIndices.length; b++) {
+                stampAdmittance(pinIndices[a], pinIndices[b], G_PARASITIC, 0);
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      // Fijar nodos de tierra (GND) a 0 + j0 V en la matriz compleja
+      for (const gIdx of groundNodes) {
+        for (let col = 1; col <= numNodes; col++) {
+          A_real[gIdx * stride + col] = 0;
+          A_imag[gIdx * stride + col] = 0;
+        }
+        A_real[gIdx * stride + gIdx] = 1.0;
+        A_imag[gIdx * stride + gIdx] = 0.0;
+        b_real[gIdx] = 0.0;
+        b_imag[gIdx] = 0.0;
+      }
+
+      // 5. Resolver Y(jω) * V = b usando el solver complejo con pivoteo parcial
+      this.solveLinearSystemComplex(
+        A_real,
+        A_imag,
+        numNodes,
+        stride,
+        outX_real,
+        outX_imag,
+        b_real,
+        b_imag
+      );
+
+      // 6. Extraer magnitud en dB (20*log10(|V|/|Vin|)) y fase en grados (atan2(Im, Re)) para cada sonda
+      const vInMag = 1.0;
+      const row = {
+        freqHz: Number(freq.toPrecision(5))
+      };
+
+      for (let pi = 0; pi < probeTraces.length; pi++) {
+        const tr = probeTraces[pi];
+        const re = outX_real[tr.nodeIdx] || 0;
+        const im = outX_imag[tr.nodeIdx] || 0;
+        const magRatio = Math.hypot(re, im) / vInMag;
+        const magDb = 20 * Math.log10(Math.max(1e-18, magRatio));
+        const phaseDeg = (Math.atan2(im, re) * 180) / Math.PI;
+
+        tr.magnitudesLinear.push(magRatio);
+        tr.magnitudesDb.push(magDb);
+        tr.phasesDeg.push(phaseDeg);
+
+        if (pi === 0) {
+          row.magnitudeDb = Number(magDb.toFixed(3));
+          row.phaseDeg = Number(phaseDeg.toFixed(2));
+        }
+        if (probeTraces.length > 1) {
+          row[`${tr.label}_dB`] = Number(magDb.toFixed(3));
+          row[`${tr.label}_deg`] = Number(phaseDeg.toFixed(2));
+        }
+      }
+
+      sweepRows.push(row);
+    }
+
+    // 7. Estimar automáticamente la frecuencia de corte a -3.01 dB para cada sonda
+    for (const tr of probeTraces) {
+      if (tr.magnitudesDb.length < 2) continue;
+      const maxDb = Math.max(...tr.magnitudesDb);
+      const targetDb = maxDb - 3.0103;
+      for (let i = 1; i < tr.magnitudesDb.length; i++) {
+        const y0 = tr.magnitudesDb[i - 1];
+        const y1 = tr.magnitudesDb[i];
+        if ((y0 >= targetDb && y1 <= targetDb) || (y0 <= targetDb && y1 >= targetDb)) {
+          const dy = y1 - y0;
+          const frac = Math.abs(dy) > 1e-9 ? (targetDb - y0) / dy : 0.5;
+          const logF0 = Math.log10(frequencies[i - 1]);
+          const logF1 = Math.log10(frequencies[i]);
+          tr.cutoffHz = Math.pow(10, logF0 + frac * (logF1 - logF0));
+          break;
+        }
+      }
+    }
+
+    // Adjuntar metadatos completos al array devuelto para facilitar tanto console.table() como el futuro trazado en Canvas
+    sweepRows.frequencies = frequencies;
+    sweepRows.probes = probeTraces;
+    sweepRows.stimulus = stimulusComp ? stimulusComp.name || stimulusComp.id : null;
+
+    return sweepRows;
+  }
 }
 
+window.ProtoSim.Complex = Complex;
 window.ProtoSim.CircuitSolver = CircuitSolver;
 
-
-// === renderer.js ===
+</script>
+  <script>
 // ============================================================================
 // PROTO-SIM: Renderizador Canvas de Alta Precisión estilo PROTO
 // ============================================================================
@@ -4703,6 +5792,7 @@ class CircuitRenderer {
     this.showNodeVoltages = false;
     this.showCurrentDots = true;
     this.showConnectorDots = true;
+    this.proMode = false;
     this.smokeParticles = [];
   }
 
@@ -4790,7 +5880,7 @@ class CircuitRenderer {
     }
 
     // 6. Dibujar vista previa ("fantasma") si hay una herramienta de componente seleccionada
-    if (appState.activeTool && appState.hoverGrid && !appState.wiringStart) {
+    if (appState.activeTool && appState.activeTool !== 'probe' && appState.hoverGrid && !appState.wiringStart) {
       this.drawGhostComponent(ctx, appState);
     }
 
@@ -4816,6 +5906,11 @@ class CircuitRenderer {
     // 10. Recuadro de selección múltiple (Marquee Selection Box)
     if (appState.selectionBox) {
       this.drawSelectionBox(ctx, appState.selectionBox, appState);
+    }
+
+    // 11. Superposición de Punta de Prueba (Herramienta Medir / Probe estilo LTSpice)
+    if (appState.activeTool === 'probe' && appState.hoverGrid && !appState.wiringStart) {
+      this.drawProbeToolOverlay(ctx, appState);
     }
 
     ctx.restore();
@@ -4865,6 +5960,29 @@ class CircuitRenderer {
     const endGx = Math.ceil(right / GRID_SIZE) + 1;
     const startGy = Math.floor(top / GRID_SIZE) - 1;
     const endGy = Math.ceil(bottom / GRID_SIZE) + 1;
+
+    if (this.proMode) {
+      // En Modo PRO / SPICE: grilla drásticamente atenuada (solo líneas principales muy tenues)
+      ctx.lineWidth = 0.75 / this.zoom;
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.022)';
+      ctx.beginPath();
+      for (let gx = startGx; gx <= endGx; gx++) {
+        if (gx % 5 === 0) {
+          const x = gx * GRID_SIZE;
+          ctx.moveTo(x, top);
+          ctx.lineTo(x, bottom);
+        }
+      }
+      for (let gy = startGy; gy <= endGy; gy++) {
+        if (gy % 5 === 0) {
+          const y = gy * GRID_SIZE;
+          ctx.moveTo(left, y);
+          ctx.lineTo(right, y);
+        }
+      }
+      ctx.stroke();
+      return;
+    }
 
     // Líneas secundarias cada 1 grilla
     ctx.lineWidth = 1 / this.zoom;
@@ -4984,6 +6102,7 @@ class CircuitRenderer {
 
   drawWires(ctx, appState) {
     const isRunning = appState.isRunning;
+    const isPro = Boolean(this.proMode);
 
     // Si el usuario pasa el mouse sobre un nodo/pin o tiene un cable seleccionado, resaltar todo el Nodo Eléctrico!
     let activeNetSeed = appState.hoveredNodeKey || appState.selectedNodeKey || null;
@@ -5007,12 +6126,18 @@ class CircuitRenderer {
         appState.selectedWire === w || Boolean(appState.selectedWires && appState.selectedWires.has(w));
       const isInHighlightedNet = netWires.has(w);
       const vAvg = ((w.v1 || 0) + (w.v2 || 0)) * 0.5;
-      const wireColor = voltageToColor(vAvg);
+      const wireColor = isPro ? '#94a3b8' : voltageToColor(vAvg);
 
       // Halo de selección o resaltado de alcance completo del Nodo Eléctrico
       if (isSelected || isInHighlightedNet) {
-        ctx.strokeStyle = isSelected ? 'rgba(56, 189, 248, 0.7)' : 'rgba(34, 211, 238, 0.36)';
-        ctx.lineWidth = isSelected ? 9 : 7.5;
+        ctx.strokeStyle = isSelected
+          ? isPro
+            ? 'rgba(56, 189, 248, 0.55)'
+            : 'rgba(56, 189, 248, 0.7)'
+          : isPro
+            ? 'rgba(56, 189, 248, 0.25)'
+            : 'rgba(34, 211, 238, 0.36)';
+        ctx.lineWidth = isPro ? (isSelected ? 4.5 : 3.6) : (isSelected ? 9 : 7.5);
         ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -5020,17 +6145,17 @@ class CircuitRenderer {
         ctx.stroke();
       }
 
-      // Trazo principal del cable coloreado según voltaje
-      ctx.strokeStyle = wireColor;
-      ctx.lineWidth = 3.2;
+      // Trazo principal del cable (fino y uniforme en Modo PRO / SPICE, o coloreado según voltaje)
+      ctx.strokeStyle = isPro && isSelected ? '#38bdf8' : wireColor;
+      ctx.lineWidth = isPro ? 1.5 : 3.2;
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
-      // Animación de puntos de corriente estilo PROTO
-      if (this.showCurrentDots) {
+      // Animación de puntos de corriente estilo PROTO (desactivada en Modo PRO)
+      if (this.showCurrentDots && !isPro) {
         const dx = x2 - x1;
         const dy = y2 - y1;
         const len = Math.hypot(dx, dy);
@@ -5160,13 +6285,14 @@ class CircuitRenderer {
     }
 
     const netNodes = this._currentNetNodes || new Set();
+    const isPro = Boolean(this.proMode);
 
     for (const [key, count] of degreeMap.entries()) {
       const [gx, gy] = key.split(',').map(Number);
       const px = gx * GRID_SIZE;
       const py = gy * GRID_SIZE;
       const v = appState.solver.nodeVoltages.get(key) || 0;
-      const vCol = voltageToColor(v);
+      const vCol = isPro ? '#94a3b8' : voltageToColor(v);
       const isWireNode = wireEndpoints.has(key);
       const isUserAnchor = userAnchors.has(key);
       const isJunction = count >= 3;
@@ -5174,7 +6300,23 @@ class CircuitRenderer {
       const isHovered = appState.hoveredNodeKey === key;
       const isSelectedNode = appState.selectedNodeKey === key;
 
-      if (this.showConnectorDots && (isWireNode || isJunction)) {
+      if (isPro) {
+        // En Modo PRO / SPICE: solo dibujar puntos de unión reales (>=3 ramas) o nodos con hover/selección
+        if (isJunction || isHovered || isSelectedNode) {
+          ctx.save();
+          if (isHovered || isSelectedNode) {
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+            ctx.beginPath();
+            ctx.arc(px, py, 8, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.fillStyle = isHovered || isSelectedNode ? '#38bdf8' : '#94a3b8';
+          ctx.beginPath();
+          ctx.arc(px, py, isHovered || isSelectedNode ? 3.8 : 3.0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      } else if (this.showConnectorDots && (isWireNode || isJunction)) {
         ctx.save();
 
         // Si pertenece al nodo eléctrico resaltado, está seleccionado o el mouse está encima, dibujar halo externo
@@ -5272,10 +6414,155 @@ class CircuitRenderer {
     ctx.restore();
   }
 
+  drawProbeToolOverlay(ctx, appState) {
+    const wx = appState.hoverWorld ? appState.hoverWorld.wx : appState.hoverGrid.gx * GRID_SIZE;
+    const wy = appState.hoverWorld ? appState.hoverWorld.wy : appState.hoverGrid.gy * GRID_SIZE;
+    const altMode = Boolean(appState.altKeyPressed);
+
+    let tx = wx;
+    let ty = wy;
+    let badgeText = altMode ? 'Sonda I(t) [Alt]' : 'Sonda V(t)';
+    let badgeColor = altMode ? '#facc15' : '#ef4444';
+
+    if (!altMode && (appState.hoveredPin || appState.hoveredNodeKey)) {
+      if (appState.hoveredPin) {
+        tx = appState.hoveredPin.gx * GRID_SIZE;
+        ty = appState.hoveredPin.gy * GRID_SIZE;
+      } else {
+        const [ngx, ngy] = appState.hoveredNodeKey.split(',').map(Number);
+        tx = ngx * GRID_SIZE;
+        ty = ngy * GRID_SIZE;
+      }
+      const key = `${Math.round(tx / GRID_SIZE)},${Math.round(ty / GRID_SIZE)}`;
+      const v = appState.solver?.nodeVoltages?.get(key) || 0;
+      badgeText = `Medir V(${key}): ${window.ProtoSim.formatSI(v, 'V', 2)}`;
+      badgeColor = '#38bdf8';
+
+      ctx.save();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+      ctx.lineWidth = 1.8 / this.zoom;
+      ctx.beginPath();
+      ctx.arc(tx, ty, 9 / this.zoom, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    } else if (appState.hoveredComponent && appState.hoveredComponent.type !== 'gnd') {
+      const c = appState.hoveredComponent;
+      const cx = c.gx * GRID_SIZE;
+      const cy = c.gy * GRID_SIZE;
+      tx = wx;
+      ty = wy;
+      badgeText = altMode
+        ? `Medir I(${c.name || c.id}): ${window.ProtoSim.formatSI(c.current || 0, 'A', 2)}`
+        : `Medir V+I (${c.name || c.id})`;
+      badgeColor = altMode ? '#facc15' : '#10b981';
+
+      ctx.save();
+      ctx.strokeStyle = badgeColor;
+      ctx.fillStyle = altMode ? 'rgba(250, 204, 21, 0.08)' : 'rgba(16, 185, 129, 0.08)';
+      ctx.lineWidth = 1.6 / this.zoom;
+      ctx.setLineDash([4 / this.zoom, 3 / this.zoom]);
+      ctx.beginPath();
+      ctx.roundRect(cx - 42, cy - 26, 84, 52, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    } else if (appState.hoveredWire) {
+      const w = appState.hoveredWire;
+      badgeText = altMode
+        ? `Medir I(cable): ${window.ProtoSim.formatSI(w.current || 0, 'A', 2)}`
+        : `Medir V(nodo ${w.gx1},${w.gy1})`;
+      badgeColor = altMode ? '#facc15' : '#38bdf8';
+    }
+
+    // Dibujar ícono vectorial de Punta de Prueba estilo LTSpice en (tx, ty)
+    ctx.save();
+    ctx.translate(tx, ty);
+    const invZ = 1 / this.zoom;
+    ctx.scale(invZ, invZ);
+
+    if (altMode) {
+      // Pinza amperimétrica / Sonda de corriente (estilo LTSpice)
+      ctx.strokeStyle = '#facc15';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(-5, 0);
+      ctx.lineTo(5, 0);
+      ctx.lineTo(2, -3.5);
+      ctx.moveTo(5, 0);
+      ctx.lineTo(2, 3.5);
+      ctx.stroke();
+    } else {
+      // Punta de prueba de tensión (Lápiz de osciloscopio inclinado a 45°)
+      ctx.save();
+      ctx.rotate(-Math.PI / 4);
+      // Aguja metálica en (0,0)
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(9, 0);
+      ctx.stroke();
+
+      // Cuerpo aislante rojo/cyan de la punta
+      ctx.fillStyle = badgeColor;
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(9, -3.5);
+      ctx.lineTo(26, -4.5);
+      ctx.lineTo(26, 4.5);
+      ctx.lineTo(9, 3.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Anillo de guarda
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(12, -4.5);
+      ctx.lineTo(12, 4.5);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Etiqueta compacta junto a la punta de prueba
+    ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+    const tw = ctx.measureText(badgeText).width + 12;
+    const th = 19;
+    const bx = 14;
+    const by = -28;
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.strokeStyle = badgeColor;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, tw, th, 5);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(badgeText, bx + 6, by + th / 2);
+
+    ctx.restore();
+  }
+
   drawComponent(ctx, comp, appState, isGhost = false) {
     const def = window.ProtoSim.COMPONENT_LIBRARY[comp.type];
     if (!def) return;
 
+    const isPro = Boolean(this.proMode);
     const cx = comp.gx * GRID_SIZE;
     const cy = comp.gy * GRID_SIZE;
     const rotRad = ((comp.rotation || 0) * Math.PI) / 180;
@@ -5291,17 +6578,17 @@ class CircuitRenderer {
     if (isSelected && !isGhost) {
       ctx.save();
       ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
-      ctx.lineWidth = 1.8;
+      ctx.fillStyle = isPro ? 'transparent' : 'rgba(56, 189, 248, 0.07)';
+      ctx.lineWidth = isPro ? 1.3 : 1.8;
       ctx.setLineDash([4, 3]);
       ctx.beginPath();
       ctx.roundRect(-44, -28, 88, 56, 10);
-      ctx.fill();
+      if (!isPro) ctx.fill();
       ctx.stroke();
       ctx.restore();
     }
 
-    if (comp.heat > 0.2 && !comp.burned) {
+    if (!isPro && comp.heat > 0.2 && !comp.burned) {
       ctx.save();
       const alpha = Math.min(0.65, comp.heat * 0.65);
       const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, 38);
@@ -5374,30 +6661,43 @@ class CircuitRenderer {
         ctx.fill();
       }
 
-      ctx.fillStyle = isHoveredPin ? '#38bdf8' : voltageToColor(vPin);
-      ctx.strokeStyle = '#0b0f17';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(px, py, isHoveredPin ? 5 : 3.6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
+      if (isPro) {
+        ctx.fillStyle = isHoveredPin ? '#38bdf8' : '#94a3b8';
+        ctx.beginPath();
+        ctx.arc(px, py, isHoveredPin ? 4.2 : 2.0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = isHoveredPin ? '#38bdf8' : voltageToColor(vPin);
+        ctx.strokeStyle = '#0b0f17';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(px, py, isHoveredPin ? 5 : 3.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
       ctx.restore();
     }
   }
 
   drawSymbolBody(ctx, comp, def, appState) {
+    const isPro = Boolean(this.proMode);
+    const vCol = (v) => (isPro ? '#94a3b8' : voltageToColor(v));
+    const symStroke = '#cbd5e1';
+    const leadWidth = isPro ? 1.5 : 2.6;
+    const bodyWidth = isPro ? 1.6 : 2.4;
+
     const pv = comp.pinVoltages || {};
     const p = comp.props || {};
-    const c1 = voltageToColor(pv[def.pins[0]?.id] || 0);
-    const c2 = voltageToColor(pv[def.pins[1]?.id] || 0);
+    const c1 = vCol(pv[def.pins[0]?.id] || 0);
+    const c2 = vCol(pv[def.pins[1]?.id] || 0);
 
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.lineWidth = 2.6;
+    ctx.lineWidth = leadWidth;
 
     // Puntos de corriente internos en componentes de 2 terminales
     const drawInternalDots = (xStart, xEnd) => {
-      if (!this.showCurrentDots || comp.burned) return;
+      if (!this.showCurrentDots || isPro || comp.burned) return;
       const cur = comp.current || 0;
       if (Math.abs(cur) < 1e-5) return;
       const speed = appState.isRunning ? currentToSpeed(cur) : 0;
@@ -5419,7 +6719,8 @@ class CircuitRenderer {
 
     switch (comp.type) {
       case 'gnd': {
-        ctx.strokeStyle = '#64748b';
+        ctx.strokeStyle = isPro ? '#94a3b8' : '#64748b';
+        ctx.lineWidth = isPro ? 1.5 : 2.6;
         ctx.beginPath();
         ctx.moveTo(0, -20);
         ctx.lineTo(0, 0);
@@ -5448,22 +6749,22 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Placa positiva (larga) y negativa (corta y gruesa)
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 2.8;
+        ctx.strokeStyle = isPro ? symStroke : '#10b981';
+        ctx.lineWidth = isPro ? 1.7 : 2.8;
         ctx.beginPath();
         ctx.moveTo(-6, -16);
         ctx.lineTo(-6, 16);
         ctx.stroke();
 
-        ctx.strokeStyle = '#94a3b8';
-        ctx.lineWidth = 4.2;
+        ctx.strokeStyle = isPro ? symStroke : '#94a3b8';
+        ctx.lineWidth = isPro ? 2.6 : 4.2;
         ctx.beginPath();
         ctx.moveTo(6, -9);
         ctx.lineTo(6, 9);
         ctx.stroke();
 
         // Signo +
-        ctx.fillStyle = '#10b981';
+        ctx.fillStyle = isPro ? symStroke : '#10b981';
         ctx.font = 'bold 12px monospace';
         ctx.fillText('+', -20, -8);
         drawInternalDots(-40, 40);
@@ -5483,17 +6784,17 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.4;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.arc(0, 0, 18, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
         // Onda interna
-        ctx.strokeStyle = '#22d3ee';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = isPro ? symStroke : '#22d3ee';
+        ctx.lineWidth = isPro ? 1.4 : 2;
         ctx.beginPath();
         if (p.waveform === 'square') {
           ctx.moveTo(-10, 4);
@@ -5529,16 +6830,17 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#a855f7';
-        ctx.lineWidth = 2.4;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : '#a855f7';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.arc(0, 0, 16, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
         // Flecha de corriente
-        ctx.strokeStyle = '#e9d5ff';
+        ctx.strokeStyle = isPro ? symStroke : '#e9d5ff';
+        ctx.lineWidth = isPro ? 1.5 : 2.2;
         ctx.beginPath();
         ctx.moveTo(-9, 0);
         ctx.lineTo(9, 0);
@@ -5563,12 +6865,17 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        // Zigzag clásico estilo PROTO
-        const grad = ctx.createLinearGradient(-22, 0, 22, 0);
-        grad.addColorStop(0, c1);
-        grad.addColorStop(1, c2);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 2.6;
+        // Zigzag clásico (en Modo PRO sin gradiente y con trazo fino neutro)
+        if (isPro) {
+          ctx.strokeStyle = symStroke;
+          ctx.lineWidth = 1.6;
+        } else {
+          const grad = ctx.createLinearGradient(-22, 0, 22, 0);
+          grad.addColorStop(0, c1);
+          grad.addColorStop(1, c2);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 2.6;
+        }
         ctx.beginPath();
         ctx.moveTo(-22, 0);
         ctx.lineTo(-18, -9);
@@ -5584,7 +6891,7 @@ class CircuitRenderer {
       }
 
       case 'potentiometer': {
-        const cWiper = voltageToColor(pv.wiper || 0);
+        const cWiper = vCol(pv.wiper || 0);
         ctx.strokeStyle = c1;
         ctx.beginPath();
         ctx.moveTo(-40, 0);
@@ -5596,7 +6903,8 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        ctx.strokeStyle = '#94a3b8';
+        ctx.strokeStyle = isPro ? symStroke : '#94a3b8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.moveTo(-22, 0);
         ctx.lineTo(-18, -8);
@@ -5612,6 +6920,7 @@ class CircuitRenderer {
         const pos = Number(p.position) || 0.5;
         const wiperX = -18 + pos * 36;
         ctx.strokeStyle = cWiper;
+        ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(0, -40);
         ctx.lineTo(0, -20);
@@ -5620,7 +6929,7 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Punta de flecha del cursor
-        ctx.fillStyle = '#38bdf8';
+        ctx.fillStyle = isPro ? symStroke : '#38bdf8';
         ctx.beginPath();
         ctx.moveTo(wiperX, -8);
         ctx.lineTo(wiperX - 4, -14);
@@ -5642,15 +6951,15 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        // Placas paralelas coloreadas según tensión en cada lado
-        ctx.strokeStyle = c1;
-        ctx.lineWidth = 3.2;
+        // Placas paralelas
+        ctx.strokeStyle = isPro ? symStroke : c1;
+        ctx.lineWidth = isPro ? 2.0 : 3.2;
         ctx.beginPath();
         ctx.moveTo(-5, -14);
         ctx.lineTo(-5, 14);
         ctx.stroke();
 
-        ctx.strokeStyle = c2;
+        ctx.strokeStyle = isPro ? symStroke : c2;
         ctx.beginPath();
         ctx.moveTo(5, -14);
         ctx.lineTo(5, 14);
@@ -5672,11 +6981,16 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        const grad = ctx.createLinearGradient(-24, 0, 24, 0);
-        grad.addColorStop(0, c1);
-        grad.addColorStop(1, c2);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 2.6;
+        if (isPro) {
+          ctx.strokeStyle = symStroke;
+          ctx.lineWidth = 1.6;
+        } else {
+          const grad = ctx.createLinearGradient(-24, 0, 24, 0);
+          grad.addColorStop(0, c1);
+          grad.addColorStop(1, c2);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 2.6;
+        }
         ctx.beginPath();
         for (let i = 0; i < 4; i++) {
           const centerX = -18 + i * 12;
@@ -5702,7 +7016,7 @@ class CircuitRenderer {
         const pNom = Math.max(0.5, Number(p.nominalPower) || 6);
         const brightness = comp.burned ? 0 : Math.min(1.5, (comp.power || 0) / pNom);
 
-        if (brightness > 0.02) {
+        if (!isPro && brightness > 0.02) {
           const glowRadius = 18 + brightness * 28;
           const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, glowRadius);
           grad.addColorStop(0, `rgba(254, 240, 138, ${Math.min(0.95, brightness)})`);
@@ -5714,9 +7028,13 @@ class CircuitRenderer {
           ctx.fill();
         }
 
-        ctx.fillStyle = brightness > 0.1 ? `rgba(254, 240, 138, ${Math.min(0.85, brightness * 0.7)})` : '#0f172a';
-        ctx.strokeStyle = brightness > 0.1 ? '#facc15' : '#94a3b8';
-        ctx.lineWidth = 2.4;
+        ctx.fillStyle = isPro
+          ? '#070a10'
+          : brightness > 0.1
+            ? `rgba(254, 240, 138, ${Math.min(0.85, brightness * 0.7)})`
+            : '#0f172a';
+        ctx.strokeStyle = isPro ? symStroke : brightness > 0.1 ? '#facc15' : '#94a3b8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.arc(0, 0, 16, 0, Math.PI * 2);
         ctx.fill();
@@ -5747,7 +7065,7 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        // Si es LED y conduce corriente, dibujar resplandor realista
+        // Si es LED y conduce corriente, dibujar resplandor realista (solo fuera de Modo PRO)
         let ledHex = '#ef4444';
         if (comp.type === 'led') {
           const colorMap = {
@@ -5762,7 +7080,7 @@ class CircuitRenderer {
           const cur = Math.max(0, comp.current || 0);
           const intensity = comp.burned ? 0 : Math.min(1.3, cur / 0.02); // 20mA = 100% brillo nominal
 
-          if (intensity > 0.02) {
+          if (!isPro && intensity > 0.02) {
             ctx.save();
             ctx.shadowColor = ledHex;
             ctx.shadowBlur = 24 * intensity;
@@ -5779,21 +7097,21 @@ class CircuitRenderer {
           }
         }
 
-        // Triángulo del ánodo
-        ctx.fillStyle = comp.type === 'led' ? ledHex : c1;
-        ctx.strokeStyle = comp.type === 'led' ? ledHex : '#e2e8f0';
-        ctx.lineWidth = 2.2;
+        // Triángulo del ánodo (en Modo PRO trazo esquemático limpio sin relleno brillante)
+        ctx.fillStyle = isPro ? 'transparent' : comp.type === 'led' ? ledHex : c1;
+        ctx.strokeStyle = isPro ? symStroke : comp.type === 'led' ? ledHex : '#e2e8f0';
+        ctx.lineWidth = isPro ? 1.6 : 2.2;
         ctx.beginPath();
         ctx.moveTo(-12, -12);
         ctx.lineTo(-12, 12);
         ctx.lineTo(12, 0);
         ctx.closePath();
-        ctx.fill();
+        if (!isPro) ctx.fill();
         ctx.stroke();
 
         // Barra del cátodo
-        ctx.strokeStyle = '#f8fafc';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = isPro ? symStroke : '#f8fafc';
+        ctx.lineWidth = isPro ? 1.8 : 3;
         ctx.beginPath();
         if (comp.type === 'zener') {
           ctx.moveTo(12, -13);
@@ -5810,8 +7128,8 @@ class CircuitRenderer {
 
         // Flechas de luz para el LED
         if (comp.type === 'led') {
-          ctx.strokeStyle = ledHex;
-          ctx.lineWidth = 1.8;
+          ctx.strokeStyle = isPro ? symStroke : ledHex;
+          ctx.lineWidth = isPro ? 1.4 : 1.8;
           ctx.beginPath();
           ctx.moveTo(-2, -15);
           ctx.lineTo(6, -23);
@@ -5826,30 +7144,30 @@ class CircuitRenderer {
 
       case 'npn':
       case 'pnp': {
-        const cB = voltageToColor(pv.base || 0);
-        const cC = voltageToColor(pv.collector || 0);
-        const cE = voltageToColor(pv.emitter || 0);
+        const cB = vCol(pv.base || 0);
+        const cC = vCol(pv.collector || 0);
+        const cE = vCol(pv.emitter || 0);
 
         // Carcasa circular
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-        ctx.strokeStyle = '#64748b';
-        ctx.lineWidth = 2;
+        ctx.fillStyle = isPro ? 'transparent' : 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeStyle = isPro ? '#64748b' : '#64748b';
+        ctx.lineWidth = isPro ? 1.4 : 2;
         ctx.beginPath();
         ctx.arc(2, 0, 22, 0, Math.PI * 2);
-        ctx.fill();
+        if (!isPro) ctx.fill();
         ctx.stroke();
 
         // Terminal Base (-40, 0)
         ctx.strokeStyle = cB;
-        ctx.lineWidth = 2.6;
+        ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(-40, 0);
         ctx.lineTo(-8, 0);
         ctx.stroke();
 
         // Barra vertical de Base
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = isPro ? symStroke : '#e2e8f0';
+        ctx.lineWidth = isPro ? 2.2 : 3.5;
         ctx.beginPath();
         ctx.moveTo(-8, -13);
         ctx.lineTo(-8, 13);
@@ -5860,7 +7178,7 @@ class CircuitRenderer {
         const botColor = comp.type === 'npn' ? cE : cC;
 
         ctx.strokeStyle = topColor;
-        ctx.lineWidth = 2.6;
+        ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(-8, -6);
         ctx.lineTo(20, -20);
@@ -5875,7 +7193,7 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Flecha de emisor
-        ctx.fillStyle = '#38bdf8';
+        ctx.fillStyle = isPro ? symStroke : '#38bdf8';
         ctx.beginPath();
         if (comp.type === 'npn') {
           ctx.moveTo(14, 17);
@@ -5892,21 +7210,21 @@ class CircuitRenderer {
       }
 
       case 'nmos': {
-        const cG = voltageToColor(pv.gate || 0);
-        const cD = voltageToColor(pv.drain || 0);
-        const cS = voltageToColor(pv.source || 0);
+        const cG = vCol(pv.gate || 0);
+        const cD = vCol(pv.drain || 0);
+        const cS = vCol(pv.source || 0);
 
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.fillStyle = isPro ? 'transparent' : 'rgba(15, 23, 42, 0.85)';
         ctx.strokeStyle = '#64748b';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = isPro ? 1.4 : 2;
         ctx.beginPath();
         ctx.arc(2, 0, 22, 0, Math.PI * 2);
-        ctx.fill();
+        if (!isPro) ctx.fill();
         ctx.stroke();
 
         // Gate
         ctx.strokeStyle = cG;
-        ctx.lineWidth = 2.6;
+        ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(-40, 0);
         ctx.lineTo(-10, 0);
@@ -5915,8 +7233,8 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Canal aislado
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.lineWidth = 2.8;
+        ctx.strokeStyle = isPro ? symStroke : '#e2e8f0';
+        ctx.lineWidth = isPro ? 2.0 : 2.8;
         ctx.beginPath();
         ctx.moveTo(-4, -14);
         ctx.lineTo(-4, 14);
@@ -5924,6 +7242,7 @@ class CircuitRenderer {
 
         // Drain (20, -40) y Source (20, 40)
         ctx.strokeStyle = cD;
+        ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(-4, -10);
         ctx.lineTo(20, -10);
@@ -5940,9 +7259,9 @@ class CircuitRenderer {
       }
 
       case 'opamp': {
-        const cInP = voltageToColor(pv.in_pos || 0);
-        const cInN = voltageToColor(pv.in_neg || 0);
-        const cOut = voltageToColor(pv.out || 0);
+        const cInP = vCol(pv.in_pos || 0);
+        const cInN = vCol(pv.in_neg || 0);
+        const cOut = vCol(pv.out || 0);
 
         ctx.strokeStyle = cInP;
         ctx.beginPath();
@@ -5962,9 +7281,9 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.4;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.moveTo(-20, -28);
         ctx.lineTo(-20, 28);
@@ -5973,10 +7292,10 @@ class CircuitRenderer {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#34d399';
+        ctx.fillStyle = isPro ? symStroke : '#34d399';
         ctx.font = 'bold 12px monospace';
         ctx.fillText('+', -16, -15);
-        ctx.fillStyle = '#f87171';
+        ctx.fillStyle = isPro ? symStroke : '#f87171';
         ctx.fillText('-', -16, 24);
         break;
       }
@@ -5997,15 +7316,15 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Contactos
-        ctx.fillStyle = '#e2e8f0';
+        ctx.fillStyle = isPro ? symStroke : '#e2e8f0';
         ctx.beginPath();
-        ctx.arc(-16, 0, 3.5, 0, Math.PI * 2);
-        ctx.arc(16, 0, 3.5, 0, Math.PI * 2);
+        ctx.arc(-16, 0, isPro ? 2.5 : 3.5, 0, Math.PI * 2);
+        ctx.arc(16, 0, isPro ? 2.5 : 3.5, 0, Math.PI * 2);
         ctx.fill();
 
         // Palanca / Botón
-        ctx.strokeStyle = closed ? '#10b981' : '#f59e0b';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = isPro ? symStroke : closed ? '#10b981' : '#f59e0b';
+        ctx.lineWidth = isPro ? 1.8 : 3;
         ctx.beginPath();
         if (comp.type === 'push_button') {
           const yBar = closed ? -2 : -11;
@@ -6030,9 +7349,9 @@ class CircuitRenderer {
 
       case 'switch_spdt': {
         const pos = Number(p.position) === 1 ? 1 : 0;
-        const cCom = voltageToColor(pv.com || 0);
-        const cB1 = voltageToColor(pv.b1 || 0);
-        const cB2 = voltageToColor(pv.b2 || 0);
+        const cCom = vCol(pv.com || 0);
+        const cB1 = vCol(pv.b1 || 0);
+        const cB2 = vCol(pv.b2 || 0);
 
         ctx.strokeStyle = cCom;
         ctx.beginPath();
@@ -6052,8 +7371,8 @@ class CircuitRenderer {
         ctx.lineTo(40, 20);
         ctx.stroke();
 
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = isPro ? 1.8 : 3;
         ctx.beginPath();
         ctx.moveTo(-16, 0);
         ctx.lineTo(16, pos === 0 ? -14 : 14);
@@ -6069,7 +7388,7 @@ class CircuitRenderer {
         const vPin = isProbe ? (pv.in || 0) : (pv.out || 0);
         const isHigh = isClock ? comp._clockState === 1 : (isProbe ? vPin >= (p.threshold || 2.5) : Number(p.state) === 1);
 
-        ctx.strokeStyle = voltageToColor(vPin);
+        ctx.strokeStyle = vCol(vPin);
         ctx.beginPath();
         if (isProbe) {
           ctx.moveTo(-20, 0);
@@ -6080,15 +7399,15 @@ class CircuitRenderer {
         }
         ctx.stroke();
 
-        ctx.fillStyle = isHigh ? 'rgba(16, 185, 129, 0.25)' : '#0f172a';
-        ctx.strokeStyle = isHigh ? '#10b981' : '#64748b';
-        ctx.lineWidth = 2.2;
+        ctx.fillStyle = isPro ? '#070a10' : isHigh ? 'rgba(16, 185, 129, 0.25)' : '#0f172a';
+        ctx.strokeStyle = isPro ? symStroke : isHigh ? '#10b981' : '#64748b';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-14, -14, 28, 28, 6);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = isHigh ? '#34d399' : '#94a3b8';
+        ctx.fillStyle = isPro ? symStroke : isHigh ? '#34d399' : '#94a3b8';
         ctx.font = 'bold 13px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -6104,18 +7423,18 @@ class CircuitRenderer {
         const isHigh = comp._logicOut === 1;
         // Entradas
         if (comp.type === 'gate_not') {
-          ctx.strokeStyle = voltageToColor(pv.in1 || 0);
+          ctx.strokeStyle = vCol(pv.in1 || 0);
           ctx.beginPath();
           ctx.moveTo(-40, 0);
           ctx.lineTo(-18, 0);
           ctx.stroke();
         } else {
-          ctx.strokeStyle = voltageToColor(pv.in1 || 0);
+          ctx.strokeStyle = vCol(pv.in1 || 0);
           ctx.beginPath();
           ctx.moveTo(-40, -20);
           ctx.lineTo(-18, -20);
           ctx.stroke();
-          ctx.strokeStyle = voltageToColor(pv.in2 || 0);
+          ctx.strokeStyle = vCol(pv.in2 || 0);
           ctx.beginPath();
           ctx.moveTo(-40, 20);
           ctx.lineTo(-18, 20);
@@ -6123,16 +7442,16 @@ class CircuitRenderer {
         }
 
         // Salida
-        ctx.strokeStyle = voltageToColor(pv.out || 0);
+        ctx.strokeStyle = vCol(pv.out || 0);
         ctx.beginPath();
         ctx.moveTo(20, 0);
         ctx.lineTo(40, 0);
         ctx.stroke();
 
         // Cuerpo de la compuerta
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = isHigh ? '#10b981' : '#38bdf8';
-        ctx.lineWidth = 2.3;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : isHigh ? '#10b981' : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-18, -24, 38, 48, 8);
         ctx.fill();
@@ -6145,14 +7464,14 @@ class CircuitRenderer {
           gate_nand: '&̅',
           gate_xor: '=1'
         };
-        ctx.fillStyle = '#f1f5f9';
+        ctx.fillStyle = isPro ? symStroke : '#f1f5f9';
         ctx.font = 'bold 13px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(labels[comp.type] || 'G', 0, 0);
 
         if (comp.type === 'gate_not' || comp.type === 'gate_nand') {
-          ctx.fillStyle = '#0f172a';
+          ctx.fillStyle = '#070a10';
           ctx.beginPath();
           ctx.arc(23, 0, 4, 0, Math.PI * 2);
           ctx.fill();
@@ -6175,15 +7494,15 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        ctx.fillStyle = '#090d16';
-        ctx.strokeStyle = isV ? '#38bdf8' : '#facc15';
-        ctx.lineWidth = 2.4;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : isV ? '#38bdf8' : '#facc15';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.arc(0, 0, 20, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = isV ? '#38bdf8' : '#facc15';
+        ctx.fillStyle = isPro ? symStroke : isV ? '#38bdf8' : '#facc15';
         ctx.font = 'bold 14px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -6193,20 +7512,21 @@ class CircuitRenderer {
       }
 
       case 'osc_probe': {
-        const chColor = p.channelColor || '#38bdf8';
+        const chColor = isPro ? symStroke : (p.channelColor || '#38bdf8');
         ctx.strokeStyle = chColor;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = isPro ? 1.5 : 2.5;
         ctx.beginPath();
         ctx.moveTo(0, 20);
         ctx.lineTo(0, 4);
         ctx.stroke();
 
-        ctx.fillStyle = chColor;
+        ctx.fillStyle = isPro ? '#070a10' : chColor;
         ctx.beginPath();
         ctx.roundRect(-18, -16, 36, 20, 6);
         ctx.fill();
+        if (isPro) ctx.stroke();
 
-        ctx.fillStyle = '#070a10';
+        ctx.fillStyle = isPro ? symStroke : '#070a10';
         ctx.font = 'bold 10px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -6217,10 +7537,10 @@ class CircuitRenderer {
       case 'net_label': {
         const netName = String(p.netName || 'VCC').trim().toUpperCase();
         const vPin = pv.p0 || 0;
-        const flagCol = voltageToColor(vPin);
+        const flagCol = vCol(vPin);
 
         ctx.strokeStyle = flagCol;
-        ctx.lineWidth = 2.4;
+        ctx.lineWidth = isPro ? 1.5 : 2.4;
         ctx.beginPath();
         ctx.moveTo(0, 20);
         ctx.lineTo(0, 5);
@@ -6230,9 +7550,9 @@ class CircuitRenderer {
         const tw = Math.max(28, ctx.measureText(netName).width + 12);
         const hw = tw / 2;
 
-        ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = '#070a10';
         ctx.strokeStyle = flagCol;
-        ctx.lineWidth = 1.9;
+        ctx.lineWidth = isPro ? 1.4 : 1.9;
         ctx.beginPath();
         ctx.moveTo(0, 6);
         ctx.lineTo(-hw, -1);
@@ -6243,7 +7563,7 @@ class CircuitRenderer {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#f8fafc';
+        ctx.fillStyle = isPro ? symStroke : '#f8fafc';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(netName, 0, -8);
@@ -6263,7 +7583,7 @@ class CircuitRenderer {
         ctx.stroke();
 
         const lightRatio = Math.max(0, Math.min(1, Number(p.lightLevel ?? 60) / 100));
-        if (lightRatio > 0.05) {
+        if (!isPro && lightRatio > 0.05) {
           const gRad = 18 + lightRatio * 14;
           const grad = ctx.createRadialGradient(0, 0, 3, 0, 0, gRad);
           grad.addColorStop(0, `rgba(250, 204, 21, ${0.42 * lightRatio})`);
@@ -6274,17 +7594,17 @@ class CircuitRenderer {
           ctx.fill();
         }
 
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-        ctx.strokeStyle = lightRatio > 0.2 ? '#facc15' : '#64748b';
-        ctx.lineWidth = 1.9;
+        ctx.fillStyle = isPro ? 'transparent' : 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeStyle = isPro ? '#64748b' : lightRatio > 0.2 ? '#facc15' : '#64748b';
+        ctx.lineWidth = isPro ? 1.4 : 1.9;
         ctx.beginPath();
         ctx.arc(0, 0, 19, 0, Math.PI * 2);
-        ctx.fill();
+        if (!isPro) ctx.fill();
         ctx.stroke();
 
         // Zigzag interno
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = isPro ? symStroke : '#10b981';
+        ctx.lineWidth = isPro ? 1.5 : 2.2;
         ctx.beginPath();
         ctx.moveTo(-15, 0);
         ctx.lineTo(-11, -6);
@@ -6296,8 +7616,8 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Flechas de luz incidentes
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 1.7;
+        ctx.strokeStyle = isPro ? symStroke : '#facc15';
+        ctx.lineWidth = isPro ? 1.3 : 1.7;
         ctx.beginPath();
         ctx.moveTo(-16, -24);
         ctx.lineTo(-8, -16);
@@ -6321,10 +7641,10 @@ class CircuitRenderer {
         ctx.stroke();
 
         const temp = Number(p.temperature ?? 25);
-        const bodyCol = temp >= 50 ? '#fb923c' : temp <= 5 ? '#38bdf8' : '#10b981';
+        const bodyCol = isPro ? symStroke : temp >= 50 ? '#fb923c' : temp <= 5 ? '#38bdf8' : '#10b981';
 
         ctx.strokeStyle = bodyCol;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = isPro ? 1.6 : 2.5;
         ctx.beginPath();
         ctx.moveTo(-20, 0);
         ctx.lineTo(-15, -8);
@@ -6337,8 +7657,8 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Línea diagonal característica de termistor (-t°)
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = isPro ? '#94a3b8' : '#cbd5e1';
+        ctx.lineWidth = isPro ? 1.3 : 1.8;
         ctx.beginPath();
         ctx.moveTo(-14, 14);
         ctx.lineTo(-6, 14);
@@ -6361,9 +7681,9 @@ class CircuitRenderer {
         ctx.stroke();
 
         const active = Boolean(comp._buzzActive && !comp.burned);
-        ctx.fillStyle = active ? 'rgba(56, 189, 248, 0.2)' : '#0f172a';
-        ctx.strokeStyle = active ? '#38bdf8' : '#94a3b8';
-        ctx.lineWidth = 2.3;
+        ctx.fillStyle = isPro ? '#070a10' : active ? 'rgba(56, 189, 248, 0.2)' : '#0f172a';
+        ctx.strokeStyle = isPro ? symStroke : active ? '#38bdf8' : '#94a3b8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.arc(0, 0, 16, 0, Math.PI * 2);
         ctx.fill();
@@ -6373,7 +7693,7 @@ class CircuitRenderer {
         ctx.arc(0, 0, 5, 0, Math.PI * 2);
         ctx.stroke();
 
-        if (active) {
+        if (!isPro && active) {
           const pulse = ((performance.now() * 0.01) % 1);
           ctx.strokeStyle = `rgba(56, 189, 248, ${1 - pulse})`;
           ctx.lineWidth = 1.8;
@@ -6387,14 +7707,14 @@ class CircuitRenderer {
 
       case 'diode_bridge': {
         // Rombo entre (-40,0), (0,40), (40,0), (0,-40)
-        const cAc1 = voltageToColor(pv.ac1 || 0);
-        const cAc2 = voltageToColor(pv.ac2 || 0);
-        const cPos = voltageToColor(pv.pos || 0);
-        const cNeg = voltageToColor(pv.neg || 0);
+        const cAc1 = vCol(pv.ac1 || 0);
+        const cAc2 = vCol(pv.ac2 || 0);
+        const cPos = vCol(pv.pos || 0);
+        const cNeg = vCol(pv.neg || 0);
 
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-        ctx.strokeStyle = '#475569';
-        ctx.lineWidth = 2.2;
+        ctx.fillStyle = isPro ? '#070a10' : 'rgba(15, 23, 42, 0.88)';
+        ctx.strokeStyle = isPro ? symStroke : '#475569';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.moveTo(-36, 0);
         ctx.lineTo(0, -36);
@@ -6430,15 +7750,15 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Símbolo de diodo central y marcas ~ / + / -
-        ctx.fillStyle = '#38bdf8';
+        ctx.fillStyle = isPro ? symStroke : '#38bdf8';
         ctx.beginPath();
         ctx.moveTo(-8, -8);
         ctx.lineTo(-8, 8);
         ctx.lineTo(8, 0);
         ctx.closePath();
         ctx.fill();
-        ctx.strokeStyle = '#f8fafc';
-        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = isPro ? symStroke : '#f8fafc';
+        ctx.lineWidth = isPro ? 1.6 : 2.2;
         ctx.beginPath();
         ctx.moveTo(8, -8);
         ctx.lineTo(8, 8);
@@ -6447,20 +7767,20 @@ class CircuitRenderer {
         ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#10b981';
+        ctx.fillStyle = isPro ? symStroke : '#10b981';
         ctx.fillText('+', 23, 0);
-        ctx.fillStyle = '#f87171';
+        ctx.fillStyle = isPro ? symStroke : '#f87171';
         ctx.fillText('-', 0, 23);
-        ctx.fillStyle = '#38bdf8';
+        ctx.fillStyle = isPro ? symStroke : '#38bdf8';
         ctx.fillText('~', -23, 0);
         ctx.fillText('~', 0, -23);
         break;
       }
 
       case 'voltage_regulator': {
-        const cIn = voltageToColor(pv.vin || 0);
-        const cOut = voltageToColor(pv.vout || 0);
-        const cGnd = voltageToColor(pv.gnd || 0);
+        const cIn = vCol(pv.vin || 0);
+        const cOut = vCol(pv.vout || 0);
+        const cGnd = vCol(pv.gnd || 0);
 
         ctx.strokeStyle = cIn;
         ctx.beginPath();
@@ -6481,9 +7801,9 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Encapsulado TO-220
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.2;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-24, -18, 48, 38, 6);
         ctx.fill();
@@ -6493,7 +7813,7 @@ class CircuitRenderer {
         ctx.fillStyle = '#334155';
         ctx.fillRect(-18, -23, 36, 5);
 
-        ctx.fillStyle = '#f8fafc';
+        ctx.fillStyle = isPro ? symStroke : '#f8fafc';
         ctx.font = 'bold 10px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -6505,10 +7825,10 @@ class CircuitRenderer {
       }
 
       case 'optocoupler': {
-        const cA = voltageToColor(pv.anode || 0);
-        const cK = voltageToColor(pv.cathode || 0);
-        const cC = voltageToColor(pv.collector || 0);
-        const cE = voltageToColor(pv.emitter || 0);
+        const cA = vCol(pv.anode || 0);
+        const cK = vCol(pv.cathode || 0);
+        const cC = vCol(pv.collector || 0);
+        const cE = vCol(pv.emitter || 0);
 
         ctx.strokeStyle = cA;
         ctx.beginPath();
@@ -6532,17 +7852,17 @@ class CircuitRenderer {
         ctx.stroke();
 
         const activeOpto = (comp._ledCurrent || 0) > 0.0005;
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = activeOpto ? '#10b981' : '#64748b';
-        ctx.lineWidth = 2.2;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : activeOpto ? '#10b981' : '#64748b';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-24, -26, 48, 52, 7);
         ctx.fill();
         ctx.stroke();
 
         // LED interno izquierdo + flechas ópticas + fototransistor derecho
-        ctx.strokeStyle = activeOpto ? '#34d399' : '#94a3b8';
-        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = isPro ? symStroke : activeOpto ? '#34d399' : '#94a3b8';
+        ctx.lineWidth = isPro ? 1.4 : 1.8;
         ctx.beginPath();
         ctx.moveTo(-14, -8);
         ctx.lineTo(-14, 8);
@@ -6550,7 +7870,7 @@ class CircuitRenderer {
         ctx.closePath();
         ctx.stroke();
 
-        ctx.strokeStyle = activeOpto ? '#facc15' : '#475569';
+        ctx.strokeStyle = isPro ? '#94a3b8' : activeOpto ? '#facc15' : '#475569';
         ctx.beginPath();
         ctx.moveTo(-4, -5);
         ctx.lineTo(4, -5);
@@ -6558,7 +7878,7 @@ class CircuitRenderer {
         ctx.lineTo(4, 5);
         ctx.stroke();
 
-        ctx.strokeStyle = '#38bdf8';
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
         ctx.beginPath();
         ctx.moveTo(8, -10);
         ctx.lineTo(8, 10);
@@ -6572,11 +7892,11 @@ class CircuitRenderer {
 
       case 'relay_spdt': {
         const energized = Boolean(comp._energized);
-        const cCoil1 = voltageToColor(pv.coil1 || 0);
-        const cCoil2 = voltageToColor(pv.coil2 || 0);
-        const cCom = voltageToColor(pv.com || 0);
-        const cNo = voltageToColor(pv.no || 0);
-        const cNc = voltageToColor(pv.nc || 0);
+        const cCoil1 = vCol(pv.coil1 || 0);
+        const cCoil2 = vCol(pv.coil2 || 0);
+        const cCom = vCol(pv.com || 0);
+        const cNo = vCol(pv.no || 0);
+        const cNc = vCol(pv.nc || 0);
 
         // Terminales
         ctx.strokeStyle = cCoil1;
@@ -6606,17 +7926,17 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Carcasa del relé
-        ctx.fillStyle = energized ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.9)';
-        ctx.strokeStyle = energized ? '#10b981' : '#64748b';
-        ctx.lineWidth = 2.1;
+        ctx.fillStyle = isPro ? '#070a10' : energized ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.9)';
+        ctx.strokeStyle = isPro ? symStroke : energized ? '#10b981' : '#64748b';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-26, -26, 52, 52, 7);
         ctx.fill();
         ctx.stroke();
 
         // Bobina izquierda
-        ctx.strokeStyle = energized ? '#34d399' : '#94a3b8';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = isPro ? symStroke : energized ? '#34d399' : '#94a3b8';
+        ctx.lineWidth = isPro ? 1.5 : 2;
         ctx.beginPath();
         ctx.rect(-20, -14, 12, 28);
         ctx.moveTo(-20, -10);
@@ -6624,8 +7944,8 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Conmutador móvil derecho desde COM (0, 20) hacia NO (18, -14) o NC (18, 14)
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 2.6;
+        ctx.strokeStyle = isPro ? symStroke : '#facc15';
+        ctx.lineWidth = isPro ? 1.8 : 2.6;
         ctx.beginPath();
         ctx.moveTo(4, 18);
         if (energized) {
@@ -6635,7 +7955,7 @@ class CircuitRenderer {
         }
         ctx.stroke();
 
-        ctx.fillStyle = '#e2e8f0';
+        ctx.fillStyle = isPro ? symStroke : '#e2e8f0';
         ctx.beginPath();
         ctx.arc(18, -14, 2.5, 0, Math.PI * 2);
         ctx.arc(18, 14, 2.5, 0, Math.PI * 2);
@@ -6649,23 +7969,23 @@ class CircuitRenderer {
         for (const pin of def.pins) {
           const px = pin.x * GRID_SIZE;
           const py = pin.y * GRID_SIZE;
-          ctx.strokeStyle = voltageToColor(pv[pin.id] || 0);
-          ctx.lineWidth = 2.4;
+          ctx.strokeStyle = vCol(pv[pin.id] || 0);
+          ctx.lineWidth = leadWidth;
           ctx.beginPath();
           ctx.moveTo(px, py);
           ctx.lineTo(Math.sign(px) * Math.min(Math.abs(px), 26), Math.sign(py) * Math.min(Math.abs(py), 28));
           ctx.stroke();
         }
 
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = isHigh ? '#10b981' : '#38bdf8';
-        ctx.lineWidth = 2.3;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : isHigh ? '#10b981' : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-26, -28, 52, 56, 7);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#f8fafc';
+        ctx.fillStyle = isPro ? symStroke : '#f8fafc';
         ctx.font = 'bold 11px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -6678,7 +7998,7 @@ class CircuitRenderer {
         ctx.fillText('THR', -22, 0);
         ctx.fillText('TRG', -22, 18);
         ctx.textAlign = 'right';
-        ctx.fillStyle = isHigh ? '#34d399' : '#38bdf8';
+        ctx.fillStyle = isPro ? symStroke : isHigh ? '#34d399' : '#38bdf8';
         ctx.fillText('OUT', 22, 0);
         break;
       }
@@ -6687,8 +8007,8 @@ class CircuitRenderer {
         for (const pin of def.pins) {
           const px = pin.x * GRID_SIZE;
           const py = pin.y * GRID_SIZE;
-          ctx.strokeStyle = voltageToColor(pv[pin.id] || 0);
-          ctx.lineWidth = 2.2;
+          ctx.strokeStyle = vCol(pv[pin.id] || 0);
+          ctx.lineWidth = leadWidth;
           ctx.beginPath();
           ctx.moveTo(px, py);
           ctx.lineTo(Math.sign(px) * Math.min(Math.abs(px), 22), Math.sign(py) * Math.min(Math.abs(py), 28));
@@ -6696,8 +8016,8 @@ class CircuitRenderer {
         }
 
         ctx.fillStyle = '#050811';
-        ctx.strokeStyle = '#475569';
-        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = isPro ? symStroke : '#475569';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-22, -28, 44, 56, 6);
         ctx.fill();
@@ -6709,7 +8029,7 @@ class CircuitRenderer {
           cyan: '#06b6d4',
           yellow: '#facc15'
         };
-        const activeCol = segColorMap[p.color] || '#ef4444';
+        const activeCol = isPro ? symStroke : (segColorMap[p.color] || '#ef4444');
         const offCol = 'rgba(148, 163, 184, 0.14)';
 
         // Tabla de 7 segmentos [a,b,c,d,e,f,g] para dígitos 0..15 (0..F)
@@ -6731,12 +8051,12 @@ class CircuitRenderer {
         ];
 
         ctx.lineCap = 'round';
-        ctx.lineWidth = 3.2;
+        ctx.lineWidth = isPro ? 2.2 : 3.2;
         for (let s = 0; s < 7; s++) {
           const on = (m & (1 << s)) !== 0;
           ctx.strokeStyle = on ? activeCol : offCol;
-          ctx.shadowColor = on ? activeCol : 'transparent';
-          ctx.shadowBlur = on ? 6 : 0;
+          ctx.shadowColor = !isPro && on ? activeCol : 'transparent';
+          ctx.shadowBlur = !isPro && on ? 6 : 0;
           ctx.beginPath();
           ctx.moveTo(segCoords[s][0], segCoords[s][1]);
           ctx.lineTo(segCoords[s][2], segCoords[s][3]);
@@ -7065,8 +8385,8 @@ window.ProtoSim.GRID_SIZE = GRID_SIZE;
 window.ProtoSim.voltageToColor = voltageToColor;
 window.ProtoSim.CircuitRenderer = CircuitRenderer;
 
-
-// === oscilloscope.js ===
+</script>
+  <script>
 // ============================================================================
 // PROTO-SIM: Osciloscopio Multicanal + Monitores Múltiples Anclados a la Derecha
 // ============================================================================
@@ -7104,6 +8424,17 @@ class Oscilloscope {
     this.draggingCursor = null; // 'A' | 'B' | 'V1' | 'V2' | null
     this.expHoverX = null;
 
+    // Estado de Sincronización de Señal (Trigger) estilo osciloscopio real
+    this.triggerEnabled = true;
+    this.triggerSource = 'auto'; // 'auto' | 'off' | id de canal o componente
+    this.triggerLevel = 0; // Nivel de disparo en V
+    this.triggerEdge = 'rising'; // 'rising' (Flanco de subida) | 'falling' (Flanco de bajada)
+    this.triggerPosition = 0.25; // Posición horizontal fija del punto de cruce (25% del ancho de pantalla)
+    this.lastTriggeredState = false;
+    this._lastTriggerOptionsSig = '';
+
+    this.initTriggerUI();
+
     if (this.canvas) {
       this.canvas.addEventListener('mousemove', (e) => {
         const rect = this.canvas.getBoundingClientRect();
@@ -7139,21 +8470,19 @@ class Oscilloscope {
     const maxS = this.maxSamples;
     const trimThreshold = maxS + 600;
 
-    if (this.canvas) {
-      const channels = this.getActiveChannels(appState);
-      const sample = { t: simTime, ch: {} };
+    const channels = this.getActiveChannels(appState);
+    const sample = { t: simTime, ch: {} };
 
-      for (const ch of channels) {
-        sample.ch[ch.id] = {
-          v: ch.getV(),
-          i: ch.getI()
-        };
-      }
+    for (const ch of channels) {
+      sample.ch[ch.id] = {
+        v: ch.getV(),
+        i: ch.getI()
+      };
+    }
 
-      this.history.push(sample);
-      if (this.history.length >= trimThreshold) {
-        this.history.splice(0, this.history.length - maxS);
-      }
+    this.history.push(sample);
+    if (this.history.length >= trimThreshold) {
+      this.history.splice(0, this.history.length - maxS);
     }
 
     // Guardar historial individual de todos los componentes para los gráficos de la derecha
@@ -7256,6 +8585,7 @@ class Oscilloscope {
         includedCompIds.add(c.id);
         list.push({
           id: `probe_${c.id}`,
+          compId: c.id,
           label: c.name || 'CH',
           color: c.props.channelColor || CHANNEL_COLORS[colorIdx++ % CHANNEL_COLORS.length],
           getV: () => c.vDiff || 0,
@@ -7273,6 +8603,7 @@ class Oscilloscope {
           includedCompIds.add(comp.id);
           list.push({
             id: `comp_${comp.id}`,
+            compId: comp.id,
             label: comp.name || comp.type.toUpperCase(),
             color: color || CHANNEL_COLORS[colorIdx++ % CHANNEL_COLORS.length],
             getV: () => comp.vDiff || 0,
@@ -7290,6 +8621,7 @@ class Oscilloscope {
         if (!includedCompIds.has(sel.id)) {
           list.push({
             id: `sel_${sel.id}`,
+            compId: sel.id,
             label: `${sel.name}`,
             color: '#00ff9d',
             getV: () => sel.vDiff || 0,
@@ -7304,7 +8636,586 @@ class Oscilloscope {
     return list;
   }
 
+  // Inicializa y enlaza los controles de UI de Trigger ('Trigger Source', 'Trigger Level', 'Edge')
+  initTriggerUI() {
+    if (typeof document === 'undefined') return;
+
+    // 1. Insertar barra de controles de Trigger en la sección de gráficos del panel derecho (#pinnedGraphsSection)
+    const graphsSection = document.getElementById('pinnedGraphsSection');
+    const graphsList = document.getElementById('pinnedGraphsList');
+    if (graphsSection && graphsList && !document.getElementById('oscTriggerBar')) {
+      const bar = document.createElement('div');
+      bar.className = 'osc-trigger-bar';
+      bar.id = 'oscTriggerBar';
+      bar.innerHTML = `
+        <div class="osc-trigger-row">
+          <div class="osc-trig-field" title="Trigger Source: Elegir canal de referencia para sincronizar la señal">
+            <label class="osc-trig-label" for="oscTriggerSource">Trigger Source</label>
+            <select class="select-input osc-trig-select" id="oscTriggerSource">
+              <option value="auto">Auto (Canal activo)</option>
+              <option value="off">Off (Libre)</option>
+            </select>
+          </div>
+          <div class="osc-trig-field osc-trig-edge-field" title="Edge: Pendiente del flanco de disparo (Rising / Falling)">
+            <label class="osc-trig-label" for="oscTriggerEdge">Edge</label>
+            <select class="select-input osc-trig-edge" id="oscTriggerEdge">
+              <option value="rising" selected>↑ Rising</option>
+              <option value="falling">↓ Falling</option>
+            </select>
+          </div>
+        </div>
+        <div class="osc-trigger-row">
+          <div class="osc-trig-field osc-trig-level-field" title="Trigger Level: Nivel de disparo en Voltios (V)">
+            <label class="osc-trig-label" for="oscTriggerLevel">Trigger Level (V)</label>
+            <div class="osc-trig-level-wrap">
+              <input type="number" class="prop-input osc-trig-input" id="oscTriggerLevel" value="0" step="0.5" />
+              <span class="osc-trig-unit">V</span>
+              <button type="button" class="unit-btn" id="btnOscTrig50" title="Ajustar Trigger Level al 50% (punto medio) de la señal actual">50%</button>
+              <button type="button" class="unit-btn" id="btnOscTrigZero" title="Fijar Trigger Level en 0 V">0V</button>
+            </div>
+          </div>
+          <div class="osc-trig-status-badge" id="oscTriggerStatus" title="Estado del Trigger: TRIG'D (Sincronizado) / AUTO (Esperando cruce) / FREE (Desactivado)">
+            TRIG'D
+          </div>
+        </div>
+      `;
+      graphsSection.insertBefore(bar, graphsList);
+    }
+
+    // 2. Insertar controles compactos de Trigger en el Analizador de Precisión superior (#topExpandedGraphDock)
+    const expControls = document.querySelector('#topExpandedGraphDock .expanded-graph-controls');
+    if (expControls && !document.getElementById('expTriggerGroup')) {
+      const expGroup = document.createElement('div');
+      expGroup.className = 'exp-trigger-group';
+      expGroup.id = 'expTriggerGroup';
+      expGroup.innerHTML = `
+        <span class="exp-trig-tag">TRIGGER</span>
+        <select class="select-input exp-trig-select" id="expTriggerSource" title="Trigger Source (elegir canal)">
+          <option value="auto">Auto (Canal)</option>
+          <option value="off">Off (Libre)</option>
+        </select>
+        <div class="exp-trig-level-box" title="Trigger Level en Voltios (V)">
+          <span class="exp-trig-sublabel">Lvl</span>
+          <input type="number" class="prop-input exp-trig-input" id="expTriggerLevel" value="0" step="0.5" />
+          <span class="exp-trig-sublabel">V</span>
+          <button type="button" class="unit-btn" id="btnExpTrig50" title="Centrar Trigger Level al 50% de la onda">50%</button>
+        </div>
+        <select class="select-input exp-trig-edge" id="expTriggerEdge" title="Edge: Pendiente Rising (Subida) o Falling (Bajada)">
+          <option value="rising" selected>↑ Rising</option>
+          <option value="falling">↓ Falling</option>
+        </select>
+      `;
+      expControls.insertBefore(expGroup, expControls.firstChild);
+    }
+
+    // 3. Enlazar eventos de cambio de Trigger Source, Trigger Level y Edge (idempotente)
+    const bindSelectSource = (el) => {
+      if (!el || el._trigBound) return;
+      el._trigBound = true;
+      el.addEventListener('click', (e) => e.stopPropagation());
+      el.addEventListener('change', (e) => {
+        this.setTriggerSource(e.target.value);
+      });
+    };
+
+    const bindInputLevel = (el) => {
+      if (!el || el._trigBound) return;
+      el._trigBound = true;
+      el.addEventListener('click', (e) => e.stopPropagation());
+      el.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (!isNaN(val)) {
+          this.setTriggerLevel(val, e.target);
+        }
+      });
+      el.addEventListener('change', (e) => {
+        const val = parseFloat(e.target.value);
+        this.setTriggerLevel(isNaN(val) ? 0 : val);
+      });
+    };
+
+    const bindSelectEdge = (el) => {
+      if (!el || el._trigBound) return;
+      el._trigBound = true;
+      el.addEventListener('click', (e) => e.stopPropagation());
+      el.addEventListener('change', (e) => {
+        this.setTriggerEdge(e.target.value);
+      });
+    };
+
+    bindSelectSource(document.getElementById('oscTriggerSource'));
+    bindSelectSource(document.getElementById('expTriggerSource'));
+    bindInputLevel(document.getElementById('oscTriggerLevel'));
+    bindInputLevel(document.getElementById('expTriggerLevel'));
+    bindSelectEdge(document.getElementById('oscTriggerEdge'));
+    bindSelectEdge(document.getElementById('expTriggerEdge'));
+
+    const btn50 = document.getElementById('btnOscTrig50');
+    if (btn50 && !btn50._trigBound) {
+      btn50._trigBound = true;
+      btn50.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setTriggerLevelToMidpoint(this._lastAppState);
+      });
+    }
+
+    const btnExp50 = document.getElementById('btnExpTrig50');
+    if (btnExp50 && !btnExp50._trigBound) {
+      btnExp50._trigBound = true;
+      btnExp50.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setTriggerLevelToMidpoint(this._lastAppState);
+      });
+    }
+
+    const btnZero = document.getElementById('btnOscTrigZero');
+    if (btnZero && !btnZero._trigBound) {
+      btnZero._trigBound = true;
+      btnZero.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setTriggerLevel(0);
+      });
+    }
+  }
+
+  setTriggerSource(sourceVal) {
+    this.triggerSource = sourceVal || 'auto';
+    this.triggerEnabled = this.triggerSource !== 'off';
+    const s1 = document.getElementById('oscTriggerSource');
+    const s2 = document.getElementById('expTriggerSource');
+    if (s1 && s1.value !== this.triggerSource) s1.value = this.triggerSource;
+    if (s2 && s2.value !== this.triggerSource) s2.value = this.triggerSource;
+  }
+
+  setTriggerLevel(levelV, activeInput = null) {
+    const num = Number(levelV);
+    this.triggerLevel = isFinite(num) ? Math.round(num * 1000) / 1000 : 0;
+    const i1 = document.getElementById('oscTriggerLevel');
+    const i2 = document.getElementById('expTriggerLevel');
+    if (i1 && i1 !== activeInput && document.activeElement !== i1) {
+      i1.value = String(this.triggerLevel);
+    }
+    if (i2 && i2 !== activeInput && document.activeElement !== i2) {
+      i2.value = String(this.triggerLevel);
+    }
+  }
+
+  setTriggerEdge(edgeVal) {
+    this.triggerEdge = edgeVal === 'falling' ? 'falling' : 'rising';
+    const e1 = document.getElementById('oscTriggerEdge');
+    const e2 = document.getElementById('expTriggerEdge');
+    if (e1 && e1.value !== this.triggerEdge) e1.value = this.triggerEdge;
+    if (e2 && e2.value !== this.triggerEdge) e2.value = this.triggerEdge;
+  }
+
+  // Ajusta automáticamente el Trigger Level al 50% pico-a-pico del canal de Trigger activo
+  setTriggerLevelToMidpoint(appState) {
+    if (!appState) return;
+    const rawKey = this.resolveTriggerHistoryKey(appState);
+    const hist = rawKey ? this.compHistory.get(rawKey) : null;
+    if (hist && hist.length >= 2) {
+      const recent = hist.slice(-Math.max(this.viewSamples, 800));
+      let vMin = Infinity;
+      let vMax = -Infinity;
+      for (const pt of recent) {
+        if (pt.v < vMin) vMin = pt.v;
+        if (pt.v > vMax) vMax = pt.v;
+      }
+      if (isFinite(vMin) && isFinite(vMax)) {
+        const mid = Math.round(((vMin + vMax) * 0.5) * 100) / 100;
+        this.setTriggerLevel(mid);
+        return;
+      }
+    }
+    this.setTriggerLevel(0);
+  }
+
+  // Sincroniza dinámicamente las opciones de 'Trigger Source' según los canales y componentes activos
+  syncTriggerUI(appState) {
+    this._lastAppState = appState;
+    this.initTriggerUI();
+
+    const graphsList = document.getElementById('pinnedGraphsList');
+    const trigBar = document.getElementById('oscTriggerBar');
+    if (graphsList && trigBar) {
+      trigBar.style.display = graphsList.style.display === 'none' ? 'none' : '';
+    }
+
+    if (!appState) return;
+
+    const options = [{ value: 'auto', label: 'Auto (Canal activo)' }];
+    const seen = new Set(['auto', 'off']);
+
+    // 1. Incluir canales activos del osciloscopio y monitores visibles
+    const activeChannels = this.getActiveChannels(appState);
+    for (const ch of activeChannels) {
+      const key = ch.compId || ch.id;
+      if (!seen.has(key)) {
+        seen.add(key);
+        options.push({ value: key, label: `CH: ${ch.label}` });
+      }
+    }
+
+    const monitorIds = appState.getDisplayedMonitorIds
+      ? appState.getDisplayedMonitorIds()
+      : appState.pinnedMonitors || [];
+    for (const mId of monitorIds) {
+      if (seen.has(mId)) continue;
+      seen.add(mId);
+      if (typeof mId === 'string' && mId.startsWith('node_')) {
+        options.push({ value: mId, label: `Nodo (${mId.slice(5)})` });
+      } else if (typeof mId === 'string' && mId.startsWith('wire_')) {
+        options.push({ value: mId, label: 'Cable Conductor' });
+      } else {
+        const comp = (appState.components || []).find((c) => c.id === mId);
+        if (comp) {
+          const def = window.ProtoSim.COMPONENT_LIBRARY?.[comp.type];
+          options.push({ value: comp.id, label: `${comp.name} (${def?.name || comp.type})` });
+        }
+      }
+    }
+
+    // 2. Incluir el resto de componentes del circuito para poder disparar desde cualquier fuente (ej: generador AC)
+    for (const comp of appState.components || []) {
+      if (comp.type === 'gnd' || seen.has(comp.id)) continue;
+      seen.add(comp.id);
+      const def = window.ProtoSim.COMPONENT_LIBRARY?.[comp.type];
+      options.push({ value: comp.id, label: `${comp.name} (${def?.name || comp.type})` });
+    }
+
+    options.push({ value: 'off', label: 'Off (Sin Trigger / Libre)' });
+
+    // Si el canal elegido ya no existe en el circuito, volver a 'auto'
+    const rawSelected = this.stripChannelPrefix(this.triggerSource);
+    if (this.triggerSource !== 'auto' && this.triggerSource !== 'off' && !seen.has(this.triggerSource) && !seen.has(rawSelected)) {
+      this.triggerSource = 'auto';
+      this.triggerEnabled = true;
+    }
+
+    const sig = options.map((o) => `${o.value}:${o.label}`).join('|');
+    if (sig !== this._lastTriggerOptionsSig) {
+      this._lastTriggerOptionsSig = sig;
+      const html = options.map((o) => `<option value="${o.value}">${o.label}</option>`).join('');
+      const sel1 = document.getElementById('oscTriggerSource');
+      const sel2 = document.getElementById('expTriggerSource');
+      const valToSet = seen.has(this.triggerSource) ? this.triggerSource : (seen.has(rawSelected) ? rawSelected : 'auto');
+      if (sel1 && document.activeElement !== sel1) {
+        sel1.innerHTML = html;
+        sel1.value = valToSet;
+      }
+      if (sel2 && document.activeElement !== sel2) {
+        sel2.innerHTML = html;
+        sel2.value = valToSet;
+      }
+    }
+  }
+
+  updateTriggerStatusBadge(triggered) {
+    this.lastTriggeredState = Boolean(triggered);
+    const badge = document.getElementById('oscTriggerStatus');
+    if (!badge) return;
+    if (!this.triggerEnabled || this.triggerSource === 'off') {
+      badge.textContent = 'FREE';
+      badge.className = 'osc-trig-status-badge status-free';
+    } else if (triggered) {
+      badge.textContent = "TRIG'D";
+      badge.className = 'osc-trig-status-badge status-trig';
+    } else {
+      badge.textContent = 'AUTO';
+      badge.className = 'osc-trig-status-badge status-auto';
+    }
+  }
+
+  stripChannelPrefix(sourceId) {
+    if (!sourceId || typeof sourceId !== 'string') return 'auto';
+    if (sourceId.startsWith('probe_')) return sourceId.slice(6);
+    if (sourceId.startsWith('comp_')) return sourceId.slice(5);
+    if (sourceId.startsWith('sel_')) return sourceId.slice(4);
+    return sourceId;
+  }
+
+  // Resuelve la clave de historial (compHistory) correspondiente al Trigger Source seleccionado
+  resolveTriggerHistoryKey(appState, fallbackMonitorId = null) {
+    if (!this.triggerEnabled || this.triggerSource === 'off') return null;
+    if (this.triggerSource && this.triggerSource !== 'auto') {
+      const raw = this.stripChannelPrefix(this.triggerSource);
+      if (this.compHistory.has(raw)) return raw;
+      if (this.compHistory.has(this.triggerSource)) return this.triggerSource;
+    }
+    if (fallbackMonitorId && this.compHistory.has(fallbackMonitorId)) {
+      return fallbackMonitorId;
+    }
+    if (appState?.expandedMonitorId && this.compHistory.has(appState.expandedMonitorId)) {
+      return appState.expandedMonitorId;
+    }
+    const monitorIds = appState?.getDisplayedMonitorIds
+      ? appState.getDisplayedMonitorIds()
+      : appState?.pinnedMonitors || [];
+    if (monitorIds.length > 0 && this.compHistory.has(monitorIds[0])) {
+      return monitorIds[0];
+    }
+    const channels = appState ? this.getActiveChannels(appState) : [];
+    if (channels.length > 0) {
+      const raw = channels[0].compId || this.stripChannelPrefix(channels[0].id);
+      if (this.compHistory.has(raw)) return raw;
+    }
+    return null;
+  }
+
+  // Busca en el historial el último cruce del Trigger Level con la pendiente correcta (Rising / Falling)
+  // y calcula la ventana alineada para que el cruce quede siempre fijo en la misma posición X de pantalla
+  findTriggerCrossing(historyArr, getV) {
+    const N = historyArr ? historyArr.length : 0;
+    const viewS = this.viewSamples;
+    const denom = Math.max(1, viewS - 1);
+    const preSamples = Math.round(denom * this.triggerPosition);
+    const postSamples = viewS - preSamples;
+
+    if (!this.triggerEnabled || this.triggerSource === 'off' || N < 2 || typeof getV !== 'function') {
+      const sliceStart = Math.max(0, N - viewS);
+      return {
+        triggered: false,
+        crossIdx: -1,
+        frac: 0,
+        offsetFromEnd: 0,
+        sliceStart,
+        sliceEnd: N,
+        data: historyArr ? historyArr.slice(sliceStart) : [],
+        baseOffset: 0,
+        preSamples,
+        denom
+      };
+    }
+
+    const level = Number(this.triggerLevel) || 0;
+    const isRising = this.triggerEdge !== 'falling';
+
+    const isCrossingAt = (idx) => {
+      const vPrev = getV(historyArr[idx - 1], idx - 1);
+      const vCurr = getV(historyArr[idx], idx);
+      if (vPrev === undefined || vCurr === undefined) return false;
+      return isRising
+        ? vPrev < level && vCurr >= level && vCurr > vPrev
+        : vPrev > level && vCurr <= level && vCurr < vPrev;
+    };
+
+    let crossIdx = -1;
+
+    // 1. Buscar hacia atrás el último cruce que tenga suficientes muestras post-trigger para llenar la pantalla
+    const maxFullIdx = N - postSamples;
+    const minFullIdx = Math.max(1, preSamples);
+    for (let i = maxFullIdx; i >= minFullIdx; i--) {
+      if (isCrossingAt(i)) {
+        crossIdx = i;
+        break;
+      }
+    }
+
+    // 2. Si el historial aún se está llenando o el período es largo, buscar en todo el rango disponible
+    if (crossIdx === -1) {
+      for (let i = N - 1; i >= 1; i--) {
+        if (isCrossingAt(i)) {
+          crossIdx = i;
+          break;
+        }
+      }
+    }
+
+    // Si no hubo cruce (ej: señal DC pura o Trigger Level fuera de rango), modo Auto sin disparo
+    if (crossIdx === -1) {
+      const sliceStart = Math.max(0, N - viewS);
+      return {
+        triggered: false,
+        crossIdx: -1,
+        frac: 0,
+        offsetFromEnd: 0,
+        sliceStart,
+        sliceEnd: N,
+        data: historyArr.slice(sliceStart),
+        baseOffset: 0,
+        preSamples,
+        denom
+      };
+    }
+
+    // Interpolación sub-muestra para eliminar cualquier jitter horizontal entre pasos discretos Δt
+    const vPrev = getV(historyArr[crossIdx - 1], crossIdx - 1);
+    const vCurr = getV(historyArr[crossIdx], crossIdx);
+    const dv = vCurr - vPrev;
+    const frac = Math.abs(dv) > 1e-12 ? Math.max(0, Math.min(1, (level - vPrev) / dv)) : 0;
+
+    const sliceStart = Math.max(0, crossIdx - preSamples - 1);
+    const sliceEnd = Math.min(N, crossIdx + postSamples + 1);
+    const data = historyArr.slice(sliceStart, sliceEnd);
+
+    // Alinear el dibujo para que el punto exacto de cruce (crossIdx - 1 + frac) caiga siempre en samplePos = preSamples
+    const baseOffset = sliceStart - (crossIdx - preSamples) + (1 - frac);
+
+    return {
+      triggered: true,
+      crossIdx,
+      frac,
+      offsetFromEnd: N - 1 - crossIdx,
+      sliceStart,
+      sliceEnd,
+      data,
+      baseOffset,
+      preSamples,
+      denom
+    };
+  }
+
+  // Obtiene la ventana sincronizada por Trigger para un monitor específico (compHistory)
+  getMonitorTriggeredWindow(monitorId, appState) {
+    const fullHist = this.compHistory.get(monitorId) || [];
+    const N = fullHist.length;
+    const viewS = this.viewSamples;
+    const denom = Math.max(1, viewS - 1);
+    const preSamples = Math.round(denom * this.triggerPosition);
+    const postSamples = viewS - preSamples;
+
+    if (!this.triggerEnabled || this.triggerSource === 'off' || N < 2) {
+      const sliceStart = Math.max(0, N - viewS);
+      return {
+        triggered: false,
+        data: fullHist.slice(sliceStart),
+        baseOffset: 0,
+        preSamples,
+        denom,
+        isTriggerSource: false
+      };
+    }
+
+    // Determinar el canal fuente de Trigger ('auto' usa el propio monitor; si eligió un canal específico, sincroniza todos a ese canal)
+    const sourceKey =
+      this.triggerSource === 'auto'
+        ? monitorId
+        : this.resolveTriggerHistoryKey(appState, monitorId);
+
+    const sourceHist = sourceKey ? this.compHistory.get(sourceKey) : null;
+    if (!sourceHist || sourceHist.length < 2) {
+      return {
+        ...this.findTriggerCrossing(fullHist, (pt) => pt?.v),
+        isTriggerSource: true
+      };
+    }
+
+    if (sourceKey === monitorId) {
+      return {
+        ...this.findTriggerCrossing(fullHist, (pt) => pt?.v),
+        isTriggerSource: true
+      };
+    }
+
+    // Sincronizar este monitor usando el instante exacto de cruce del canal elegido en 'Trigger Source'
+    const refTrig = this.findTriggerCrossing(sourceHist, (pt) => pt?.v);
+    if (!refTrig.triggered) {
+      const sliceStart = Math.max(0, N - viewS);
+      return {
+        triggered: false,
+        data: fullHist.slice(sliceStart),
+        baseOffset: 0,
+        preSamples,
+        denom,
+        isTriggerSource: false
+      };
+    }
+
+    const targetCrossIdx = N - 1 - refTrig.offsetFromEnd;
+    if (targetCrossIdx < 1 || targetCrossIdx >= N) {
+      const sliceStart = Math.max(0, N - viewS);
+      return {
+        triggered: false,
+        data: fullHist.slice(sliceStart),
+        baseOffset: 0,
+        preSamples,
+        denom,
+        isTriggerSource: false
+      };
+    }
+
+    const sliceStart = Math.max(0, targetCrossIdx - preSamples - 1);
+    const sliceEnd = Math.min(N, targetCrossIdx + postSamples + 1);
+    const data = fullHist.slice(sliceStart, sliceEnd);
+    const baseOffset = sliceStart - (targetCrossIdx - preSamples) + (1 - refTrig.frac);
+
+    return {
+      triggered: true,
+      crossIdx: targetCrossIdx,
+      frac: refTrig.frac,
+      offsetFromEnd: refTrig.offsetFromEnd,
+      sliceStart,
+      sliceEnd,
+      data,
+      baseOffset,
+      preSamples,
+      denom,
+      isTriggerSource: false
+    };
+  }
+
+  // Dibuja los indicadores visuales del Trigger sobre el canvas (posición X fija de disparo y línea de Trigger Level)
+  drawTriggerOverlay(ctx, w, h, mapYV, trigWin, showLevelLine = true) {
+    if (!this.triggerEnabled || this.triggerSource === 'off' || !trigWin) return;
+
+    const trigX = (trigWin.preSamples / trigWin.denom) * w;
+    const yTrig = mapYV(this.triggerLevel);
+    const edgeArrow = this.triggerEdge === 'falling' ? '↓' : '↑';
+
+    ctx.save();
+
+    // 1. Guía vertical fija de posición X del Trigger
+    ctx.strokeStyle = trigWin.triggered ? 'rgba(249, 115, 22, 0.32)' : 'rgba(148, 163, 184, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath();
+    ctx.moveTo(trigX, 0);
+    ctx.lineTo(trigX, h);
+    ctx.stroke();
+
+    // 2. Línea horizontal de Trigger Level (si aplica a la escala vertical de este canal)
+    if (showLevelLine && yTrig >= 2 && yTrig <= h - 2) {
+      ctx.strokeStyle = trigWin.triggered ? 'rgba(249, 115, 22, 0.55)' : 'rgba(249, 115, 22, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(0, yTrig);
+      ctx.lineTo(w, yTrig);
+      ctx.stroke();
+
+      // Punto de anclaje exacto (trigX, yTrig) donde la onda cruza el Trigger Level
+      if (trigWin.triggered) {
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#f97316';
+        ctx.shadowColor = '#f97316';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(trigX, yTrig, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    // 3. Marcador superior [▼ T] en la coordenada X fija del Trigger
+    ctx.setLineDash([]);
+    ctx.fillStyle = trigWin.triggered ? '#f97316' : '#64748b';
+    ctx.beginPath();
+    ctx.moveTo(trigX - 5, 0);
+    ctx.lineTo(trigX + 5, 0);
+    ctx.lineTo(trigX, 6);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`T${edgeArrow}`, trigX + 6, 9);
+
+    ctx.restore();
+  }
+
   render(appState) {
+    this.syncTriggerUI(appState);
+
     if (!this.canvas || !this.ctx) {
       this.renderPinnedMonitors(appState);
       this.renderExpandedGraph(appState);
@@ -7348,8 +9259,40 @@ class Oscilloscope {
     ctx.setLineDash([]);
 
     const channels = this.getActiveChannels(appState);
-    const sliceStart = Math.max(0, this.history.length - this.viewSamples);
-    const visibleHistory = this.history.slice(sliceStart);
+
+    // Resolver canal de Trigger Source y buscar el último cruce del Trigger Level con la pendiente correcta
+    const rawTrigSource = this.stripChannelPrefix(this.triggerSource);
+    const trigChannel =
+      this.triggerSource === 'off' || !this.triggerEnabled
+        ? null
+        : channels.find(
+            (c) => c.id === this.triggerSource || c.compId === this.triggerSource || c.compId === rawTrigSource
+          ) || channels[0] || null;
+
+    const extTrigHist =
+      this.triggerSource !== 'auto' && this.triggerSource !== 'off'
+        ? this.compHistory.get(rawTrigSource)
+        : null;
+
+    const trigWin = this.findTriggerCrossing(this.history, (sample, idx) => {
+      if (!sample) return undefined;
+      if (trigChannel && sample.ch[trigChannel.id] !== undefined) {
+        return sample.ch[trigChannel.id].v;
+      }
+      if (extTrigHist && extTrigHist.length > 0) {
+        const extIdx = extTrigHist.length - (this.history.length - idx);
+        if (extIdx >= 0 && extIdx < extTrigHist.length) {
+          return extTrigHist[extIdx].v;
+        }
+      }
+      const firstCh = channels[0];
+      return firstCh && sample.ch[firstCh.id] !== undefined ? sample.ch[firstCh.id].v : undefined;
+    });
+
+    const visibleHistory = trigWin.data;
+    const baseOffset = trigWin.baseOffset;
+    const denom = trigWin.denom;
+    this.updateTriggerStatusBadge(trigWin.triggered);
 
     if (channels.length === 0 || visibleHistory.length < 2) {
       ctx.fillStyle = '#64748b';
@@ -7372,7 +9315,8 @@ class Oscilloscope {
     if (this.autoScale) {
       maxAbsV = 1.0;
       maxAbsI = 0.005;
-      for (const s of visibleHistory) {
+      const scaleSamples = this.history.slice(-Math.max(this.viewSamples, 1200));
+      for (const s of scaleSamples) {
         for (const ch of channels) {
           const val = s.ch[ch.id];
           if (val) {
@@ -7390,8 +9334,10 @@ class Oscilloscope {
     const scaleY = (h * 0.42) / Math.max(0.5, maxAbsV);
     const scaleI = (h * 0.38) / Math.max(1e-4, maxAbsI);
 
+    // Dibujar guías de Trigger (nivel horizontal y posición X fija del cruce)
+    this.drawTriggerOverlay(ctx, w, h, (v) => midY - v * scaleY, trigWin, true);
+
     const stats = [];
-    const denom = Math.max(1, this.viewSamples - 1);
 
     for (const ch of channels) {
       let vMin = Infinity;
@@ -7410,7 +9356,7 @@ class Oscilloscope {
       for (let i = 0; i < visibleHistory.length; i++) {
         const item = visibleHistory[i].ch[ch.id];
         if (!item) continue;
-        const x = (i / denom) * w;
+        const x = ((i + baseOffset) / denom) * w;
         const y = midY - item.v * scaleY;
         if (item.v < vMin) vMin = item.v;
         if (item.v > vMax) vMax = item.v;
@@ -7438,7 +9384,7 @@ class Oscilloscope {
         for (let i = 0; i < visibleHistory.length; i++) {
           const item = visibleHistory[i].ch[ch.id];
           if (!item) continue;
-          const x = (i / denom) * w;
+          const x = ((i + baseOffset) / denom) * w;
           const y = midY - item.i * scaleI;
           if (!startedI) {
             ctx.moveTo(x, y);
@@ -7472,11 +9418,11 @@ class Oscilloscope {
     if (this.hoverX !== null && visibleHistory.length > 1) {
       const idx = Math.min(
         visibleHistory.length - 1,
-        Math.max(0, Math.round((this.hoverX / w) * denom))
+        Math.max(0, Math.round((this.hoverX / w) * denom - baseOffset))
       );
       const sample = visibleHistory[idx];
       if (sample) {
-        const cx = (idx / denom) * w;
+        const cx = ((idx + baseOffset) / denom) * w;
         ctx.strokeStyle = 'rgba(248, 250, 252, 0.45)';
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -7508,11 +9454,15 @@ class Oscilloscope {
     const monitorIds = appState.getDisplayedMonitorIds
       ? appState.getDisplayedMonitorIds()
       : appState.pinnedMonitors || [];
-    if (!monitorIds || monitorIds.length === 0) return;
+    if (!monitorIds || monitorIds.length === 0) {
+      this.updateTriggerStatusBadge(false);
+      return;
+    }
 
     const dpr = window.devicePixelRatio || 1;
     const f = window.ProtoSim.formatSI;
     const numVisible = this.viewSamples;
+    let anyTriggered = false;
 
     for (const compId of monitorIds) {
       const canvas = document.getElementById(`pinCanvas_${compId}`);
@@ -7565,7 +9515,12 @@ class Oscilloscope {
 
       const midY = h / 2;
       const fullHist = this.compHistory.get(compId) || [];
-      const data = fullHist.slice(-numVisible);
+      const trigWin = this.getMonitorTriggeredWindow(compId, appState);
+      const data = trigWin.data;
+      const baseOffset = trigWin.baseOffset;
+      const denom = trigWin.denom;
+      if (trigWin.triggered) anyTriggered = true;
+
       if (data.length < 2) {
         ctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
         ctx.setLineDash([3, 3]);
@@ -7585,6 +9540,14 @@ class Oscilloscope {
       let iMax = -Infinity;
       let sumSqV = 0;
 
+      // Escala vertical estabilizada para evitar saltos de amplitud al hacer zoom horizontal en un flanco
+      const scaleWindow = fullHist.slice(-Math.max(numVisible, 1200));
+      for (const pt of scaleWindow) {
+        if (pt.v < vMin) vMin = pt.v;
+        if (pt.v > vMax) vMax = pt.v;
+        if (pt.i < iMin) iMin = pt.i;
+        if (pt.i > iMax) iMax = pt.i;
+      }
       for (const pt of data) {
         if (pt.v < vMin) vMin = pt.v;
         if (pt.v > vMax) vMax = pt.v;
@@ -7643,18 +9606,27 @@ class Oscilloscope {
         ctx.setLineDash([]);
       }
 
-      const denom = Math.max(1, numVisible - 1);
+      // Indicador visual de Trigger (posición X fija y nivel de cruce)
+      this.drawTriggerOverlay(ctx, w, h, mapYV, trigWin, trigWin.isTriggerSource);
 
-      // Curva de Corriente I(t) (Amarillo punteado, solo en componentes y cables)
+      const preferCurrent = !isNodeMonitor && appState?.monitorModes?.get(compId) === 'current';
+
+      // Curva de Corriente I(t) (Amarillo: continuo principal si se fijó con Alt+Clic, o punteado secundario)
       if (!isNodeMonitor) {
         ctx.save();
         ctx.strokeStyle = '#facc15';
-        ctx.globalAlpha = 0.75;
-        ctx.lineWidth = 1.45;
-        ctx.setLineDash([3, 3]);
+        if (preferCurrent) {
+          ctx.shadowColor = '#eab308';
+          ctx.shadowBlur = 6;
+          ctx.lineWidth = 2.2;
+        } else {
+          ctx.globalAlpha = 0.75;
+          ctx.lineWidth = 1.45;
+          ctx.setLineDash([3, 3]);
+        }
         ctx.beginPath();
         for (let i = 0; i < data.length; i++) {
-          const x = (i / denom) * w;
+          const x = ((i + baseOffset) / denom) * w;
           const y = mapYI(data[i].i);
           if (i === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
@@ -7663,15 +9635,21 @@ class Oscilloscope {
         ctx.restore();
       }
 
-      // Curva de Tensión V(t) (Verde neón continuo)
+      // Curva de Tensión V(t) (Verde neón: continuo principal o punteado secundario si se prioriza corriente)
       ctx.save();
       ctx.strokeStyle = '#00ff9d';
-      ctx.shadowColor = '#10b981';
-      ctx.shadowBlur = 6;
-      ctx.lineWidth = 2.1;
+      if (preferCurrent) {
+        ctx.globalAlpha = 0.68;
+        ctx.lineWidth = 1.45;
+        ctx.setLineDash([3, 3]);
+      } else {
+        ctx.shadowColor = '#10b981';
+        ctx.shadowBlur = 6;
+        ctx.lineWidth = 2.1;
+      }
       ctx.beginPath();
       for (let i = 0; i < data.length; i++) {
-        const x = (i / denom) * w;
+        const x = ((i + baseOffset) / denom) * w;
         const y = mapYV(data[i].v);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
@@ -7706,11 +9684,11 @@ class Oscilloscope {
       let displayPt = lastPt;
       const hx = this.pinHoverX.get(compId);
       if (hx !== undefined && hx >= 0 && hx <= w) {
-        const idx = Math.min(data.length - 1, Math.max(0, Math.round((hx / w) * denom)));
+        const idx = Math.min(data.length - 1, Math.max(0, Math.round((hx / w) * denom - baseOffset)));
         const hPt = data[idx];
         if (hPt) {
           displayPt = hPt;
-          const cx = (idx / denom) * w;
+          const cx = ((idx + baseOffset) / denom) * w;
           const cyV = mapYV(hPt.v);
 
           ctx.save();
@@ -7749,13 +9727,15 @@ class Oscilloscope {
 
       ctx.restore();
     }
+
+    this.updateTriggerStatusBadge(anyTriggered);
   }
 
   // Posiciona automáticamente Cursor A en el mínimo y Cursor B en el máximo de la ventana visible
   autoPlaceCursorsMinMax(compId) {
     if (!compId) return;
-    const fullHist = this.compHistory.get(compId) || [];
-    const data = fullHist.slice(-this.viewSamples);
+    const trigWin = this.getMonitorTriggeredWindow(compId, this._lastAppState);
+    const data = trigWin.data;
     if (data.length < 2) return;
 
     let minIdx = 0;
@@ -7779,8 +9759,8 @@ class Oscilloscope {
   // Posiciona automáticamente Cursor A al inicio del último flanco/escalón y Cursor B al 63.21% (1 constante de tiempo τ)
   autoPlaceCursorsTau(compId) {
     if (!compId) return;
-    const fullHist = this.compHistory.get(compId) || [];
-    const data = fullHist.slice(-this.viewSamples);
+    const trigWin = this.getMonitorTriggeredWindow(compId, this._lastAppState);
+    const data = trigWin.data;
     if (data.length < 4) return;
 
     // Buscar el punto donde arranca la mayor variación (inicio de escalón exponencial)
@@ -7976,7 +9956,10 @@ class Oscilloscope {
     ctx.stroke();
 
     const fullHist = this.compHistory.get(compId) || [];
-    const data = fullHist.slice(-this.viewSamples);
+    const trigWin = this.getMonitorTriggeredWindow(compId, appState);
+    const data = trigWin.data;
+    const baseOffset = trigWin.baseOffset;
+    const denom = trigWin.denom;
     if (data.length < 2) {
       ctx.restore();
       return;
@@ -7988,6 +9971,13 @@ class Oscilloscope {
     let iMin = Infinity;
     let iMax = -Infinity;
 
+    const scaleWindow = fullHist.slice(-Math.max(this.viewSamples, 1200));
+    for (const pt of scaleWindow) {
+      if (pt.v < vMin) vMin = pt.v;
+      if (pt.v > vMax) vMax = pt.v;
+      if (pt.i < iMin) iMin = pt.i;
+      if (pt.i > iMax) iMax = pt.i;
+    }
     for (const pt of data) {
       if (pt.v < vMin) vMin = pt.v;
       if (pt.v > vMax) vMax = pt.v;
@@ -8043,7 +10033,8 @@ class Oscilloscope {
       ctx.setLineDash([]);
     }
 
-    const denom = Math.max(1, data.length - 1);
+    // Indicador visual de Trigger en el analizador ampliado
+    this.drawTriggerOverlay(ctx, w, h, mapYV, trigWin, trigWin.isTriggerSource);
 
     // Curva de Corriente I(t)
     if (!isNodeMonitor) {
@@ -8054,7 +10045,7 @@ class Oscilloscope {
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
       for (let i = 0; i < data.length; i++) {
-        const x = (i / denom) * w;
+        const x = ((i + baseOffset) / denom) * w;
         const y = mapYI(data[i].i);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
@@ -8071,7 +10062,7 @@ class Oscilloscope {
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     for (let i = 0; i < data.length; i++) {
-      const x = (i / denom) * w;
+      const x = ((i + baseOffset) / denom) * w;
       const y = mapYV(data[i].v);
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
@@ -8091,13 +10082,13 @@ class Oscilloscope {
 
     // Dibujar Cursores Interactivos A (T1) y B (T2) para medir Δt (ms), ΔV, ΔI, 1/Δt y Pendiente
     if (this.cursorsEnabled) {
-      const idxA = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorA * denom)));
-      const idxB = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorB * denom)));
+      const idxA = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorA * denom - baseOffset)));
+      const idxB = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorB * denom - baseOffset)));
       const ptA = data[idxA];
       const ptB = data[idxB];
 
-      const xA = (idxA / denom) * w;
-      const xB = (idxB / denom) * w;
+      const xA = ((idxA + baseOffset) / denom) * w;
+      const xB = ((idxB + baseOffset) / denom) * w;
 
       let v1 = ptA.v;
       let v2 = ptB.v;
@@ -8257,8 +10248,8 @@ class Oscilloscope {
 window.ProtoSim.Oscilloscope = Oscilloscope;
 window.ProtoSim.CHANNEL_COLORS = CHANNEL_COLORS;
 
-
-// === examples.js ===
+</script>
+  <script>
 // ============================================================================
 // PROTO-SIM: Circuitos de Ejemplo Precargados
 // ============================================================================
@@ -8550,8 +10541,8 @@ const EXAMPLE_CIRCUITS = {
 
 window.ProtoSim.EXAMPLE_CIRCUITS = EXAMPLE_CIRCUITS;
 
-
-// === app.js ===
+</script>
+  <script>
 // ============================================================================
 // PROTO-SIM: Controlador Principal de Interfaz, Secciones, Resizer y Atajos
 // ============================================================================
@@ -8586,6 +10577,7 @@ class ProtoSimApp {
     this.boxSelectBaseWires = new Set();
     this.probedComponents = new Map();
     this.pinnedMonitors = [];
+    this.monitorModes = new Map();
     this.graphSizeClass = 'size-md';
     this.leftPanelWidth = 245;
     this.rightPanelWidth = 340;
@@ -8593,7 +10585,11 @@ class ProtoSimApp {
     this.expandedDockHeight = 350;
 
     this.hoverGrid = { gx: 0, gy: 0 };
+    this.hoverWorld = { wx: 0, wy: 0 };
     this.hoveredPin = null;
+    this.hoveredComponent = null;
+    this.hoveredWire = null;
+    this.altKeyPressed = false;
     this.wiringStart = null;
 
     this.isDraggingComp = false;
@@ -8683,6 +10679,9 @@ class ProtoSimApp {
     window.addEventListener('resize', () => {
       this.renderer.resize();
       this.oscilloscope.resize();
+      if (document.getElementById('bodeModal')?.classList.contains('visible')) {
+        this.renderBodePlot();
+      }
     });
 
     // Pestañas de categorías
@@ -8825,6 +10824,17 @@ class ProtoSimApp {
     // Botones de barra flotante inferior
     document.getElementById('btnToolSelect').addEventListener('click', () => this.setActiveTool(null));
     document.getElementById('btnToolWire').addEventListener('click', () => this.setActiveTool('wire'));
+    document.getElementById('btnToolProbe')?.addEventListener('click', () => {
+      this.setActiveTool(this.activeTool === 'probe' ? null : 'probe');
+    });
+    document.getElementById('btnToggleProMode')?.addEventListener('click', (e) => {
+      this.renderer.proMode = !this.renderer.proMode;
+      this.renderer.showCurrentDots = !this.renderer.proMode;
+      e.currentTarget.classList.toggle('btn-active', this.renderer.proMode);
+    });
+    document.getElementById('btnBodePlot')?.addEventListener('click', () => {
+      this.runBodePlotSweep();
+    });
     document.getElementById('btnRotate').addEventListener('click', () => this.rotateSelectedOrTool());
     document.getElementById('btnDuplicate')?.addEventListener('click', () => this.duplicateSelected());
     document.getElementById('btnDelete').addEventListener('click', () => this.deleteSelected());
@@ -8923,6 +10933,9 @@ class ProtoSimApp {
     opModal?.addEventListener('click', (e) => {
       if (e.target === opModal) this.closeOperatingPoint();
     });
+
+    // Modal de Diagrama de Bode Interactivo (Análisis AC)
+    this.initBodeModalEvents();
   }
 
   // Divisores arrastrables para la barra izquierda (Catálogo), barra derecha (Inspector) y gráfico expandido superior
@@ -9243,15 +11256,23 @@ class ProtoSimApp {
     for (const cid of this.pinnedMonitors) {
       const isValidComp = this.components.some((c) => c.id === cid);
       const isValidNode = typeof cid === 'string' && cid.startsWith('node_');
-      if (!ids.includes(cid) && (isValidComp || isValidNode)) {
+      const isValidWire =
+        typeof cid === 'string' &&
+        cid.startsWith('wire_') &&
+        Number(cid.slice(5)) >= 0 &&
+        Number(cid.slice(5)) < this.wires.length;
+      if (!ids.includes(cid) && (isValidComp || isValidNode || isValidWire)) {
         ids.push(cid);
       }
     }
     return ids;
   }
 
-  // Gestión de gráficos múltiples en el panel derecho (tanto componentes como nodos)
-  addPinnedMonitor(compId, exclusive = false) {
+  // Gestión de gráficos múltiples en el panel derecho (tanto componentes como nodos y cables)
+  addPinnedMonitor(compId, exclusive = false, options = {}) {
+    if (options && options.preferCurrent !== undefined) {
+      this.monitorModes.set(compId, options.preferCurrent ? 'current' : 'default');
+    }
     if (exclusive) {
       this.pinnedMonitors = [compId];
     } else if (!this.pinnedMonitors.includes(compId)) {
@@ -9264,6 +11285,7 @@ class ProtoSimApp {
 
   removePinnedMonitor(compId) {
     this.pinnedMonitors = this.pinnedMonitors.filter((id) => id !== compId);
+    this.monitorModes.delete(compId);
     this.renderPinnedMonitorsDOM();
     this.renderCircuitFinder();
     this.updateInspector();
@@ -9289,7 +11311,10 @@ class ProtoSimApp {
     if (!listEl) return;
 
     this.pinnedMonitors = this.pinnedMonitors.filter(
-      (id) => (typeof id === 'string' && id.startsWith('node_')) || this.components.some((c) => c.id === id)
+      (id) =>
+        (typeof id === 'string' && id.startsWith('node_')) ||
+        (typeof id === 'string' && id.startsWith('wire_') && Number(id.slice(5)) < this.wires.length) ||
+        this.components.some((c) => c.id === id)
     );
     const monitorIds = this.getDisplayedMonitorIds();
     listEl.classList.toggle('two-cols', this.rightPanelWidth >= 520 && monitorIds.length >= 2);
@@ -9347,13 +11372,19 @@ class ProtoSimApp {
         }
 
         if (mId.startsWith('wire_')) {
+          const isPinned = this.pinnedMonitors.includes(mId);
+          const preferI = this.monitorModes.get(mId) === 'current';
+          const legendHtml = preferI
+            ? `<span style="color:#facc15;font-weight:700;">―I(t)</span> <span style="color:#00ff9d;opacity:0.75;">--V</span>`
+            : `<span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span>`;
           return `
             <div class="inspector-scope-card" data-monitor-id="${mId}" title="Doble clic para ampliar este gráfico arriba y medir ΔV / Δt con cursores">
               <div class="inspector-scope-header">
                 <span>Cable Conductor</span>
                 <div style="display:flex;align-items:center;gap:5px;">
-                  <span style="font-size:9.5px;color:#94a3b8;"><span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span></span>
+                  <span style="font-size:9.5px;color:#94a3b8;">${legendHtml}</span>
                   <button class="pinned-graph-close" data-expand-monitor="${mId}" title="Ampliar gráfico en panel superior con cursores (Doble clic)">Ampliar</button>
+                  ${isPinned ? `<button class="pinned-graph-close" data-close-monitor="${mId}" title="Quitar gráfico de cable fijado">✕</button>` : ''}
                 </div>
               </div>
               <div class="inspector-scope-canvas-wrap ${this.graphSizeClass}">
@@ -9373,6 +11404,10 @@ class ProtoSimApp {
         if (!comp) return '';
         const def = window.ProtoSim.COMPONENT_LIBRARY[comp.type];
         const isPinned = this.pinnedMonitors.includes(comp.id);
+        const preferI = this.monitorModes.get(comp.id) === 'current';
+        const legendHtml = preferI
+          ? `<span style="color:#facc15;font-weight:700;">―I(t)</span> <span style="color:#00ff9d;opacity:0.75;">--V</span>`
+          : `<span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span>`;
         return `
           <div class="inspector-scope-card" data-monitor-id="${comp.id}" title="Doble clic para ampliar este gráfico arriba y medir ΔV / Δt con cursores">
             <div class="inspector-scope-header">
@@ -9380,7 +11415,7 @@ class ProtoSimApp {
                 ${comp.name} <span style="font-weight:400;color:#94a3b8;">(${def?.name || comp.type})</span>
               </span>
               <div style="display:flex;align-items:center;gap:5px;">
-                <span style="font-size:9.5px;color:#94a3b8;"><span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span></span>
+                <span style="font-size:9.5px;color:#94a3b8;">${legendHtml}</span>
                 <button class="pinned-graph-close" data-expand-monitor="${comp.id}" title="Ampliar gráfico en panel superior con cursores (Doble clic)">Ampliar</button>
                 ${isPinned ? `<button class="pinned-graph-close" data-close-monitor="${comp.id}" title="Quitar de comparativa">✕</button>` : ''}
               </div>
@@ -9651,8 +11686,22 @@ class ProtoSimApp {
     this.activeTool = tool;
     this.wiringStart = null;
 
-    document.getElementById('btnToolSelect').classList.toggle('btn-active', tool === null);
-    document.getElementById('btnToolWire').classList.toggle('btn-active', tool === 'wire');
+    document.getElementById('btnToolSelect')?.classList.toggle('btn-active', tool === null);
+    document.getElementById('btnToolWire')?.classList.toggle('btn-active', tool === 'wire');
+    document.getElementById('btnToolProbe')?.classList.toggle('btn-active', tool === 'probe');
+
+    if (this.canvas) {
+      if (tool === 'probe') {
+        const probeCursorSvg = encodeURIComponent(
+          `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M2 2 L9 9" stroke="#f8fafc" stroke-width="2" stroke-linecap="round"/><polygon points="8,11 11,8 20,17 17,20" fill="#ef4444" stroke="#0f172a" stroke-width="1.2"/><circle cx="2" cy="2" r="1.5" fill="#38bdf8"/></svg>`
+        );
+        this.canvas.style.cursor = `url("data:image/svg+xml,${probeCursorSvg}") 2 2, crosshair`;
+      } else if (tool === 'wire') {
+        this.canvas.style.cursor = 'crosshair';
+      } else {
+        this.canvas.style.cursor = '';
+      }
+    }
 
     document.querySelectorAll('.comp-card').forEach((card) => {
       card.classList.toggle('selected-tool', card.dataset.type === tool);
@@ -9674,6 +11723,8 @@ class ProtoSimApp {
       const { sx, sy } = getCanvasCoords(e);
       const world = this.renderer.screenToWorld(sx, sy);
       this.hoverGrid = { gx: world.gx, gy: world.gy };
+      this.hoverWorld = { wx: world.wx, wy: world.wy };
+      this.altKeyPressed = Boolean(e.altKey);
 
       if (this.isPanning) {
         this.renderer.camX = this.panStartCam.x - (sx - this.panStartMouse.x) / this.renderer.zoom;
@@ -9723,11 +11774,55 @@ class ProtoSimApp {
 
       this.hoveredPin = this.findPinNearWorld(world.wx, world.wy, 13);
       this.hoveredNodeKey = this.findWireNodeNearWorld(world.wx, world.wy, 12);
+      if (this.activeTool === 'probe') {
+        this.hoveredComponent = this.findComponentAtWorld(world.wx, world.wy);
+        this.hoveredWire = this.findWireAtWorld(world.wx, world.wy);
+      } else {
+        this.hoveredComponent = null;
+        this.hoveredWire = null;
+      }
     });
 
     this.canvas.addEventListener('mousedown', (e) => {
       const { sx, sy } = getCanvasCoords(e);
       const world = this.renderer.screenToWorld(sx, sy);
+      this.altKeyPressed = Boolean(e.altKey);
+
+      // Modo Sonda ('probe' - Estilo LTSpice): clic izquierdo mide nodo/pin, componente o cable (Alt+Clic prioriza corriente)
+      if (e.button === 0 && this.activeTool === 'probe') {
+        const pinHitProbe = this.findPinNearWorld(world.wx, world.wy, 12);
+        const nodeKeyHitProbe = this.findWireNodeNearWorld(world.wx, world.wy, 12);
+        const compHitProbe = this.findComponentAtWorld(world.wx, world.wy);
+        const wireHitProbe = this.findWireAtWorld(world.wx, world.wy);
+
+        if (!e.altKey && (pinHitProbe || nodeKeyHitProbe)) {
+          const nodoKey = nodeKeyHitProbe || `${pinHitProbe.gx},${pinHitProbe.gy}`;
+          this.addPinnedMonitor('node_' + nodoKey, false, { preferCurrent: false });
+          return;
+        }
+        if (compHitProbe && compHitProbe.type !== 'gnd') {
+          this.addPinnedMonitor(compHitProbe.id, false, { preferCurrent: Boolean(e.altKey) });
+          return;
+        }
+        if (pinHitProbe || nodeKeyHitProbe) {
+          const nodoKey = nodeKeyHitProbe || `${pinHitProbe.gx},${pinHitProbe.gy}`;
+          this.addPinnedMonitor('node_' + nodoKey, false, { preferCurrent: false });
+          return;
+        }
+        if (wireHitProbe) {
+          if (e.altKey) {
+            const wIdx = this.wires.indexOf(wireHitProbe);
+            if (wIdx >= 0) {
+              this.addPinnedMonitor(`wire_${wIdx}`, false, { preferCurrent: true });
+            }
+          } else {
+            const nodoKey = `${wireHitProbe.gx1},${wireHitProbe.gy1}`;
+            this.addPinnedMonitor('node_' + nodoKey, false, { preferCurrent: false });
+          }
+          return;
+        }
+        return;
+      }
 
       if (e.button === 1 || e.button === 2 || (e.button === 0 && e.altKey)) {
         if ((e.button === 1 || e.button === 2) && (this.wiringStart || this.activeTool)) {
@@ -9744,7 +11839,7 @@ class ProtoSimApp {
       const isMultiMod = Boolean(e.ctrlKey || e.metaKey || e.shiftKey);
 
       // 1. Si estamos colocando un componente nuevo desde la paleta
-      if (this.activeTool && this.activeTool !== 'wire') {
+      if (this.activeTool && this.activeTool !== 'wire' && this.activeTool !== 'probe') {
         this.saveUndoSnapshot();
         this.placeComponent(this.activeTool, world.gx, world.gy, this.toolRotation);
         if (!e.shiftKey) {
@@ -9924,6 +12019,7 @@ class ProtoSimApp {
     window.addEventListener(
       'keyup',
       (e) => {
+        this.altKeyPressed = Boolean(e.altKey);
         if (e.code === 'Space' || e.key === ' ') {
           if (!isTypingInTextInput(e.target)) {
             e.preventDefault();
@@ -9937,6 +12033,7 @@ class ProtoSimApp {
     window.addEventListener(
       'keydown',
       (e) => {
+        this.altKeyPressed = Boolean(e.altKey);
         // ESPACIO EXCLUSIVO PARA START/STOP (salvo cuando se escribe texto en un buscador o input numérico)
         if (e.code === 'Space' || e.key === ' ') {
           if (!isTypingInTextInput(e.target)) {
@@ -10085,10 +12182,14 @@ class ProtoSimApp {
         return;
       }
 
-      // P -> Tabla de Punto de Operación DC (.op)
+      // P -> Herramienta Medir / Sonda interactiva (Shift+P -> Tabla de Punto de Operación DC .op)
       if (keyLower === 'p' && !e.ctrlKey) {
         e.preventDefault();
-        this.toggleOperatingPoint();
+        if (e.shiftKey) {
+          this.toggleOperatingPoint();
+        } else {
+          this.setActiveTool(this.activeTool === 'probe' ? null : 'probe');
+        }
         return;
       }
 
@@ -10131,6 +12232,7 @@ class ProtoSimApp {
       if (e.key === 'Escape') {
         document.getElementById('shortcutsModal')?.classList.remove('visible');
         this.closeOperatingPoint();
+        this.closeBodeModal();
         this.wiringStart = null;
         this.setActiveTool(null);
         return;
@@ -12596,6 +14698,628 @@ class ProtoSimApp {
     }
   }
 
+  initBodeModalEvents() {
+    const bodeModal = document.getElementById('bodeModal');
+    const closeBtn = document.getElementById('btnCloseBodeModal');
+    const recalcBtn = document.getElementById('btnRecalcBode');
+    const fMinInput = document.getElementById('bodeFMin');
+    const fMaxInput = document.getElementById('bodeFMax');
+    const ptsSelect = document.getElementById('bodePtsDec');
+    const yAxisSelect = document.getElementById('bodeYAxisMode');
+    const bodeCanvas = document.getElementById('bodeCanvas');
+
+    closeBtn?.addEventListener('click', () => this.closeBodeModal());
+    bodeModal?.addEventListener('click', (e) => {
+      if (e.target === bodeModal) this.closeBodeModal();
+    });
+
+    const triggerRecalc = () => {
+      const fMin = Math.max(0.01, parseFloat(fMinInput?.value) || 1);
+      const fMax = Math.max(fMin * 2, parseFloat(fMaxInput?.value) || 100000);
+      const pts = Math.max(5, parseInt(ptsSelect?.value, 10) || 20);
+      this.runBodePlotSweep(fMin, fMax, pts);
+    };
+
+    recalcBtn?.addEventListener('click', triggerRecalc);
+    fMinInput?.addEventListener('change', triggerRecalc);
+    fMaxInput?.addEventListener('change', triggerRecalc);
+    ptsSelect?.addEventListener('change', triggerRecalc);
+    yAxisSelect?.addEventListener('change', () => {
+      const readout = document.getElementById('bodeCursorReadout');
+      if (readout && typeof this._bodeHoverX !== 'number') {
+        const isLin = yAxisSelect.value === 'linear';
+        readout.textContent = isLin
+          ? 'Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Tensión (V) y Fase (°)'
+          : 'Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Magnitud (dB) y Fase (°)';
+      }
+      this.renderBodePlot();
+    });
+
+    if (bodeCanvas) {
+      bodeCanvas.addEventListener('mousemove', (e) => {
+        const rect = bodeCanvas.getBoundingClientRect();
+        this._bodeHoverX = e.clientX - rect.left;
+        this._bodeHoverY = e.clientY - rect.top;
+        this.renderBodePlot();
+      });
+
+      bodeCanvas.addEventListener('mouseleave', () => {
+        this._bodeHoverX = null;
+        this._bodeHoverY = null;
+        const readout = document.getElementById('bodeCursorReadout');
+        if (readout) {
+          const isLin = document.getElementById('bodeYAxisMode')?.value === 'linear';
+          readout.textContent = isLin
+            ? 'Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Tensión (V) y Fase (°)'
+            : 'Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Magnitud (dB) y Fase (°)';
+        }
+        this.renderBodePlot();
+      });
+    }
+  }
+
+  openBodeModal() {
+    const bodeModal = document.getElementById('bodeModal');
+    if (!bodeModal) return;
+    bodeModal.classList.add('visible');
+    requestAnimationFrame(() => {
+      this.renderBodePlot();
+    });
+  }
+
+  closeBodeModal() {
+    document.getElementById('bodeModal')?.classList.remove('visible');
+  }
+
+  runBodePlotSweep(fMin = null, fMax = null, pointsPerDecade = null) {
+    const fMinEl = document.getElementById('bodeFMin');
+    const fMaxEl = document.getElementById('bodeFMax');
+    const ptsEl = document.getElementById('bodePtsDec');
+
+    const effFMin = fMin !== null ? fMin : Math.max(0.01, parseFloat(fMinEl?.value) || 1);
+    const effFMax = fMax !== null ? fMax : Math.max(effFMin * 2, parseFloat(fMaxEl?.value) || 100000);
+    const effPts = pointsPerDecade !== null ? pointsPerDecade : Math.max(5, parseInt(ptsEl?.value, 10) || 20);
+
+    if (fMinEl) fMinEl.value = String(effFMin);
+    if (fMaxEl) fMaxEl.value = String(effFMax);
+    if (ptsEl) ptsEl.value = String(effPts);
+
+    const extraTargets = this.getDisplayedMonitorIds ? this.getDisplayedMonitorIds() : this.pinnedMonitors || [];
+    const sweep = this.solver.runACSweep(this.components, this.wires, effFMin, effFMax, effPts, extraTargets);
+    this._lastBodeSweep = sweep;
+
+    if (!sweep || sweep.length === 0) {
+      console.warn('[Bode Plot AC] No se pudo ejecutar el barrido AC: circuito vacío o sin nodos activos.');
+      this.showToast('Agregá una fuente AC y una sonda para correr el Análisis AC');
+      return sweep;
+    }
+
+    const probes = sweep.probes || [];
+    const firstProbe = probes[0];
+    console.log(
+      `%c=== ANÁLISIS AC (BODE SWEEP): ${effFMin} Hz → ${effFMax} Hz (${effPts} pts/década) ===`,
+      'color:#38bdf8;font-weight:bold;font-size:12px;'
+    );
+    console.log('Fuente de estímulo AC (1∠0° V):', sweep.stimulus || 'Auto');
+    for (const p of probes) {
+      const fcInfo = p.cutoffHz ? ` | Frecuencia de corte (-3 dB): ${p.cutoffHz.toFixed(2)} Hz` : '';
+      console.log(`Sonda / Nodo medido: ${p.label} [Nodo ${p.nodeKey}]${fcInfo}`);
+    }
+    console.table(sweep);
+
+    // Actualizar encabezados del modal y abrir el Diagrama de Bode interactivo
+    const stimBadge = document.getElementById('bodeStimulusBadge');
+    if (stimBadge) {
+      stimBadge.textContent = `Estímulo AC: ${sweep.stimulus || 'Auto'} (1∠0° V)`;
+    }
+    const summaryEl = document.getElementById('bodeTraceSummary');
+    if (summaryEl) {
+      if (probes.length > 0) {
+        const desc = probes
+          .map((p) => {
+            const fcTxt = p.cutoffHz ? ` [fc ≈ ${window.ProtoSim.formatSI(p.cutoffHz, 'Hz', 2)}]` : '';
+            return `${p.label} (Nodo ${p.nodeKey})${fcTxt}`;
+          })
+          .join(' • ');
+        summaryEl.textContent = `Trazas: ${desc}`;
+      } else {
+        summaryEl.textContent = 'Sin sondas activas';
+      }
+    }
+
+    this.openBodeModal();
+
+    if (firstProbe && firstProbe.cutoffHz) {
+      this.showToast(
+        `Diagrama de Bode AC • fc (-3dB) ≈ ${window.ProtoSim.formatSI(firstProbe.cutoffHz, 'Hz', 2)}`
+      );
+    } else {
+      this.showToast(`Diagrama de Bode AC (${sweep.length} puntos calculados)`);
+    }
+
+    return sweep;
+  }
+
+  renderBodePlot() {
+    const canvas = document.getElementById('bodeCanvas');
+    if (!canvas) return;
+    const rect = canvas.parentElement?.getBoundingClientRect();
+    const width = Math.max(320, Math.floor(rect?.width || 800));
+    const height = Math.max(240, Math.floor(rect?.height || 460));
+
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.floor(width * dpr) || canvas.height !== Math.floor(height * dpr)) {
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+    }
+
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    ctx.scale(dpr, dpr);
+
+    // Fondo oscuro estilo analizador de espectro / Bode
+    ctx.fillStyle = '#050811';
+    ctx.fillRect(0, 0, width, height);
+
+    const sweep = this._lastBodeSweep;
+    const freqs = sweep?.frequencies || [];
+    const probes = sweep?.probes || [];
+
+    if (!sweep || freqs.length < 2 || probes.length === 0) {
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '13px "Inter", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        'No hay datos de barrido AC para graficar. Colocá una Fuente AC y una Sonda o componente en el circuito.',
+        width / 2,
+        height / 2
+      );
+      ctx.restore();
+      return;
+    }
+
+    // Márgenes del área de trazado
+    const padLeft = 66;
+    const padRight = 66;
+    const padTop = 36;
+    const padBottom = 46;
+    const plotW = Math.max(100, width - padLeft - padRight);
+    const plotH = Math.max(100, height - padTop - padBottom);
+
+    const fMin = freqs[0];
+    const fMax = freqs[freqs.length - 1];
+    const logMin = Math.log10(fMin);
+    const logMax = Math.log10(fMax);
+    const logSpan = Math.max(1e-6, logMax - logMin);
+
+    const yAxisMode = document.getElementById('bodeYAxisMode')?.value || 'db';
+    const isLinearMode = yAxisMode === 'linear';
+
+    // Determinar rango del eje Y izquierdo: Magnitud (dB) o Tensión Lineal (V)
+    let minDbData = 0;
+    let maxDbData = 0;
+    let maxLinData = 0;
+    for (const tr of probes) {
+      for (const db of tr.magnitudesDb || []) {
+        if (Number.isFinite(db)) {
+          if (db < minDbData) minDbData = db;
+          if (db > maxDbData) maxDbData = db;
+        }
+      }
+      for (const v of tr.magnitudesLinear || []) {
+        if (Number.isFinite(v) && v > maxLinData) {
+          maxLinData = v;
+        }
+      }
+    }
+
+    let dbMax = Math.ceil((maxDbData + 4) / 10) * 10;
+    let dbMin = Math.floor((minDbData - 4) / 10) * 10;
+    if (dbMax < 10) dbMax = 10;
+    if (dbMin > -40) dbMin = -40;
+    if (dbMin < -100) dbMin = -100;
+    if (dbMax - dbMin < 30) dbMin = dbMax - 40;
+    const dbSpan = Math.max(10, dbMax - dbMin);
+
+    // Escala para modo Tensión Lineal (V)
+    const vMin = 0;
+    const rawVMax = maxLinData > 1e-6 ? maxLinData * 1.12 : 1.0;
+    let vStep = 0.2;
+    if (rawVMax <= 0.12) vStep = 0.02;
+    else if (rawVMax <= 0.3) vStep = 0.05;
+    else if (rawVMax <= 0.6) vStep = 0.1;
+    else if (rawVMax <= 1.5) vStep = 0.2;
+    else if (rawVMax <= 3.0) vStep = 0.5;
+    else if (rawVMax <= 7.0) vStep = 1.0;
+    else if (rawVMax <= 15.0) vStep = 2.0;
+    else vStep = Math.ceil(rawVMax / 6);
+    const vMax = Math.max(vStep * 2, Math.ceil(rawVMax / vStep) * vStep);
+    const vSpan = Math.max(1e-6, vMax - vMin);
+
+    // Determinar rango del eje Y derecho: Fase (grados)
+    let minPhData = 0;
+    let maxPhData = 0;
+    for (const tr of probes) {
+      for (const ph of tr.phasesDeg || []) {
+        if (Number.isFinite(ph)) {
+          if (ph < minPhData) minPhData = ph;
+          if (ph > maxPhData) maxPhData = ph;
+        }
+      }
+    }
+    const useFullPhase = minPhData < -95 || maxPhData > 95;
+    const phMin = useFullPhase ? -180 : -90;
+    const phMax = useFullPhase ? 180 : 90;
+    const phStep = useFullPhase ? 45 : 30;
+    const phSpan = phMax - phMin;
+
+    // Funciones de mapeo a coordenadas de pantalla
+    const freqToX = (f) => padLeft + ((Math.log10(Math.max(fMin, f)) - logMin) / logSpan) * plotW;
+    const xToFreq = (x) => Math.pow(10, logMin + ((x - padLeft) / plotW) * logSpan);
+    const dbToY = (db) => {
+      const clamped = Math.max(dbMin, Math.min(dbMax, db));
+      return padTop + ((dbMax - clamped) / dbSpan) * plotH;
+    };
+    const linToY = (v) => {
+      const clamped = Math.max(vMin, Math.min(vMax, v));
+      return padTop + ((vMax - clamped) / vSpan) * plotH;
+    };
+    const phaseToY = (deg) => {
+      const clamped = Math.max(phMin, Math.min(phMax, deg));
+      return padTop + ((phMax - clamped) / phSpan) * plotH;
+    };
+
+    const formatFreq = (hz) => {
+      if (hz >= 1e6) return `${+(hz / 1e6).toPrecision(3)} MHz`;
+      if (hz >= 1e3) return `${+(hz / 1e3).toPrecision(3)} kHz`;
+      if (hz >= 1) return `${+hz.toPrecision(3)} Hz`;
+      return `${hz.toFixed(2)} Hz`;
+    };
+
+    // 1. GRILLA LOGARÍTMICA VERTICAL (Eje X: Frecuencia)
+    const startExp = Math.floor(logMin);
+    const endExp = Math.ceil(logMax);
+
+    ctx.lineWidth = 1;
+    for (let exp = startExp; exp <= endExp; exp++) {
+      const baseFreq = Math.pow(10, exp);
+      // Líneas secundarias (2..9 * 10^exp)
+      for (let m = 2; m <= 9; m++) {
+        const subFreq = m * baseFreq;
+        if (subFreq < fMin || subFreq > fMax) continue;
+        const x = freqToX(subFreq);
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
+        ctx.beginPath();
+        ctx.moveTo(x, padTop);
+        ctx.lineTo(x, padTop + plotH);
+        ctx.stroke();
+      }
+
+      // Línea principal de década (10^exp)
+      if (baseFreq >= fMin * 0.999 && baseFreq <= fMax * 1.001) {
+        const x = freqToX(baseFreq);
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.24)';
+        ctx.beginPath();
+        ctx.moveTo(x, padTop);
+        ctx.lineTo(x, padTop + plotH);
+        ctx.stroke();
+
+        // Etiqueta de década en el eje X
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '11px "JetBrains Mono", Consolas, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(formatFreq(baseFreq), x, padTop + plotH + 18);
+      }
+    }
+
+    // 2. GRILLA HORIZONTAL Y EJES Y (Izquierdo: Magnitud dB o Tensión V | Derecho: Fase °)
+    if (!isLinearMode) {
+      const dbStep = dbSpan <= 50 ? 10 : 20;
+      for (let db = dbMin; db <= dbMax + 0.001; db += dbStep) {
+        const y = dbToY(db);
+        ctx.strokeStyle = Math.abs(db) < 0.01 ? 'rgba(226, 232, 240, 0.28)' : 'rgba(148, 163, 184, 0.12)';
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(padLeft + plotW, y);
+        ctx.stroke();
+
+        // Etiqueta eje Y izquierdo (Magnitud dB)
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '11px "JetBrains Mono", Consolas, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${db > 0 ? '+' : ''}${Math.round(db)} dB`, padLeft - 8, y + 4);
+      }
+
+      // Línea horizontal tenue de referencia en -3 dB (si cae dentro del rango)
+      const refDb = (probes[0]?.magnitudesDb?.[0] || 0) - 3.0103;
+      if (refDb >= dbMin && refDb <= dbMax) {
+        const y3dB = dbToY(refDb);
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y3dB);
+        ctx.lineTo(padLeft + plotW, y3dB);
+        ctx.stroke();
+        ctx.restore();
+      }
+    } else {
+      const decimals = vStep < 0.1 ? 2 : vStep < 1 ? 1 : 0;
+      for (let v = vMin; v <= vMax + vStep * 0.01; v += vStep) {
+        const y = linToY(v);
+        ctx.strokeStyle = Math.abs(v) < 1e-6 ? 'rgba(226, 232, 240, 0.28)' : 'rgba(148, 163, 184, 0.12)';
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(padLeft + plotW, y);
+        ctx.stroke();
+
+        // Etiqueta eje Y izquierdo (Tensión Lineal V)
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '11px "JetBrains Mono", Consolas, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${v.toFixed(decimals)} V`, padLeft - 8, y + 4);
+      }
+
+      // Línea horizontal tenue de referencia en Vmax / √2 (0.707 Vmax, punto de -3 dB en tensión lineal)
+      const firstLinArr = probes[0]?.magnitudesLinear || [];
+      const maxFirstV = firstLinArr.length > 0 ? Math.max(...firstLinArr) : 0;
+      const refV = maxFirstV * Math.SQRT1_2;
+      if (refV > vMin && refV <= vMax) {
+        const yRefV = linToY(refV);
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+        ctx.beginPath();
+        ctx.moveTo(padLeft, yRefV);
+        ctx.lineTo(padLeft + plotW, yRefV);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // Etiquetas eje Y derecho (Fase en grados)
+    for (let ph = phMin; ph <= phMax + 0.001; ph += phStep) {
+      const y = phaseToY(ph);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px "JetBrains Mono", Consolas, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${ph > 0 ? '+' : ''}${Math.round(ph)}°`, padLeft + plotW + 8, y + 4);
+    }
+
+    // Títulos de los ejes
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 11px "Inter", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Frecuencia (Escala Logarítmica)', padLeft + plotW / 2, height - 8);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.textAlign = 'left';
+    ctx.fillText(
+      isLinearMode ? 'Tensión Lineal (V) — Línea Continua' : 'Magnitud (dB) — Línea Continua',
+      padLeft,
+      padTop - 12
+    );
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'right';
+    ctx.fillText('Fase (°) — Línea Punteada', padLeft + plotW, padTop - 12);
+
+    // Marco del gráfico
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(padLeft, padTop, plotW, plotH);
+
+    // 3. DIBUJAR CURVAS DE PROBETRACES (Magnitud en dB o Tensión en V, y Fase en grados)
+    const palette = [
+      { mag: '#38bdf8', phase: 'rgba(125, 211, 252, 0.58)' },
+      { mag: '#34d399', phase: 'rgba(110, 231, 183, 0.58)' },
+      { mag: '#f472b6', phase: 'rgba(249, 168, 212, 0.58)' },
+      { mag: '#facc15', phase: 'rgba(253, 224, 71, 0.58)' }
+    ];
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padLeft, padTop, plotW, plotH);
+    ctx.clip();
+
+    probes.forEach((tr, idx) => {
+      const col = palette[idx % palette.length];
+      const magsDb = tr.magnitudesDb || [];
+      const magsLin = tr.magnitudesLinear || [];
+      const phases = tr.phasesDeg || [];
+
+      // Curva de Fase (grados) — punteada y color más apagado
+      ctx.save();
+      ctx.strokeStyle = col.phase;
+      ctx.lineWidth = 1.75;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      for (let i = 0; i < freqs.length; i++) {
+        const x = freqToX(freqs[i]);
+        const y = phaseToY(phases[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Curva principal (Magnitud en dB o Tensión Lineal en V) — continua y vibrante
+      ctx.save();
+      ctx.strokeStyle = col.mag;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      for (let i = 0; i < freqs.length; i++) {
+        const x = freqToX(freqs[i]);
+        const y = isLinearMode ? linToY(magsLin[i]) : dbToY(magsDb[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Marca y etiqueta en la Frecuencia de Corte (-3 dB / 0.707 Vmax) si existe
+      if (tr.cutoffHz && tr.cutoffHz >= fMin && tr.cutoffHz <= fMax) {
+        const xc = freqToX(tr.cutoffHz);
+        let yc;
+        let labelTxt;
+        if (isLinearMode) {
+          const maxVTrace = Math.max(...magsLin);
+          const cutV = maxVTrace * Math.SQRT1_2;
+          yc = linToY(cutV);
+          labelTxt = `fc = ${formatFreq(tr.cutoffHz)} (${cutV.toFixed(2)} V)`;
+        } else {
+          const maxDbTrace = Math.max(...magsDb);
+          yc = dbToY(maxDbTrace - 3.0103);
+          labelTxt = `fc = ${formatFreq(tr.cutoffHz)} (-3 dB)`;
+        }
+
+        ctx.save();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(xc, padTop);
+        ctx.lineTo(xc, padTop + plotH);
+        ctx.stroke();
+        ctx.restore();
+
+        // Punto destacado en fc
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(xc, yc, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#050811';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Etiqueta de frecuencia de corte fc
+        ctx.font = 'bold 11px "JetBrains Mono", Consolas, monospace';
+        const tw = ctx.measureText(labelTxt).width + 12;
+        const lx = xc + 8 + tw < padLeft + plotW ? xc + 8 : xc - tw - 8;
+        const ly = Math.max(padTop + 18, Math.min(padTop + plotH - 12, yc - 8));
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.fillRect(lx, ly - 13, tw, 20);
+        ctx.strokeRect(lx, ly - 13, tw, 20);
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.textAlign = 'left';
+        ctx.fillText(labelTxt, lx + 6, ly + 1);
+      }
+    });
+
+    ctx.restore();
+
+    // 4. CURSOR INTERACTIVO Y TOOLTIP EN MOUSEMOVE
+    if (
+      typeof this._bodeHoverX === 'number' &&
+      this._bodeHoverX >= padLeft &&
+      this._bodeHoverX <= padLeft + plotW
+    ) {
+      const hoverFreq = xToFreq(this._bodeHoverX);
+
+      // Buscar el índice más cercano en freqs
+      let nearestIdx = 0;
+      let bestDist = Infinity;
+      for (let i = 0; i < freqs.length; i++) {
+        const d = Math.abs(Math.log10(freqs[i]) - Math.log10(hoverFreq));
+        if (d < bestDist) {
+          bestDist = d;
+          nearestIdx = i;
+        }
+      }
+
+      const snapFreq = freqs[nearestIdx];
+      const cx = freqToX(snapFreq);
+
+      // Línea vertical del cursor
+      ctx.save();
+      ctx.strokeStyle = 'rgba(248, 250, 252, 0.65)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(cx, padTop);
+      ctx.lineTo(cx, padTop + plotH);
+      ctx.stroke();
+      ctx.restore();
+
+      const tooltipLines = [`Frecuencia: ${formatFreq(snapFreq)}`];
+
+      probes.forEach((tr, idx) => {
+        const col = palette[idx % palette.length];
+        const phVal = tr.phasesDeg[nearestIdx];
+        const yp = phaseToY(phVal);
+
+        let ym;
+        let valText;
+        if (isLinearMode) {
+          const linVal = tr.magnitudesLinear[nearestIdx];
+          ym = linToY(linVal);
+          valText = `${linVal.toFixed(3)} V`;
+        } else {
+          const magVal = tr.magnitudesDb[nearestIdx];
+          ym = dbToY(magVal);
+          valText = `${magVal >= 0 ? '+' : ''}${magVal.toFixed(2)} dB`;
+        }
+
+        // Punto sobre la curva principal (Magnitud dB o Tensión V)
+        ctx.fillStyle = col.mag;
+        ctx.beginPath();
+        ctx.arc(cx, ym, 4.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#050811';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+
+        // Punto sobre la curva de Fase
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.arc(cx, yp, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        tooltipLines.push(
+          `${tr.label}: ${valText}  |  ∠ ${phVal >= 0 ? '+' : ''}${phVal.toFixed(1)}°`
+        );
+      });
+
+      const readout = document.getElementById('bodeCursorReadout');
+      if (readout) {
+        readout.textContent = tooltipLines.join('   •   ');
+      }
+
+      // Dibujar recuadro flotante (tooltip) en el canvas
+      ctx.font = '11.5px "JetBrains Mono", Consolas, monospace';
+      let maxW = 0;
+      for (const line of tooltipLines) {
+        const w = ctx.measureText(line).width;
+        if (w > maxW) maxW = w;
+      }
+      const boxW = maxW + 18;
+      const boxH = tooltipLines.length * 18 + 10;
+      const boxX = cx + 14 + boxW < padLeft + plotW ? cx + 14 : cx - boxW - 14;
+      const boxY = Math.max(
+        padTop + 8,
+        Math.min(padTop + plotH - boxH - 8, (this._bodeHoverY || padTop + 30) - boxH / 2)
+      );
+
+      ctx.fillStyle = 'rgba(11, 17, 30, 0.94)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+      ctx.lineWidth = 1.2;
+      ctx.fillRect(boxX, boxY, boxW, boxH);
+      ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+      tooltipLines.forEach((line, i) => {
+        ctx.fillStyle = i === 0 ? '#f8fafc' : palette[(i - 1) % palette.length].mag;
+        ctx.textAlign = 'left';
+        ctx.fillText(line, boxX + 9, boxY + 17 + i * 18);
+      });
+    }
+
+    ctx.restore();
+  }
+
   loop() {
     if (this.isRunning) {
       const newlyBurned = this.solver.stepFrame(this.components, this.wires, (t) => {
@@ -12624,7 +15348,6 @@ class ProtoSimApp {
 window.addEventListener('DOMContentLoaded', () => {
   window.protoApp = new ProtoSimApp();
 });
-
 
 </script>
 </body>
