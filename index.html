@@ -2049,7 +2049,7 @@ body.is-resizing-panel .sidebar-resizer {
   }
 }
 
-</style>
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -2206,7 +2206,8 @@ body.is-resizing-panel .sidebar-resizer {
 
             <!-- ATAJOS Y ARCHIVO -->
             <div class="topbar-actions">
-              <button class="btn" id="btnOpPoint" title="Tabla de punto de operación DC: tensiones de nodo y corrientes (Tecla P)">Punto DC</button>
+              <button class="btn" id="btnToggleProMode" title="Alternar Modo SPICE / PRO: esquemático técnico limpio estilo LTSpice / KiCad">Modo SPICE</button>
+              <button class="btn" id="btnOpPoint" title="Tabla de punto de operación DC: tensiones de nodo y corrientes (Shift + P)">Punto DC</button>
               <button class="btn" id="btnShareLink" title="Copiar un link que abre este mismo circuito">Compartir</button>
               <button class="btn" id="btnOpenShortcuts" title="Ver todos los Atajos de Teclado (Tecla ?)">Atajos</button>
               <button class="btn" id="btnExportJson" title="Guardar circuito en archivo .JSON">Guardar</button>
@@ -2243,6 +2244,9 @@ body.is-resizing-panel .sidebar-resizer {
             </button>
             <button class="btn" id="btnToolWire" data-tooltip="Trazar cables (W)">
               Cablear
+            </button>
+            <button class="btn" id="btnToolProbe" data-tooltip="Medir con Sonda (P): Clic en nodo/pin = V(t) • Clic en componente = V+I • Alt+Clic = I(t)">
+              Medir
             </button>
             <div class="tool-divider"></div>
             <button class="btn" id="btnRotate" data-tooltip="Girar 90° (R)">
@@ -2358,7 +2362,7 @@ body.is-resizing-panel .sidebar-resizer {
           <div class="shortcut-row"><span>Reiniciar desde t = 0</span><span class="kbd-key">Shift + R</span></div>
           <div class="shortcut-row"><span>Centrar cámara y zoom</span><span class="kbd-key">C</span></div>
           <div class="shortcut-row"><span>Mostrar tensión en nodos</span><span class="kbd-key">V</span></div>
-          <div class="shortcut-row"><span>Tabla de punto de operación (.op)</span><span class="kbd-key">P</span></div>
+          <div class="shortcut-row"><span>Tabla de punto de operación (.op)</span><span class="kbd-key">Shift + P</span></div>
           <div class="shortcut-row"><span>Seleccionar todo el circuito</span><span class="kbd-key">Ctrl + A</span></div>
           <div class="shortcut-row"><span>Alternar ancho panel derecho</span><span class="kbd-key">Tab</span></div>
           <div class="shortcut-row"><span>Minimizar / Mostrar Catálogo Izq.</span><span class="kbd-key">B</span></div>
@@ -2369,6 +2373,7 @@ body.is-resizing-panel .sidebar-resizer {
           <div class="shortcut-group-title">Edición y Gráficos</div>
           <div class="shortcut-row"><span>Modo Selección / Cancelar</span><span class="kbd-key">Esc</span></div>
           <div class="shortcut-row"><span>Modo Trazar Cable</span><span class="kbd-key">W</span></div>
+          <div class="shortcut-row"><span>Herramienta Medir (Sonda V / Alt=I)</span><span class="kbd-key">P</span></div>
           <div class="shortcut-row"><span>Rotar 90° horario</span><span class="kbd-key">R</span></div>
           <div class="shortcut-row"><span>Anclar/Quitar Gráfico Derecho</span><span class="kbd-key">G</span></div>
           <div class="shortcut-row"><span>Duplicar seleccionado</span><span class="kbd-key">Ctrl + D</span></div>
@@ -2429,7 +2434,8 @@ body.is-resizing-panel .sidebar-resizer {
     </div>
   </div>
 
-    <script>
+  <!-- SCRIPTS INTEGRADOS DE PROTO-SIM -->
+  <script>
 // ============================================================================
 // PROTO-SIM: Catálogo de Componentes Electrónicos, Pines y Utilidades SI
 // ============================================================================
@@ -3387,6 +3393,7 @@ window.ProtoSim.CATEGORIES = CATEGORIES;
 window.ProtoSim.COMPONENT_SHORTCUTS = COMPONENT_SHORTCUTS;
 window.ProtoSim.COMPONENT_LIBRARY = COMPONENT_LIBRARY;
 window.ProtoSim.getPinWorldGrid = getPinWorldGrid;
+
 
 // ============================================================================
 // PROTO-SIM: Motor MNA (Modified Nodal Analysis) en Tiempo Real + Newton-Raphson
@@ -4845,6 +4852,7 @@ class CircuitSolver {
 
 window.ProtoSim.CircuitSolver = CircuitSolver;
 
+
 // ============================================================================
 // PROTO-SIM: Renderizador Canvas de Alta Precisión estilo PROTO
 // ============================================================================
@@ -4896,6 +4904,7 @@ class CircuitRenderer {
     this.showNodeVoltages = false;
     this.showCurrentDots = true;
     this.showConnectorDots = true;
+    this.proMode = false;
     this.smokeParticles = [];
   }
 
@@ -4983,7 +4992,7 @@ class CircuitRenderer {
     }
 
     // 6. Dibujar vista previa ("fantasma") si hay una herramienta de componente seleccionada
-    if (appState.activeTool && appState.hoverGrid && !appState.wiringStart) {
+    if (appState.activeTool && appState.activeTool !== 'probe' && appState.hoverGrid && !appState.wiringStart) {
       this.drawGhostComponent(ctx, appState);
     }
 
@@ -5009,6 +5018,11 @@ class CircuitRenderer {
     // 10. Recuadro de selección múltiple (Marquee Selection Box)
     if (appState.selectionBox) {
       this.drawSelectionBox(ctx, appState.selectionBox, appState);
+    }
+
+    // 11. Superposición de Punta de Prueba (Herramienta Medir / Probe estilo LTSpice)
+    if (appState.activeTool === 'probe' && appState.hoverGrid && !appState.wiringStart) {
+      this.drawProbeToolOverlay(ctx, appState);
     }
 
     ctx.restore();
@@ -5058,6 +5072,29 @@ class CircuitRenderer {
     const endGx = Math.ceil(right / GRID_SIZE) + 1;
     const startGy = Math.floor(top / GRID_SIZE) - 1;
     const endGy = Math.ceil(bottom / GRID_SIZE) + 1;
+
+    if (this.proMode) {
+      // En Modo PRO / SPICE: grilla drásticamente atenuada (solo líneas principales muy tenues)
+      ctx.lineWidth = 0.75 / this.zoom;
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.022)';
+      ctx.beginPath();
+      for (let gx = startGx; gx <= endGx; gx++) {
+        if (gx % 5 === 0) {
+          const x = gx * GRID_SIZE;
+          ctx.moveTo(x, top);
+          ctx.lineTo(x, bottom);
+        }
+      }
+      for (let gy = startGy; gy <= endGy; gy++) {
+        if (gy % 5 === 0) {
+          const y = gy * GRID_SIZE;
+          ctx.moveTo(left, y);
+          ctx.lineTo(right, y);
+        }
+      }
+      ctx.stroke();
+      return;
+    }
 
     // Líneas secundarias cada 1 grilla
     ctx.lineWidth = 1 / this.zoom;
@@ -5177,6 +5214,7 @@ class CircuitRenderer {
 
   drawWires(ctx, appState) {
     const isRunning = appState.isRunning;
+    const isPro = Boolean(this.proMode);
 
     // Si el usuario pasa el mouse sobre un nodo/pin o tiene un cable seleccionado, resaltar todo el Nodo Eléctrico!
     let activeNetSeed = appState.hoveredNodeKey || appState.selectedNodeKey || null;
@@ -5200,12 +5238,18 @@ class CircuitRenderer {
         appState.selectedWire === w || Boolean(appState.selectedWires && appState.selectedWires.has(w));
       const isInHighlightedNet = netWires.has(w);
       const vAvg = ((w.v1 || 0) + (w.v2 || 0)) * 0.5;
-      const wireColor = voltageToColor(vAvg);
+      const wireColor = isPro ? '#94a3b8' : voltageToColor(vAvg);
 
       // Halo de selección o resaltado de alcance completo del Nodo Eléctrico
       if (isSelected || isInHighlightedNet) {
-        ctx.strokeStyle = isSelected ? 'rgba(56, 189, 248, 0.7)' : 'rgba(34, 211, 238, 0.36)';
-        ctx.lineWidth = isSelected ? 9 : 7.5;
+        ctx.strokeStyle = isSelected
+          ? isPro
+            ? 'rgba(56, 189, 248, 0.55)'
+            : 'rgba(56, 189, 248, 0.7)'
+          : isPro
+            ? 'rgba(56, 189, 248, 0.25)'
+            : 'rgba(34, 211, 238, 0.36)';
+        ctx.lineWidth = isPro ? (isSelected ? 4.5 : 3.6) : (isSelected ? 9 : 7.5);
         ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -5213,17 +5257,17 @@ class CircuitRenderer {
         ctx.stroke();
       }
 
-      // Trazo principal del cable coloreado según voltaje
-      ctx.strokeStyle = wireColor;
-      ctx.lineWidth = 3.2;
+      // Trazo principal del cable (fino y uniforme en Modo PRO / SPICE, o coloreado según voltaje)
+      ctx.strokeStyle = isPro && isSelected ? '#38bdf8' : wireColor;
+      ctx.lineWidth = isPro ? 1.5 : 3.2;
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
-      // Animación de puntos de corriente estilo PROTO
-      if (this.showCurrentDots) {
+      // Animación de puntos de corriente estilo PROTO (desactivada en Modo PRO)
+      if (this.showCurrentDots && !isPro) {
         const dx = x2 - x1;
         const dy = y2 - y1;
         const len = Math.hypot(dx, dy);
@@ -5353,13 +5397,14 @@ class CircuitRenderer {
     }
 
     const netNodes = this._currentNetNodes || new Set();
+    const isPro = Boolean(this.proMode);
 
     for (const [key, count] of degreeMap.entries()) {
       const [gx, gy] = key.split(',').map(Number);
       const px = gx * GRID_SIZE;
       const py = gy * GRID_SIZE;
       const v = appState.solver.nodeVoltages.get(key) || 0;
-      const vCol = voltageToColor(v);
+      const vCol = isPro ? '#94a3b8' : voltageToColor(v);
       const isWireNode = wireEndpoints.has(key);
       const isUserAnchor = userAnchors.has(key);
       const isJunction = count >= 3;
@@ -5367,7 +5412,23 @@ class CircuitRenderer {
       const isHovered = appState.hoveredNodeKey === key;
       const isSelectedNode = appState.selectedNodeKey === key;
 
-      if (this.showConnectorDots && (isWireNode || isJunction)) {
+      if (isPro) {
+        // En Modo PRO / SPICE: solo dibujar puntos de unión reales (>=3 ramas) o nodos con hover/selección
+        if (isJunction || isHovered || isSelectedNode) {
+          ctx.save();
+          if (isHovered || isSelectedNode) {
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+            ctx.beginPath();
+            ctx.arc(px, py, 8, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.fillStyle = isHovered || isSelectedNode ? '#38bdf8' : '#94a3b8';
+          ctx.beginPath();
+          ctx.arc(px, py, isHovered || isSelectedNode ? 3.8 : 3.0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      } else if (this.showConnectorDots && (isWireNode || isJunction)) {
         ctx.save();
 
         // Si pertenece al nodo eléctrico resaltado, está seleccionado o el mouse está encima, dibujar halo externo
@@ -5465,10 +5526,155 @@ class CircuitRenderer {
     ctx.restore();
   }
 
+  drawProbeToolOverlay(ctx, appState) {
+    const wx = appState.hoverWorld ? appState.hoverWorld.wx : appState.hoverGrid.gx * GRID_SIZE;
+    const wy = appState.hoverWorld ? appState.hoverWorld.wy : appState.hoverGrid.gy * GRID_SIZE;
+    const altMode = Boolean(appState.altKeyPressed);
+
+    let tx = wx;
+    let ty = wy;
+    let badgeText = altMode ? 'Sonda I(t) [Alt]' : 'Sonda V(t)';
+    let badgeColor = altMode ? '#facc15' : '#ef4444';
+
+    if (!altMode && (appState.hoveredPin || appState.hoveredNodeKey)) {
+      if (appState.hoveredPin) {
+        tx = appState.hoveredPin.gx * GRID_SIZE;
+        ty = appState.hoveredPin.gy * GRID_SIZE;
+      } else {
+        const [ngx, ngy] = appState.hoveredNodeKey.split(',').map(Number);
+        tx = ngx * GRID_SIZE;
+        ty = ngy * GRID_SIZE;
+      }
+      const key = `${Math.round(tx / GRID_SIZE)},${Math.round(ty / GRID_SIZE)}`;
+      const v = appState.solver?.nodeVoltages?.get(key) || 0;
+      badgeText = `Medir V(${key}): ${window.ProtoSim.formatSI(v, 'V', 2)}`;
+      badgeColor = '#38bdf8';
+
+      ctx.save();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+      ctx.lineWidth = 1.8 / this.zoom;
+      ctx.beginPath();
+      ctx.arc(tx, ty, 9 / this.zoom, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    } else if (appState.hoveredComponent && appState.hoveredComponent.type !== 'gnd') {
+      const c = appState.hoveredComponent;
+      const cx = c.gx * GRID_SIZE;
+      const cy = c.gy * GRID_SIZE;
+      tx = wx;
+      ty = wy;
+      badgeText = altMode
+        ? `Medir I(${c.name || c.id}): ${window.ProtoSim.formatSI(c.current || 0, 'A', 2)}`
+        : `Medir V+I (${c.name || c.id})`;
+      badgeColor = altMode ? '#facc15' : '#10b981';
+
+      ctx.save();
+      ctx.strokeStyle = badgeColor;
+      ctx.fillStyle = altMode ? 'rgba(250, 204, 21, 0.08)' : 'rgba(16, 185, 129, 0.08)';
+      ctx.lineWidth = 1.6 / this.zoom;
+      ctx.setLineDash([4 / this.zoom, 3 / this.zoom]);
+      ctx.beginPath();
+      ctx.roundRect(cx - 42, cy - 26, 84, 52, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    } else if (appState.hoveredWire) {
+      const w = appState.hoveredWire;
+      badgeText = altMode
+        ? `Medir I(cable): ${window.ProtoSim.formatSI(w.current || 0, 'A', 2)}`
+        : `Medir V(nodo ${w.gx1},${w.gy1})`;
+      badgeColor = altMode ? '#facc15' : '#38bdf8';
+    }
+
+    // Dibujar ícono vectorial de Punta de Prueba estilo LTSpice en (tx, ty)
+    ctx.save();
+    ctx.translate(tx, ty);
+    const invZ = 1 / this.zoom;
+    ctx.scale(invZ, invZ);
+
+    if (altMode) {
+      // Pinza amperimétrica / Sonda de corriente (estilo LTSpice)
+      ctx.strokeStyle = '#facc15';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(-5, 0);
+      ctx.lineTo(5, 0);
+      ctx.lineTo(2, -3.5);
+      ctx.moveTo(5, 0);
+      ctx.lineTo(2, 3.5);
+      ctx.stroke();
+    } else {
+      // Punta de prueba de tensión (Lápiz de osciloscopio inclinado a 45°)
+      ctx.save();
+      ctx.rotate(-Math.PI / 4);
+      // Aguja metálica en (0,0)
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(9, 0);
+      ctx.stroke();
+
+      // Cuerpo aislante rojo/cyan de la punta
+      ctx.fillStyle = badgeColor;
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(9, -3.5);
+      ctx.lineTo(26, -4.5);
+      ctx.lineTo(26, 4.5);
+      ctx.lineTo(9, 3.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Anillo de guarda
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(12, -4.5);
+      ctx.lineTo(12, 4.5);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Etiqueta compacta junto a la punta de prueba
+    ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+    const tw = ctx.measureText(badgeText).width + 12;
+    const th = 19;
+    const bx = 14;
+    const by = -28;
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.strokeStyle = badgeColor;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, tw, th, 5);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(badgeText, bx + 6, by + th / 2);
+
+    ctx.restore();
+  }
+
   drawComponent(ctx, comp, appState, isGhost = false) {
     const def = window.ProtoSim.COMPONENT_LIBRARY[comp.type];
     if (!def) return;
 
+    const isPro = Boolean(this.proMode);
     const cx = comp.gx * GRID_SIZE;
     const cy = comp.gy * GRID_SIZE;
     const rotRad = ((comp.rotation || 0) * Math.PI) / 180;
@@ -5484,17 +5690,17 @@ class CircuitRenderer {
     if (isSelected && !isGhost) {
       ctx.save();
       ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
-      ctx.lineWidth = 1.8;
+      ctx.fillStyle = isPro ? 'transparent' : 'rgba(56, 189, 248, 0.07)';
+      ctx.lineWidth = isPro ? 1.3 : 1.8;
       ctx.setLineDash([4, 3]);
       ctx.beginPath();
       ctx.roundRect(-44, -28, 88, 56, 10);
-      ctx.fill();
+      if (!isPro) ctx.fill();
       ctx.stroke();
       ctx.restore();
     }
 
-    if (comp.heat > 0.2 && !comp.burned) {
+    if (!isPro && comp.heat > 0.2 && !comp.burned) {
       ctx.save();
       const alpha = Math.min(0.65, comp.heat * 0.65);
       const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, 38);
@@ -5567,30 +5773,43 @@ class CircuitRenderer {
         ctx.fill();
       }
 
-      ctx.fillStyle = isHoveredPin ? '#38bdf8' : voltageToColor(vPin);
-      ctx.strokeStyle = '#0b0f17';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(px, py, isHoveredPin ? 5 : 3.6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
+      if (isPro) {
+        ctx.fillStyle = isHoveredPin ? '#38bdf8' : '#94a3b8';
+        ctx.beginPath();
+        ctx.arc(px, py, isHoveredPin ? 4.2 : 2.0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = isHoveredPin ? '#38bdf8' : voltageToColor(vPin);
+        ctx.strokeStyle = '#0b0f17';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(px, py, isHoveredPin ? 5 : 3.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
       ctx.restore();
     }
   }
 
   drawSymbolBody(ctx, comp, def, appState) {
+    const isPro = Boolean(this.proMode);
+    const vCol = (v) => (isPro ? '#94a3b8' : voltageToColor(v));
+    const symStroke = '#cbd5e1';
+    const leadWidth = isPro ? 1.5 : 2.6;
+    const bodyWidth = isPro ? 1.6 : 2.4;
+
     const pv = comp.pinVoltages || {};
     const p = comp.props || {};
-    const c1 = voltageToColor(pv[def.pins[0]?.id] || 0);
-    const c2 = voltageToColor(pv[def.pins[1]?.id] || 0);
+    const c1 = vCol(pv[def.pins[0]?.id] || 0);
+    const c2 = vCol(pv[def.pins[1]?.id] || 0);
 
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.lineWidth = 2.6;
+    ctx.lineWidth = leadWidth;
 
     // Puntos de corriente internos en componentes de 2 terminales
     const drawInternalDots = (xStart, xEnd) => {
-      if (!this.showCurrentDots || comp.burned) return;
+      if (!this.showCurrentDots || isPro || comp.burned) return;
       const cur = comp.current || 0;
       if (Math.abs(cur) < 1e-5) return;
       const speed = appState.isRunning ? currentToSpeed(cur) : 0;
@@ -5612,7 +5831,8 @@ class CircuitRenderer {
 
     switch (comp.type) {
       case 'gnd': {
-        ctx.strokeStyle = '#64748b';
+        ctx.strokeStyle = isPro ? '#94a3b8' : '#64748b';
+        ctx.lineWidth = isPro ? 1.5 : 2.6;
         ctx.beginPath();
         ctx.moveTo(0, -20);
         ctx.lineTo(0, 0);
@@ -5641,22 +5861,22 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Placa positiva (larga) y negativa (corta y gruesa)
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 2.8;
+        ctx.strokeStyle = isPro ? symStroke : '#10b981';
+        ctx.lineWidth = isPro ? 1.7 : 2.8;
         ctx.beginPath();
         ctx.moveTo(-6, -16);
         ctx.lineTo(-6, 16);
         ctx.stroke();
 
-        ctx.strokeStyle = '#94a3b8';
-        ctx.lineWidth = 4.2;
+        ctx.strokeStyle = isPro ? symStroke : '#94a3b8';
+        ctx.lineWidth = isPro ? 2.6 : 4.2;
         ctx.beginPath();
         ctx.moveTo(6, -9);
         ctx.lineTo(6, 9);
         ctx.stroke();
 
         // Signo +
-        ctx.fillStyle = '#10b981';
+        ctx.fillStyle = isPro ? symStroke : '#10b981';
         ctx.font = 'bold 12px monospace';
         ctx.fillText('+', -20, -8);
         drawInternalDots(-40, 40);
@@ -5676,17 +5896,17 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.4;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.arc(0, 0, 18, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
         // Onda interna
-        ctx.strokeStyle = '#22d3ee';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = isPro ? symStroke : '#22d3ee';
+        ctx.lineWidth = isPro ? 1.4 : 2;
         ctx.beginPath();
         if (p.waveform === 'square') {
           ctx.moveTo(-10, 4);
@@ -5722,16 +5942,17 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#a855f7';
-        ctx.lineWidth = 2.4;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : '#a855f7';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.arc(0, 0, 16, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
         // Flecha de corriente
-        ctx.strokeStyle = '#e9d5ff';
+        ctx.strokeStyle = isPro ? symStroke : '#e9d5ff';
+        ctx.lineWidth = isPro ? 1.5 : 2.2;
         ctx.beginPath();
         ctx.moveTo(-9, 0);
         ctx.lineTo(9, 0);
@@ -5756,12 +5977,17 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        // Zigzag clásico estilo PROTO
-        const grad = ctx.createLinearGradient(-22, 0, 22, 0);
-        grad.addColorStop(0, c1);
-        grad.addColorStop(1, c2);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 2.6;
+        // Zigzag clásico (en Modo PRO sin gradiente y con trazo fino neutro)
+        if (isPro) {
+          ctx.strokeStyle = symStroke;
+          ctx.lineWidth = 1.6;
+        } else {
+          const grad = ctx.createLinearGradient(-22, 0, 22, 0);
+          grad.addColorStop(0, c1);
+          grad.addColorStop(1, c2);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 2.6;
+        }
         ctx.beginPath();
         ctx.moveTo(-22, 0);
         ctx.lineTo(-18, -9);
@@ -5777,7 +6003,7 @@ class CircuitRenderer {
       }
 
       case 'potentiometer': {
-        const cWiper = voltageToColor(pv.wiper || 0);
+        const cWiper = vCol(pv.wiper || 0);
         ctx.strokeStyle = c1;
         ctx.beginPath();
         ctx.moveTo(-40, 0);
@@ -5789,7 +6015,8 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        ctx.strokeStyle = '#94a3b8';
+        ctx.strokeStyle = isPro ? symStroke : '#94a3b8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.moveTo(-22, 0);
         ctx.lineTo(-18, -8);
@@ -5805,6 +6032,7 @@ class CircuitRenderer {
         const pos = Number(p.position) || 0.5;
         const wiperX = -18 + pos * 36;
         ctx.strokeStyle = cWiper;
+        ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(0, -40);
         ctx.lineTo(0, -20);
@@ -5813,7 +6041,7 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Punta de flecha del cursor
-        ctx.fillStyle = '#38bdf8';
+        ctx.fillStyle = isPro ? symStroke : '#38bdf8';
         ctx.beginPath();
         ctx.moveTo(wiperX, -8);
         ctx.lineTo(wiperX - 4, -14);
@@ -5835,15 +6063,15 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        // Placas paralelas coloreadas según tensión en cada lado
-        ctx.strokeStyle = c1;
-        ctx.lineWidth = 3.2;
+        // Placas paralelas
+        ctx.strokeStyle = isPro ? symStroke : c1;
+        ctx.lineWidth = isPro ? 2.0 : 3.2;
         ctx.beginPath();
         ctx.moveTo(-5, -14);
         ctx.lineTo(-5, 14);
         ctx.stroke();
 
-        ctx.strokeStyle = c2;
+        ctx.strokeStyle = isPro ? symStroke : c2;
         ctx.beginPath();
         ctx.moveTo(5, -14);
         ctx.lineTo(5, 14);
@@ -5865,11 +6093,16 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        const grad = ctx.createLinearGradient(-24, 0, 24, 0);
-        grad.addColorStop(0, c1);
-        grad.addColorStop(1, c2);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 2.6;
+        if (isPro) {
+          ctx.strokeStyle = symStroke;
+          ctx.lineWidth = 1.6;
+        } else {
+          const grad = ctx.createLinearGradient(-24, 0, 24, 0);
+          grad.addColorStop(0, c1);
+          grad.addColorStop(1, c2);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 2.6;
+        }
         ctx.beginPath();
         for (let i = 0; i < 4; i++) {
           const centerX = -18 + i * 12;
@@ -5895,7 +6128,7 @@ class CircuitRenderer {
         const pNom = Math.max(0.5, Number(p.nominalPower) || 6);
         const brightness = comp.burned ? 0 : Math.min(1.5, (comp.power || 0) / pNom);
 
-        if (brightness > 0.02) {
+        if (!isPro && brightness > 0.02) {
           const glowRadius = 18 + brightness * 28;
           const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, glowRadius);
           grad.addColorStop(0, `rgba(254, 240, 138, ${Math.min(0.95, brightness)})`);
@@ -5907,9 +6140,13 @@ class CircuitRenderer {
           ctx.fill();
         }
 
-        ctx.fillStyle = brightness > 0.1 ? `rgba(254, 240, 138, ${Math.min(0.85, brightness * 0.7)})` : '#0f172a';
-        ctx.strokeStyle = brightness > 0.1 ? '#facc15' : '#94a3b8';
-        ctx.lineWidth = 2.4;
+        ctx.fillStyle = isPro
+          ? '#070a10'
+          : brightness > 0.1
+            ? `rgba(254, 240, 138, ${Math.min(0.85, brightness * 0.7)})`
+            : '#0f172a';
+        ctx.strokeStyle = isPro ? symStroke : brightness > 0.1 ? '#facc15' : '#94a3b8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.arc(0, 0, 16, 0, Math.PI * 2);
         ctx.fill();
@@ -5940,7 +6177,7 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        // Si es LED y conduce corriente, dibujar resplandor realista
+        // Si es LED y conduce corriente, dibujar resplandor realista (solo fuera de Modo PRO)
         let ledHex = '#ef4444';
         if (comp.type === 'led') {
           const colorMap = {
@@ -5955,7 +6192,7 @@ class CircuitRenderer {
           const cur = Math.max(0, comp.current || 0);
           const intensity = comp.burned ? 0 : Math.min(1.3, cur / 0.02); // 20mA = 100% brillo nominal
 
-          if (intensity > 0.02) {
+          if (!isPro && intensity > 0.02) {
             ctx.save();
             ctx.shadowColor = ledHex;
             ctx.shadowBlur = 24 * intensity;
@@ -5972,21 +6209,21 @@ class CircuitRenderer {
           }
         }
 
-        // Triángulo del ánodo
-        ctx.fillStyle = comp.type === 'led' ? ledHex : c1;
-        ctx.strokeStyle = comp.type === 'led' ? ledHex : '#e2e8f0';
-        ctx.lineWidth = 2.2;
+        // Triángulo del ánodo (en Modo PRO trazo esquemático limpio sin relleno brillante)
+        ctx.fillStyle = isPro ? 'transparent' : comp.type === 'led' ? ledHex : c1;
+        ctx.strokeStyle = isPro ? symStroke : comp.type === 'led' ? ledHex : '#e2e8f0';
+        ctx.lineWidth = isPro ? 1.6 : 2.2;
         ctx.beginPath();
         ctx.moveTo(-12, -12);
         ctx.lineTo(-12, 12);
         ctx.lineTo(12, 0);
         ctx.closePath();
-        ctx.fill();
+        if (!isPro) ctx.fill();
         ctx.stroke();
 
         // Barra del cátodo
-        ctx.strokeStyle = '#f8fafc';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = isPro ? symStroke : '#f8fafc';
+        ctx.lineWidth = isPro ? 1.8 : 3;
         ctx.beginPath();
         if (comp.type === 'zener') {
           ctx.moveTo(12, -13);
@@ -6003,8 +6240,8 @@ class CircuitRenderer {
 
         // Flechas de luz para el LED
         if (comp.type === 'led') {
-          ctx.strokeStyle = ledHex;
-          ctx.lineWidth = 1.8;
+          ctx.strokeStyle = isPro ? symStroke : ledHex;
+          ctx.lineWidth = isPro ? 1.4 : 1.8;
           ctx.beginPath();
           ctx.moveTo(-2, -15);
           ctx.lineTo(6, -23);
@@ -6019,30 +6256,30 @@ class CircuitRenderer {
 
       case 'npn':
       case 'pnp': {
-        const cB = voltageToColor(pv.base || 0);
-        const cC = voltageToColor(pv.collector || 0);
-        const cE = voltageToColor(pv.emitter || 0);
+        const cB = vCol(pv.base || 0);
+        const cC = vCol(pv.collector || 0);
+        const cE = vCol(pv.emitter || 0);
 
         // Carcasa circular
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-        ctx.strokeStyle = '#64748b';
-        ctx.lineWidth = 2;
+        ctx.fillStyle = isPro ? 'transparent' : 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeStyle = isPro ? '#64748b' : '#64748b';
+        ctx.lineWidth = isPro ? 1.4 : 2;
         ctx.beginPath();
         ctx.arc(2, 0, 22, 0, Math.PI * 2);
-        ctx.fill();
+        if (!isPro) ctx.fill();
         ctx.stroke();
 
         // Terminal Base (-40, 0)
         ctx.strokeStyle = cB;
-        ctx.lineWidth = 2.6;
+        ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(-40, 0);
         ctx.lineTo(-8, 0);
         ctx.stroke();
 
         // Barra vertical de Base
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = isPro ? symStroke : '#e2e8f0';
+        ctx.lineWidth = isPro ? 2.2 : 3.5;
         ctx.beginPath();
         ctx.moveTo(-8, -13);
         ctx.lineTo(-8, 13);
@@ -6053,7 +6290,7 @@ class CircuitRenderer {
         const botColor = comp.type === 'npn' ? cE : cC;
 
         ctx.strokeStyle = topColor;
-        ctx.lineWidth = 2.6;
+        ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(-8, -6);
         ctx.lineTo(20, -20);
@@ -6068,7 +6305,7 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Flecha de emisor
-        ctx.fillStyle = '#38bdf8';
+        ctx.fillStyle = isPro ? symStroke : '#38bdf8';
         ctx.beginPath();
         if (comp.type === 'npn') {
           ctx.moveTo(14, 17);
@@ -6085,21 +6322,21 @@ class CircuitRenderer {
       }
 
       case 'nmos': {
-        const cG = voltageToColor(pv.gate || 0);
-        const cD = voltageToColor(pv.drain || 0);
-        const cS = voltageToColor(pv.source || 0);
+        const cG = vCol(pv.gate || 0);
+        const cD = vCol(pv.drain || 0);
+        const cS = vCol(pv.source || 0);
 
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.fillStyle = isPro ? 'transparent' : 'rgba(15, 23, 42, 0.85)';
         ctx.strokeStyle = '#64748b';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = isPro ? 1.4 : 2;
         ctx.beginPath();
         ctx.arc(2, 0, 22, 0, Math.PI * 2);
-        ctx.fill();
+        if (!isPro) ctx.fill();
         ctx.stroke();
 
         // Gate
         ctx.strokeStyle = cG;
-        ctx.lineWidth = 2.6;
+        ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(-40, 0);
         ctx.lineTo(-10, 0);
@@ -6108,8 +6345,8 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Canal aislado
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.lineWidth = 2.8;
+        ctx.strokeStyle = isPro ? symStroke : '#e2e8f0';
+        ctx.lineWidth = isPro ? 2.0 : 2.8;
         ctx.beginPath();
         ctx.moveTo(-4, -14);
         ctx.lineTo(-4, 14);
@@ -6117,6 +6354,7 @@ class CircuitRenderer {
 
         // Drain (20, -40) y Source (20, 40)
         ctx.strokeStyle = cD;
+        ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(-4, -10);
         ctx.lineTo(20, -10);
@@ -6133,9 +6371,9 @@ class CircuitRenderer {
       }
 
       case 'opamp': {
-        const cInP = voltageToColor(pv.in_pos || 0);
-        const cInN = voltageToColor(pv.in_neg || 0);
-        const cOut = voltageToColor(pv.out || 0);
+        const cInP = vCol(pv.in_pos || 0);
+        const cInN = vCol(pv.in_neg || 0);
+        const cOut = vCol(pv.out || 0);
 
         ctx.strokeStyle = cInP;
         ctx.beginPath();
@@ -6155,9 +6393,9 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.4;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.moveTo(-20, -28);
         ctx.lineTo(-20, 28);
@@ -6166,10 +6404,10 @@ class CircuitRenderer {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#34d399';
+        ctx.fillStyle = isPro ? symStroke : '#34d399';
         ctx.font = 'bold 12px monospace';
         ctx.fillText('+', -16, -15);
-        ctx.fillStyle = '#f87171';
+        ctx.fillStyle = isPro ? symStroke : '#f87171';
         ctx.fillText('-', -16, 24);
         break;
       }
@@ -6190,15 +6428,15 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Contactos
-        ctx.fillStyle = '#e2e8f0';
+        ctx.fillStyle = isPro ? symStroke : '#e2e8f0';
         ctx.beginPath();
-        ctx.arc(-16, 0, 3.5, 0, Math.PI * 2);
-        ctx.arc(16, 0, 3.5, 0, Math.PI * 2);
+        ctx.arc(-16, 0, isPro ? 2.5 : 3.5, 0, Math.PI * 2);
+        ctx.arc(16, 0, isPro ? 2.5 : 3.5, 0, Math.PI * 2);
         ctx.fill();
 
         // Palanca / Botón
-        ctx.strokeStyle = closed ? '#10b981' : '#f59e0b';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = isPro ? symStroke : closed ? '#10b981' : '#f59e0b';
+        ctx.lineWidth = isPro ? 1.8 : 3;
         ctx.beginPath();
         if (comp.type === 'push_button') {
           const yBar = closed ? -2 : -11;
@@ -6223,9 +6461,9 @@ class CircuitRenderer {
 
       case 'switch_spdt': {
         const pos = Number(p.position) === 1 ? 1 : 0;
-        const cCom = voltageToColor(pv.com || 0);
-        const cB1 = voltageToColor(pv.b1 || 0);
-        const cB2 = voltageToColor(pv.b2 || 0);
+        const cCom = vCol(pv.com || 0);
+        const cB1 = vCol(pv.b1 || 0);
+        const cB2 = vCol(pv.b2 || 0);
 
         ctx.strokeStyle = cCom;
         ctx.beginPath();
@@ -6245,8 +6483,8 @@ class CircuitRenderer {
         ctx.lineTo(40, 20);
         ctx.stroke();
 
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = isPro ? 1.8 : 3;
         ctx.beginPath();
         ctx.moveTo(-16, 0);
         ctx.lineTo(16, pos === 0 ? -14 : 14);
@@ -6262,7 +6500,7 @@ class CircuitRenderer {
         const vPin = isProbe ? (pv.in || 0) : (pv.out || 0);
         const isHigh = isClock ? comp._clockState === 1 : (isProbe ? vPin >= (p.threshold || 2.5) : Number(p.state) === 1);
 
-        ctx.strokeStyle = voltageToColor(vPin);
+        ctx.strokeStyle = vCol(vPin);
         ctx.beginPath();
         if (isProbe) {
           ctx.moveTo(-20, 0);
@@ -6273,15 +6511,15 @@ class CircuitRenderer {
         }
         ctx.stroke();
 
-        ctx.fillStyle = isHigh ? 'rgba(16, 185, 129, 0.25)' : '#0f172a';
-        ctx.strokeStyle = isHigh ? '#10b981' : '#64748b';
-        ctx.lineWidth = 2.2;
+        ctx.fillStyle = isPro ? '#070a10' : isHigh ? 'rgba(16, 185, 129, 0.25)' : '#0f172a';
+        ctx.strokeStyle = isPro ? symStroke : isHigh ? '#10b981' : '#64748b';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-14, -14, 28, 28, 6);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = isHigh ? '#34d399' : '#94a3b8';
+        ctx.fillStyle = isPro ? symStroke : isHigh ? '#34d399' : '#94a3b8';
         ctx.font = 'bold 13px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -6297,18 +6535,18 @@ class CircuitRenderer {
         const isHigh = comp._logicOut === 1;
         // Entradas
         if (comp.type === 'gate_not') {
-          ctx.strokeStyle = voltageToColor(pv.in1 || 0);
+          ctx.strokeStyle = vCol(pv.in1 || 0);
           ctx.beginPath();
           ctx.moveTo(-40, 0);
           ctx.lineTo(-18, 0);
           ctx.stroke();
         } else {
-          ctx.strokeStyle = voltageToColor(pv.in1 || 0);
+          ctx.strokeStyle = vCol(pv.in1 || 0);
           ctx.beginPath();
           ctx.moveTo(-40, -20);
           ctx.lineTo(-18, -20);
           ctx.stroke();
-          ctx.strokeStyle = voltageToColor(pv.in2 || 0);
+          ctx.strokeStyle = vCol(pv.in2 || 0);
           ctx.beginPath();
           ctx.moveTo(-40, 20);
           ctx.lineTo(-18, 20);
@@ -6316,16 +6554,16 @@ class CircuitRenderer {
         }
 
         // Salida
-        ctx.strokeStyle = voltageToColor(pv.out || 0);
+        ctx.strokeStyle = vCol(pv.out || 0);
         ctx.beginPath();
         ctx.moveTo(20, 0);
         ctx.lineTo(40, 0);
         ctx.stroke();
 
         // Cuerpo de la compuerta
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = isHigh ? '#10b981' : '#38bdf8';
-        ctx.lineWidth = 2.3;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : isHigh ? '#10b981' : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-18, -24, 38, 48, 8);
         ctx.fill();
@@ -6338,14 +6576,14 @@ class CircuitRenderer {
           gate_nand: '&̅',
           gate_xor: '=1'
         };
-        ctx.fillStyle = '#f1f5f9';
+        ctx.fillStyle = isPro ? symStroke : '#f1f5f9';
         ctx.font = 'bold 13px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(labels[comp.type] || 'G', 0, 0);
 
         if (comp.type === 'gate_not' || comp.type === 'gate_nand') {
-          ctx.fillStyle = '#0f172a';
+          ctx.fillStyle = '#070a10';
           ctx.beginPath();
           ctx.arc(23, 0, 4, 0, Math.PI * 2);
           ctx.fill();
@@ -6368,15 +6606,15 @@ class CircuitRenderer {
         ctx.lineTo(40, 0);
         ctx.stroke();
 
-        ctx.fillStyle = '#090d16';
-        ctx.strokeStyle = isV ? '#38bdf8' : '#facc15';
-        ctx.lineWidth = 2.4;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : isV ? '#38bdf8' : '#facc15';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.arc(0, 0, 20, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = isV ? '#38bdf8' : '#facc15';
+        ctx.fillStyle = isPro ? symStroke : isV ? '#38bdf8' : '#facc15';
         ctx.font = 'bold 14px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -6386,20 +6624,21 @@ class CircuitRenderer {
       }
 
       case 'osc_probe': {
-        const chColor = p.channelColor || '#38bdf8';
+        const chColor = isPro ? symStroke : (p.channelColor || '#38bdf8');
         ctx.strokeStyle = chColor;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = isPro ? 1.5 : 2.5;
         ctx.beginPath();
         ctx.moveTo(0, 20);
         ctx.lineTo(0, 4);
         ctx.stroke();
 
-        ctx.fillStyle = chColor;
+        ctx.fillStyle = isPro ? '#070a10' : chColor;
         ctx.beginPath();
         ctx.roundRect(-18, -16, 36, 20, 6);
         ctx.fill();
+        if (isPro) ctx.stroke();
 
-        ctx.fillStyle = '#070a10';
+        ctx.fillStyle = isPro ? symStroke : '#070a10';
         ctx.font = 'bold 10px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -6410,10 +6649,10 @@ class CircuitRenderer {
       case 'net_label': {
         const netName = String(p.netName || 'VCC').trim().toUpperCase();
         const vPin = pv.p0 || 0;
-        const flagCol = voltageToColor(vPin);
+        const flagCol = vCol(vPin);
 
         ctx.strokeStyle = flagCol;
-        ctx.lineWidth = 2.4;
+        ctx.lineWidth = isPro ? 1.5 : 2.4;
         ctx.beginPath();
         ctx.moveTo(0, 20);
         ctx.lineTo(0, 5);
@@ -6423,9 +6662,9 @@ class CircuitRenderer {
         const tw = Math.max(28, ctx.measureText(netName).width + 12);
         const hw = tw / 2;
 
-        ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = '#070a10';
         ctx.strokeStyle = flagCol;
-        ctx.lineWidth = 1.9;
+        ctx.lineWidth = isPro ? 1.4 : 1.9;
         ctx.beginPath();
         ctx.moveTo(0, 6);
         ctx.lineTo(-hw, -1);
@@ -6436,7 +6675,7 @@ class CircuitRenderer {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#f8fafc';
+        ctx.fillStyle = isPro ? symStroke : '#f8fafc';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(netName, 0, -8);
@@ -6456,7 +6695,7 @@ class CircuitRenderer {
         ctx.stroke();
 
         const lightRatio = Math.max(0, Math.min(1, Number(p.lightLevel ?? 60) / 100));
-        if (lightRatio > 0.05) {
+        if (!isPro && lightRatio > 0.05) {
           const gRad = 18 + lightRatio * 14;
           const grad = ctx.createRadialGradient(0, 0, 3, 0, 0, gRad);
           grad.addColorStop(0, `rgba(250, 204, 21, ${0.42 * lightRatio})`);
@@ -6467,17 +6706,17 @@ class CircuitRenderer {
           ctx.fill();
         }
 
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-        ctx.strokeStyle = lightRatio > 0.2 ? '#facc15' : '#64748b';
-        ctx.lineWidth = 1.9;
+        ctx.fillStyle = isPro ? 'transparent' : 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeStyle = isPro ? '#64748b' : lightRatio > 0.2 ? '#facc15' : '#64748b';
+        ctx.lineWidth = isPro ? 1.4 : 1.9;
         ctx.beginPath();
         ctx.arc(0, 0, 19, 0, Math.PI * 2);
-        ctx.fill();
+        if (!isPro) ctx.fill();
         ctx.stroke();
 
         // Zigzag interno
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = isPro ? symStroke : '#10b981';
+        ctx.lineWidth = isPro ? 1.5 : 2.2;
         ctx.beginPath();
         ctx.moveTo(-15, 0);
         ctx.lineTo(-11, -6);
@@ -6489,8 +6728,8 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Flechas de luz incidentes
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 1.7;
+        ctx.strokeStyle = isPro ? symStroke : '#facc15';
+        ctx.lineWidth = isPro ? 1.3 : 1.7;
         ctx.beginPath();
         ctx.moveTo(-16, -24);
         ctx.lineTo(-8, -16);
@@ -6514,10 +6753,10 @@ class CircuitRenderer {
         ctx.stroke();
 
         const temp = Number(p.temperature ?? 25);
-        const bodyCol = temp >= 50 ? '#fb923c' : temp <= 5 ? '#38bdf8' : '#10b981';
+        const bodyCol = isPro ? symStroke : temp >= 50 ? '#fb923c' : temp <= 5 ? '#38bdf8' : '#10b981';
 
         ctx.strokeStyle = bodyCol;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = isPro ? 1.6 : 2.5;
         ctx.beginPath();
         ctx.moveTo(-20, 0);
         ctx.lineTo(-15, -8);
@@ -6530,8 +6769,8 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Línea diagonal característica de termistor (-t°)
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = isPro ? '#94a3b8' : '#cbd5e1';
+        ctx.lineWidth = isPro ? 1.3 : 1.8;
         ctx.beginPath();
         ctx.moveTo(-14, 14);
         ctx.lineTo(-6, 14);
@@ -6554,9 +6793,9 @@ class CircuitRenderer {
         ctx.stroke();
 
         const active = Boolean(comp._buzzActive && !comp.burned);
-        ctx.fillStyle = active ? 'rgba(56, 189, 248, 0.2)' : '#0f172a';
-        ctx.strokeStyle = active ? '#38bdf8' : '#94a3b8';
-        ctx.lineWidth = 2.3;
+        ctx.fillStyle = isPro ? '#070a10' : active ? 'rgba(56, 189, 248, 0.2)' : '#0f172a';
+        ctx.strokeStyle = isPro ? symStroke : active ? '#38bdf8' : '#94a3b8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.arc(0, 0, 16, 0, Math.PI * 2);
         ctx.fill();
@@ -6566,7 +6805,7 @@ class CircuitRenderer {
         ctx.arc(0, 0, 5, 0, Math.PI * 2);
         ctx.stroke();
 
-        if (active) {
+        if (!isPro && active) {
           const pulse = ((performance.now() * 0.01) % 1);
           ctx.strokeStyle = `rgba(56, 189, 248, ${1 - pulse})`;
           ctx.lineWidth = 1.8;
@@ -6580,14 +6819,14 @@ class CircuitRenderer {
 
       case 'diode_bridge': {
         // Rombo entre (-40,0), (0,40), (40,0), (0,-40)
-        const cAc1 = voltageToColor(pv.ac1 || 0);
-        const cAc2 = voltageToColor(pv.ac2 || 0);
-        const cPos = voltageToColor(pv.pos || 0);
-        const cNeg = voltageToColor(pv.neg || 0);
+        const cAc1 = vCol(pv.ac1 || 0);
+        const cAc2 = vCol(pv.ac2 || 0);
+        const cPos = vCol(pv.pos || 0);
+        const cNeg = vCol(pv.neg || 0);
 
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-        ctx.strokeStyle = '#475569';
-        ctx.lineWidth = 2.2;
+        ctx.fillStyle = isPro ? '#070a10' : 'rgba(15, 23, 42, 0.88)';
+        ctx.strokeStyle = isPro ? symStroke : '#475569';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.moveTo(-36, 0);
         ctx.lineTo(0, -36);
@@ -6623,15 +6862,15 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Símbolo de diodo central y marcas ~ / + / -
-        ctx.fillStyle = '#38bdf8';
+        ctx.fillStyle = isPro ? symStroke : '#38bdf8';
         ctx.beginPath();
         ctx.moveTo(-8, -8);
         ctx.lineTo(-8, 8);
         ctx.lineTo(8, 0);
         ctx.closePath();
         ctx.fill();
-        ctx.strokeStyle = '#f8fafc';
-        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = isPro ? symStroke : '#f8fafc';
+        ctx.lineWidth = isPro ? 1.6 : 2.2;
         ctx.beginPath();
         ctx.moveTo(8, -8);
         ctx.lineTo(8, 8);
@@ -6640,20 +6879,20 @@ class CircuitRenderer {
         ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#10b981';
+        ctx.fillStyle = isPro ? symStroke : '#10b981';
         ctx.fillText('+', 23, 0);
-        ctx.fillStyle = '#f87171';
+        ctx.fillStyle = isPro ? symStroke : '#f87171';
         ctx.fillText('-', 0, 23);
-        ctx.fillStyle = '#38bdf8';
+        ctx.fillStyle = isPro ? symStroke : '#38bdf8';
         ctx.fillText('~', -23, 0);
         ctx.fillText('~', 0, -23);
         break;
       }
 
       case 'voltage_regulator': {
-        const cIn = voltageToColor(pv.vin || 0);
-        const cOut = voltageToColor(pv.vout || 0);
-        const cGnd = voltageToColor(pv.gnd || 0);
+        const cIn = vCol(pv.vin || 0);
+        const cOut = vCol(pv.vout || 0);
+        const cGnd = vCol(pv.gnd || 0);
 
         ctx.strokeStyle = cIn;
         ctx.beginPath();
@@ -6674,9 +6913,9 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Encapsulado TO-220
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.2;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-24, -18, 48, 38, 6);
         ctx.fill();
@@ -6686,7 +6925,7 @@ class CircuitRenderer {
         ctx.fillStyle = '#334155';
         ctx.fillRect(-18, -23, 36, 5);
 
-        ctx.fillStyle = '#f8fafc';
+        ctx.fillStyle = isPro ? symStroke : '#f8fafc';
         ctx.font = 'bold 10px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -6698,10 +6937,10 @@ class CircuitRenderer {
       }
 
       case 'optocoupler': {
-        const cA = voltageToColor(pv.anode || 0);
-        const cK = voltageToColor(pv.cathode || 0);
-        const cC = voltageToColor(pv.collector || 0);
-        const cE = voltageToColor(pv.emitter || 0);
+        const cA = vCol(pv.anode || 0);
+        const cK = vCol(pv.cathode || 0);
+        const cC = vCol(pv.collector || 0);
+        const cE = vCol(pv.emitter || 0);
 
         ctx.strokeStyle = cA;
         ctx.beginPath();
@@ -6725,17 +6964,17 @@ class CircuitRenderer {
         ctx.stroke();
 
         const activeOpto = (comp._ledCurrent || 0) > 0.0005;
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = activeOpto ? '#10b981' : '#64748b';
-        ctx.lineWidth = 2.2;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : activeOpto ? '#10b981' : '#64748b';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-24, -26, 48, 52, 7);
         ctx.fill();
         ctx.stroke();
 
         // LED interno izquierdo + flechas ópticas + fototransistor derecho
-        ctx.strokeStyle = activeOpto ? '#34d399' : '#94a3b8';
-        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = isPro ? symStroke : activeOpto ? '#34d399' : '#94a3b8';
+        ctx.lineWidth = isPro ? 1.4 : 1.8;
         ctx.beginPath();
         ctx.moveTo(-14, -8);
         ctx.lineTo(-14, 8);
@@ -6743,7 +6982,7 @@ class CircuitRenderer {
         ctx.closePath();
         ctx.stroke();
 
-        ctx.strokeStyle = activeOpto ? '#facc15' : '#475569';
+        ctx.strokeStyle = isPro ? '#94a3b8' : activeOpto ? '#facc15' : '#475569';
         ctx.beginPath();
         ctx.moveTo(-4, -5);
         ctx.lineTo(4, -5);
@@ -6751,7 +6990,7 @@ class CircuitRenderer {
         ctx.lineTo(4, 5);
         ctx.stroke();
 
-        ctx.strokeStyle = '#38bdf8';
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
         ctx.beginPath();
         ctx.moveTo(8, -10);
         ctx.lineTo(8, 10);
@@ -6765,11 +7004,11 @@ class CircuitRenderer {
 
       case 'relay_spdt': {
         const energized = Boolean(comp._energized);
-        const cCoil1 = voltageToColor(pv.coil1 || 0);
-        const cCoil2 = voltageToColor(pv.coil2 || 0);
-        const cCom = voltageToColor(pv.com || 0);
-        const cNo = voltageToColor(pv.no || 0);
-        const cNc = voltageToColor(pv.nc || 0);
+        const cCoil1 = vCol(pv.coil1 || 0);
+        const cCoil2 = vCol(pv.coil2 || 0);
+        const cCom = vCol(pv.com || 0);
+        const cNo = vCol(pv.no || 0);
+        const cNc = vCol(pv.nc || 0);
 
         // Terminales
         ctx.strokeStyle = cCoil1;
@@ -6799,17 +7038,17 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Carcasa del relé
-        ctx.fillStyle = energized ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.9)';
-        ctx.strokeStyle = energized ? '#10b981' : '#64748b';
-        ctx.lineWidth = 2.1;
+        ctx.fillStyle = isPro ? '#070a10' : energized ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.9)';
+        ctx.strokeStyle = isPro ? symStroke : energized ? '#10b981' : '#64748b';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-26, -26, 52, 52, 7);
         ctx.fill();
         ctx.stroke();
 
         // Bobina izquierda
-        ctx.strokeStyle = energized ? '#34d399' : '#94a3b8';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = isPro ? symStroke : energized ? '#34d399' : '#94a3b8';
+        ctx.lineWidth = isPro ? 1.5 : 2;
         ctx.beginPath();
         ctx.rect(-20, -14, 12, 28);
         ctx.moveTo(-20, -10);
@@ -6817,8 +7056,8 @@ class CircuitRenderer {
         ctx.stroke();
 
         // Conmutador móvil derecho desde COM (0, 20) hacia NO (18, -14) o NC (18, 14)
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 2.6;
+        ctx.strokeStyle = isPro ? symStroke : '#facc15';
+        ctx.lineWidth = isPro ? 1.8 : 2.6;
         ctx.beginPath();
         ctx.moveTo(4, 18);
         if (energized) {
@@ -6828,7 +7067,7 @@ class CircuitRenderer {
         }
         ctx.stroke();
 
-        ctx.fillStyle = '#e2e8f0';
+        ctx.fillStyle = isPro ? symStroke : '#e2e8f0';
         ctx.beginPath();
         ctx.arc(18, -14, 2.5, 0, Math.PI * 2);
         ctx.arc(18, 14, 2.5, 0, Math.PI * 2);
@@ -6842,23 +7081,23 @@ class CircuitRenderer {
         for (const pin of def.pins) {
           const px = pin.x * GRID_SIZE;
           const py = pin.y * GRID_SIZE;
-          ctx.strokeStyle = voltageToColor(pv[pin.id] || 0);
-          ctx.lineWidth = 2.4;
+          ctx.strokeStyle = vCol(pv[pin.id] || 0);
+          ctx.lineWidth = leadWidth;
           ctx.beginPath();
           ctx.moveTo(px, py);
           ctx.lineTo(Math.sign(px) * Math.min(Math.abs(px), 26), Math.sign(py) * Math.min(Math.abs(py), 28));
           ctx.stroke();
         }
 
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = isHigh ? '#10b981' : '#38bdf8';
-        ctx.lineWidth = 2.3;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : isHigh ? '#10b981' : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-26, -28, 52, 56, 7);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#f8fafc';
+        ctx.fillStyle = isPro ? symStroke : '#f8fafc';
         ctx.font = 'bold 11px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -6871,7 +7110,7 @@ class CircuitRenderer {
         ctx.fillText('THR', -22, 0);
         ctx.fillText('TRG', -22, 18);
         ctx.textAlign = 'right';
-        ctx.fillStyle = isHigh ? '#34d399' : '#38bdf8';
+        ctx.fillStyle = isPro ? symStroke : isHigh ? '#34d399' : '#38bdf8';
         ctx.fillText('OUT', 22, 0);
         break;
       }
@@ -6880,8 +7119,8 @@ class CircuitRenderer {
         for (const pin of def.pins) {
           const px = pin.x * GRID_SIZE;
           const py = pin.y * GRID_SIZE;
-          ctx.strokeStyle = voltageToColor(pv[pin.id] || 0);
-          ctx.lineWidth = 2.2;
+          ctx.strokeStyle = vCol(pv[pin.id] || 0);
+          ctx.lineWidth = leadWidth;
           ctx.beginPath();
           ctx.moveTo(px, py);
           ctx.lineTo(Math.sign(px) * Math.min(Math.abs(px), 22), Math.sign(py) * Math.min(Math.abs(py), 28));
@@ -6889,8 +7128,8 @@ class CircuitRenderer {
         }
 
         ctx.fillStyle = '#050811';
-        ctx.strokeStyle = '#475569';
-        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = isPro ? symStroke : '#475569';
+        ctx.lineWidth = bodyWidth;
         ctx.beginPath();
         ctx.roundRect(-22, -28, 44, 56, 6);
         ctx.fill();
@@ -6902,7 +7141,7 @@ class CircuitRenderer {
           cyan: '#06b6d4',
           yellow: '#facc15'
         };
-        const activeCol = segColorMap[p.color] || '#ef4444';
+        const activeCol = isPro ? symStroke : (segColorMap[p.color] || '#ef4444');
         const offCol = 'rgba(148, 163, 184, 0.14)';
 
         // Tabla de 7 segmentos [a,b,c,d,e,f,g] para dígitos 0..15 (0..F)
@@ -6924,12 +7163,12 @@ class CircuitRenderer {
         ];
 
         ctx.lineCap = 'round';
-        ctx.lineWidth = 3.2;
+        ctx.lineWidth = isPro ? 2.2 : 3.2;
         for (let s = 0; s < 7; s++) {
           const on = (m & (1 << s)) !== 0;
           ctx.strokeStyle = on ? activeCol : offCol;
-          ctx.shadowColor = on ? activeCol : 'transparent';
-          ctx.shadowBlur = on ? 6 : 0;
+          ctx.shadowColor = !isPro && on ? activeCol : 'transparent';
+          ctx.shadowBlur = !isPro && on ? 6 : 0;
           ctx.beginPath();
           ctx.moveTo(segCoords[s][0], segCoords[s][1]);
           ctx.lineTo(segCoords[s][2], segCoords[s][3]);
@@ -7257,6 +7496,7 @@ class CircuitRenderer {
 window.ProtoSim.GRID_SIZE = GRID_SIZE;
 window.ProtoSim.voltageToColor = voltageToColor;
 window.ProtoSim.CircuitRenderer = CircuitRenderer;
+
 
 // ============================================================================
 // PROTO-SIM: Osciloscopio Multicanal + Monitores Múltiples Anclados a la Derecha
@@ -8480,13 +8720,21 @@ class Oscilloscope {
       // Indicador visual de Trigger (posición X fija y nivel de cruce)
       this.drawTriggerOverlay(ctx, w, h, mapYV, trigWin, trigWin.isTriggerSource);
 
-      // Curva de Corriente I(t) (Amarillo punteado, solo en componentes y cables)
+      const preferCurrent = !isNodeMonitor && appState?.monitorModes?.get(compId) === 'current';
+
+      // Curva de Corriente I(t) (Amarillo: continuo principal si se fijó con Alt+Clic, o punteado secundario)
       if (!isNodeMonitor) {
         ctx.save();
         ctx.strokeStyle = '#facc15';
-        ctx.globalAlpha = 0.75;
-        ctx.lineWidth = 1.45;
-        ctx.setLineDash([3, 3]);
+        if (preferCurrent) {
+          ctx.shadowColor = '#eab308';
+          ctx.shadowBlur = 6;
+          ctx.lineWidth = 2.2;
+        } else {
+          ctx.globalAlpha = 0.75;
+          ctx.lineWidth = 1.45;
+          ctx.setLineDash([3, 3]);
+        }
         ctx.beginPath();
         for (let i = 0; i < data.length; i++) {
           const x = ((i + baseOffset) / denom) * w;
@@ -8498,12 +8746,18 @@ class Oscilloscope {
         ctx.restore();
       }
 
-      // Curva de Tensión V(t) (Verde neón continuo)
+      // Curva de Tensión V(t) (Verde neón: continuo principal o punteado secundario si se prioriza corriente)
       ctx.save();
       ctx.strokeStyle = '#00ff9d';
-      ctx.shadowColor = '#10b981';
-      ctx.shadowBlur = 6;
-      ctx.lineWidth = 2.1;
+      if (preferCurrent) {
+        ctx.globalAlpha = 0.68;
+        ctx.lineWidth = 1.45;
+        ctx.setLineDash([3, 3]);
+      } else {
+        ctx.shadowColor = '#10b981';
+        ctx.shadowBlur = 6;
+        ctx.lineWidth = 2.1;
+      }
       ctx.beginPath();
       for (let i = 0; i < data.length; i++) {
         const x = ((i + baseOffset) / denom) * w;
@@ -9105,6 +9359,7 @@ class Oscilloscope {
 window.ProtoSim.Oscilloscope = Oscilloscope;
 window.ProtoSim.CHANNEL_COLORS = CHANNEL_COLORS;
 
+
 // ============================================================================
 // PROTO-SIM: Circuitos de Ejemplo Precargados
 // ============================================================================
@@ -9396,6 +9651,7 @@ const EXAMPLE_CIRCUITS = {
 
 window.ProtoSim.EXAMPLE_CIRCUITS = EXAMPLE_CIRCUITS;
 
+
 // ============================================================================
 // PROTO-SIM: Controlador Principal de Interfaz, Secciones, Resizer y Atajos
 // ============================================================================
@@ -9430,6 +9686,7 @@ class ProtoSimApp {
     this.boxSelectBaseWires = new Set();
     this.probedComponents = new Map();
     this.pinnedMonitors = [];
+    this.monitorModes = new Map();
     this.graphSizeClass = 'size-md';
     this.leftPanelWidth = 245;
     this.rightPanelWidth = 340;
@@ -9437,7 +9694,11 @@ class ProtoSimApp {
     this.expandedDockHeight = 350;
 
     this.hoverGrid = { gx: 0, gy: 0 };
+    this.hoverWorld = { wx: 0, wy: 0 };
     this.hoveredPin = null;
+    this.hoveredComponent = null;
+    this.hoveredWire = null;
+    this.altKeyPressed = false;
     this.wiringStart = null;
 
     this.isDraggingComp = false;
@@ -9669,6 +9930,14 @@ class ProtoSimApp {
     // Botones de barra flotante inferior
     document.getElementById('btnToolSelect').addEventListener('click', () => this.setActiveTool(null));
     document.getElementById('btnToolWire').addEventListener('click', () => this.setActiveTool('wire'));
+    document.getElementById('btnToolProbe')?.addEventListener('click', () => {
+      this.setActiveTool(this.activeTool === 'probe' ? null : 'probe');
+    });
+    document.getElementById('btnToggleProMode')?.addEventListener('click', (e) => {
+      this.renderer.proMode = !this.renderer.proMode;
+      this.renderer.showCurrentDots = !this.renderer.proMode;
+      e.currentTarget.classList.toggle('btn-active', this.renderer.proMode);
+    });
     document.getElementById('btnRotate').addEventListener('click', () => this.rotateSelectedOrTool());
     document.getElementById('btnDuplicate')?.addEventListener('click', () => this.duplicateSelected());
     document.getElementById('btnDelete').addEventListener('click', () => this.deleteSelected());
@@ -10087,15 +10356,23 @@ class ProtoSimApp {
     for (const cid of this.pinnedMonitors) {
       const isValidComp = this.components.some((c) => c.id === cid);
       const isValidNode = typeof cid === 'string' && cid.startsWith('node_');
-      if (!ids.includes(cid) && (isValidComp || isValidNode)) {
+      const isValidWire =
+        typeof cid === 'string' &&
+        cid.startsWith('wire_') &&
+        Number(cid.slice(5)) >= 0 &&
+        Number(cid.slice(5)) < this.wires.length;
+      if (!ids.includes(cid) && (isValidComp || isValidNode || isValidWire)) {
         ids.push(cid);
       }
     }
     return ids;
   }
 
-  // Gestión de gráficos múltiples en el panel derecho (tanto componentes como nodos)
-  addPinnedMonitor(compId, exclusive = false) {
+  // Gestión de gráficos múltiples en el panel derecho (tanto componentes como nodos y cables)
+  addPinnedMonitor(compId, exclusive = false, options = {}) {
+    if (options && options.preferCurrent !== undefined) {
+      this.monitorModes.set(compId, options.preferCurrent ? 'current' : 'default');
+    }
     if (exclusive) {
       this.pinnedMonitors = [compId];
     } else if (!this.pinnedMonitors.includes(compId)) {
@@ -10108,6 +10385,7 @@ class ProtoSimApp {
 
   removePinnedMonitor(compId) {
     this.pinnedMonitors = this.pinnedMonitors.filter((id) => id !== compId);
+    this.monitorModes.delete(compId);
     this.renderPinnedMonitorsDOM();
     this.renderCircuitFinder();
     this.updateInspector();
@@ -10133,7 +10411,10 @@ class ProtoSimApp {
     if (!listEl) return;
 
     this.pinnedMonitors = this.pinnedMonitors.filter(
-      (id) => (typeof id === 'string' && id.startsWith('node_')) || this.components.some((c) => c.id === id)
+      (id) =>
+        (typeof id === 'string' && id.startsWith('node_')) ||
+        (typeof id === 'string' && id.startsWith('wire_') && Number(id.slice(5)) < this.wires.length) ||
+        this.components.some((c) => c.id === id)
     );
     const monitorIds = this.getDisplayedMonitorIds();
     listEl.classList.toggle('two-cols', this.rightPanelWidth >= 520 && monitorIds.length >= 2);
@@ -10191,13 +10472,19 @@ class ProtoSimApp {
         }
 
         if (mId.startsWith('wire_')) {
+          const isPinned = this.pinnedMonitors.includes(mId);
+          const preferI = this.monitorModes.get(mId) === 'current';
+          const legendHtml = preferI
+            ? `<span style="color:#facc15;font-weight:700;">―I(t)</span> <span style="color:#00ff9d;opacity:0.75;">--V</span>`
+            : `<span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span>`;
           return `
             <div class="inspector-scope-card" data-monitor-id="${mId}" title="Doble clic para ampliar este gráfico arriba y medir ΔV / Δt con cursores">
               <div class="inspector-scope-header">
                 <span>Cable Conductor</span>
                 <div style="display:flex;align-items:center;gap:5px;">
-                  <span style="font-size:9.5px;color:#94a3b8;"><span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span></span>
+                  <span style="font-size:9.5px;color:#94a3b8;">${legendHtml}</span>
                   <button class="pinned-graph-close" data-expand-monitor="${mId}" title="Ampliar gráfico en panel superior con cursores (Doble clic)">Ampliar</button>
+                  ${isPinned ? `<button class="pinned-graph-close" data-close-monitor="${mId}" title="Quitar gráfico de cable fijado">✕</button>` : ''}
                 </div>
               </div>
               <div class="inspector-scope-canvas-wrap ${this.graphSizeClass}">
@@ -10217,6 +10504,10 @@ class ProtoSimApp {
         if (!comp) return '';
         const def = window.ProtoSim.COMPONENT_LIBRARY[comp.type];
         const isPinned = this.pinnedMonitors.includes(comp.id);
+        const preferI = this.monitorModes.get(comp.id) === 'current';
+        const legendHtml = preferI
+          ? `<span style="color:#facc15;font-weight:700;">―I(t)</span> <span style="color:#00ff9d;opacity:0.75;">--V</span>`
+          : `<span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span>`;
         return `
           <div class="inspector-scope-card" data-monitor-id="${comp.id}" title="Doble clic para ampliar este gráfico arriba y medir ΔV / Δt con cursores">
             <div class="inspector-scope-header">
@@ -10224,7 +10515,7 @@ class ProtoSimApp {
                 ${comp.name} <span style="font-weight:400;color:#94a3b8;">(${def?.name || comp.type})</span>
               </span>
               <div style="display:flex;align-items:center;gap:5px;">
-                <span style="font-size:9.5px;color:#94a3b8;"><span style="color:#00ff9d">―V</span> <span style="color:#facc15">--I</span></span>
+                <span style="font-size:9.5px;color:#94a3b8;">${legendHtml}</span>
                 <button class="pinned-graph-close" data-expand-monitor="${comp.id}" title="Ampliar gráfico en panel superior con cursores (Doble clic)">Ampliar</button>
                 ${isPinned ? `<button class="pinned-graph-close" data-close-monitor="${comp.id}" title="Quitar de comparativa">✕</button>` : ''}
               </div>
@@ -10495,8 +10786,22 @@ class ProtoSimApp {
     this.activeTool = tool;
     this.wiringStart = null;
 
-    document.getElementById('btnToolSelect').classList.toggle('btn-active', tool === null);
-    document.getElementById('btnToolWire').classList.toggle('btn-active', tool === 'wire');
+    document.getElementById('btnToolSelect')?.classList.toggle('btn-active', tool === null);
+    document.getElementById('btnToolWire')?.classList.toggle('btn-active', tool === 'wire');
+    document.getElementById('btnToolProbe')?.classList.toggle('btn-active', tool === 'probe');
+
+    if (this.canvas) {
+      if (tool === 'probe') {
+        const probeCursorSvg = encodeURIComponent(
+          `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M2 2 L9 9" stroke="#f8fafc" stroke-width="2" stroke-linecap="round"/><polygon points="8,11 11,8 20,17 17,20" fill="#ef4444" stroke="#0f172a" stroke-width="1.2"/><circle cx="2" cy="2" r="1.5" fill="#38bdf8"/></svg>`
+        );
+        this.canvas.style.cursor = `url("data:image/svg+xml,${probeCursorSvg}") 2 2, crosshair`;
+      } else if (tool === 'wire') {
+        this.canvas.style.cursor = 'crosshair';
+      } else {
+        this.canvas.style.cursor = '';
+      }
+    }
 
     document.querySelectorAll('.comp-card').forEach((card) => {
       card.classList.toggle('selected-tool', card.dataset.type === tool);
@@ -10518,6 +10823,8 @@ class ProtoSimApp {
       const { sx, sy } = getCanvasCoords(e);
       const world = this.renderer.screenToWorld(sx, sy);
       this.hoverGrid = { gx: world.gx, gy: world.gy };
+      this.hoverWorld = { wx: world.wx, wy: world.wy };
+      this.altKeyPressed = Boolean(e.altKey);
 
       if (this.isPanning) {
         this.renderer.camX = this.panStartCam.x - (sx - this.panStartMouse.x) / this.renderer.zoom;
@@ -10567,11 +10874,55 @@ class ProtoSimApp {
 
       this.hoveredPin = this.findPinNearWorld(world.wx, world.wy, 13);
       this.hoveredNodeKey = this.findWireNodeNearWorld(world.wx, world.wy, 12);
+      if (this.activeTool === 'probe') {
+        this.hoveredComponent = this.findComponentAtWorld(world.wx, world.wy);
+        this.hoveredWire = this.findWireAtWorld(world.wx, world.wy);
+      } else {
+        this.hoveredComponent = null;
+        this.hoveredWire = null;
+      }
     });
 
     this.canvas.addEventListener('mousedown', (e) => {
       const { sx, sy } = getCanvasCoords(e);
       const world = this.renderer.screenToWorld(sx, sy);
+      this.altKeyPressed = Boolean(e.altKey);
+
+      // Modo Sonda ('probe' - Estilo LTSpice): clic izquierdo mide nodo/pin, componente o cable (Alt+Clic prioriza corriente)
+      if (e.button === 0 && this.activeTool === 'probe') {
+        const pinHitProbe = this.findPinNearWorld(world.wx, world.wy, 12);
+        const nodeKeyHitProbe = this.findWireNodeNearWorld(world.wx, world.wy, 12);
+        const compHitProbe = this.findComponentAtWorld(world.wx, world.wy);
+        const wireHitProbe = this.findWireAtWorld(world.wx, world.wy);
+
+        if (!e.altKey && (pinHitProbe || nodeKeyHitProbe)) {
+          const nodoKey = nodeKeyHitProbe || `${pinHitProbe.gx},${pinHitProbe.gy}`;
+          this.addPinnedMonitor('node_' + nodoKey, false, { preferCurrent: false });
+          return;
+        }
+        if (compHitProbe && compHitProbe.type !== 'gnd') {
+          this.addPinnedMonitor(compHitProbe.id, false, { preferCurrent: Boolean(e.altKey) });
+          return;
+        }
+        if (pinHitProbe || nodeKeyHitProbe) {
+          const nodoKey = nodeKeyHitProbe || `${pinHitProbe.gx},${pinHitProbe.gy}`;
+          this.addPinnedMonitor('node_' + nodoKey, false, { preferCurrent: false });
+          return;
+        }
+        if (wireHitProbe) {
+          if (e.altKey) {
+            const wIdx = this.wires.indexOf(wireHitProbe);
+            if (wIdx >= 0) {
+              this.addPinnedMonitor(`wire_${wIdx}`, false, { preferCurrent: true });
+            }
+          } else {
+            const nodoKey = `${wireHitProbe.gx1},${wireHitProbe.gy1}`;
+            this.addPinnedMonitor('node_' + nodoKey, false, { preferCurrent: false });
+          }
+          return;
+        }
+        return;
+      }
 
       if (e.button === 1 || e.button === 2 || (e.button === 0 && e.altKey)) {
         if ((e.button === 1 || e.button === 2) && (this.wiringStart || this.activeTool)) {
@@ -10588,7 +10939,7 @@ class ProtoSimApp {
       const isMultiMod = Boolean(e.ctrlKey || e.metaKey || e.shiftKey);
 
       // 1. Si estamos colocando un componente nuevo desde la paleta
-      if (this.activeTool && this.activeTool !== 'wire') {
+      if (this.activeTool && this.activeTool !== 'wire' && this.activeTool !== 'probe') {
         this.saveUndoSnapshot();
         this.placeComponent(this.activeTool, world.gx, world.gy, this.toolRotation);
         if (!e.shiftKey) {
@@ -10768,6 +11119,7 @@ class ProtoSimApp {
     window.addEventListener(
       'keyup',
       (e) => {
+        this.altKeyPressed = Boolean(e.altKey);
         if (e.code === 'Space' || e.key === ' ') {
           if (!isTypingInTextInput(e.target)) {
             e.preventDefault();
@@ -10781,6 +11133,7 @@ class ProtoSimApp {
     window.addEventListener(
       'keydown',
       (e) => {
+        this.altKeyPressed = Boolean(e.altKey);
         // ESPACIO EXCLUSIVO PARA START/STOP (salvo cuando se escribe texto en un buscador o input numérico)
         if (e.code === 'Space' || e.key === ' ') {
           if (!isTypingInTextInput(e.target)) {
@@ -10929,10 +11282,14 @@ class ProtoSimApp {
         return;
       }
 
-      // P -> Tabla de Punto de Operación DC (.op)
+      // P -> Herramienta Medir / Sonda interactiva (Shift+P -> Tabla de Punto de Operación DC .op)
       if (keyLower === 'p' && !e.ctrlKey) {
         e.preventDefault();
-        this.toggleOperatingPoint();
+        if (e.shiftKey) {
+          this.toggleOperatingPoint();
+        } else {
+          this.setActiveTool(this.activeTool === 'probe' ? null : 'probe');
+        }
         return;
       }
 
@@ -13469,6 +13826,6 @@ window.addEventListener('DOMContentLoaded', () => {
   window.protoApp = new ProtoSimApp();
 });
 
-</script>
+  </script>
 </body>
 </html>
