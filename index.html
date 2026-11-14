@@ -2206,6 +2206,7 @@ body.is-resizing-panel .sidebar-resizer {
 
             <!-- ATAJOS Y ARCHIVO -->
             <div class="topbar-actions">
+              <button class="btn" id="btnBodePlot" title="Ejecutar Análisis AC (Barrido en Frecuencia) y ver tabla de Magnitud (dB) y Fase (°) en Consola (F12)">Bode Plot (AC)</button>
               <button class="btn" id="btnToggleProMode" title="Alternar Modo SPICE / PRO: esquemático técnico limpio estilo LTSpice / KiCad">Modo SPICE</button>
               <button class="btn" id="btnOpPoint" title="Tabla de punto de operación DC: tensiones de nodo y corrientes (Shift + P)">Punto DC</button>
               <button class="btn" id="btnShareLink" title="Copiar un link que abre este mismo circuito">Compartir</button>
@@ -5177,6 +5178,422 @@ class CircuitSolver {
       Math.abs(xi[2] - 3) < 1e-11;
 
     return { ok: opsOk && solverOk, opsOk, solverOk, x1: new Complex(xr[1], xi[1]), x2: new Complex(xr[2], xi[2]) };
+  }
+
+  // ============================================================================
+  // ANÁLISIS AC EN FRECUENCIA (Barrido de Bode en Pequeña Señal: Y(jω) * V = I)
+  // ============================================================================
+  runACSweep(components, wires, fMin = 1, fMax = 100000, pointsPerDecade = 20, extraTargets = []) {
+    if (!components || components.length === 0) return [];
+    const topo = this.buildTopology(components, wires);
+    if (!topo || topo.numNodes === 0) return [];
+
+    const {
+      numNodes,
+      stride,
+      indexKeyMap,
+      compPinNodes,
+      subSegments,
+      netLinks,
+      groundNodes
+    } = topo;
+
+    // 1. Identificar la primera fuente AC activa como estímulo (Vin = 1 ∠ 0° V)
+    let stimulusComp = components.find((c) => !c.burned && c.type === 'ac_voltage') || null;
+    if (!stimulusComp) {
+      // Fallback amigable si el usuario probó un circuito sin cambiar la fuente DC por AC
+      stimulusComp = components.find((c) => !c.burned && c.type === 'dc_voltage') || null;
+    }
+
+    // 2. Identificar las sondas de medición (osc_probe) y objetivos adicionales (nodos/componentes fijados)
+    const keyToNodeIdx = new Map();
+    for (let idx = 1; idx <= numNodes; idx++) {
+      keyToNodeIdx.set(indexKeyMap[idx], idx);
+    }
+
+    const targets = [];
+    const seenNodeIdx = new Set();
+
+    // 2a. Prioridad #1: Componentes explícitos osc_probe colocados en el circuito
+    for (const c of components) {
+      if (c.type !== 'osc_probe') continue;
+      const pm = compPinNodes.get(c.id);
+      if (pm && pm.tip) {
+        seenNodeIdx.add(pm.tip);
+        targets.push({
+          id: c.id,
+          label: c.name || 'CH',
+          nodeIdx: pm.tip,
+          nodeKey: indexKeyMap[pm.tip],
+          isOscProbe: true
+        });
+      }
+    }
+
+    // 2b. Prioridad #2: Nodos o componentes fijados con la herramienta Sonda ('Medir') o seleccionados
+    if (Array.isArray(extraTargets)) {
+      for (const t of extraTargets) {
+        if (!t) continue;
+        if (typeof t === 'string' && t.startsWith('node_')) {
+          const nKey = t.slice(5);
+          const nIdx = keyToNodeIdx.get(nKey);
+          if (nIdx && !groundNodes.has(nIdx) && !seenNodeIdx.has(nIdx)) {
+            seenNodeIdx.add(nIdx);
+            targets.push({
+              id: t,
+              label: `Nodo (${nKey})`,
+              nodeIdx: nIdx,
+              nodeKey: nKey,
+              isOscProbe: false
+            });
+          }
+        } else if (typeof t === 'string') {
+          const comp = components.find((c) => c.id === t);
+          const pm = comp ? compPinNodes.get(comp.id) : null;
+          if (comp && pm) {
+            const pinIds = Object.keys(pm);
+            // Elegir el pin que no sea tierra (priorizando nodo de salida/intermedio)
+            const chosenPin = pinIds.find((pId) => !groundNodes.has(pm[pId])) || pinIds[0];
+            const nIdx = pm[chosenPin];
+            if (nIdx && !seenNodeIdx.has(nIdx)) {
+              seenNodeIdx.add(nIdx);
+              targets.push({
+                id: comp.id,
+                label: comp.name || comp.id,
+                nodeIdx: nIdx,
+                nodeKey: indexKeyMap[nIdx],
+                isOscProbe: false
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // 2c. Fallback automático: si no hay osc_probe ni monitor fijado, elegir el primer nodo intermedio (no GND, no fuente directa)
+    if (targets.length === 0) {
+      const stimPm = stimulusComp ? compPinNodes.get(stimulusComp.id) : null;
+      const stimPosIdx = stimPm ? stimPm.pos : -1;
+      for (let idx = 1; idx <= numNodes; idx++) {
+        if (!groundNodes.has(idx) && idx !== stimPosIdx) {
+          targets.push({
+            id: `node_${indexKeyMap[idx]}`,
+            label: `Nodo (${indexKeyMap[idx]})`,
+            nodeIdx: idx,
+            nodeKey: indexKeyMap[idx],
+            isOscProbe: false
+          });
+          break;
+        }
+      }
+    }
+
+    // 3. Construir el vector de frecuencias logarítmicas desde fMin hasta fMax
+    const safeFMin = Math.max(1e-3, Number(fMin) || 1);
+    const safeFMax = Math.max(safeFMin * 1.01, Number(fMax) || 100000);
+    const ptsDec = Math.max(2, Number(pointsPerDecade) || 20);
+    const logMin = Math.log10(safeFMin);
+    const logMax = Math.log10(safeFMax);
+    const totalDecades = logMax - logMin;
+    const totalSteps = Math.max(2, Math.round(totalDecades * ptsDec));
+
+    const frequencies = [];
+    for (let s = 0; s <= totalSteps; s++) {
+      const exp = logMin + (s / totalSteps) * totalDecades;
+      frequencies.push(Math.pow(10, exp));
+    }
+
+    // Buffers reutilizables para el sistema complejo Y(jω) * V = b
+    const A_real = new Float64Array((numNodes + 1) * stride);
+    const A_imag = new Float64Array((numNodes + 1) * stride);
+    const b_real = new Float64Array(numNodes + 1);
+    const b_imag = new Float64Array(numNodes + 1);
+    const outX_real = new Float64Array(numNodes + 1);
+    const outX_imag = new Float64Array(numNodes + 1);
+
+    const G_WIRE = 100000.0; // Conductancia de cables ideales
+    const G_MIN = 1e-12; // Conductancia mínima a tierra para estabilidad MNA
+    const G_PARASITIC = 1e-7; // 10 MOhm para modelar semiconductores en circuito abierto de pequeña señal
+
+    const probeTraces = targets.map((t) => ({
+      ...t,
+      magnitudesLinear: [],
+      magnitudesDb: [],
+      phasesDeg: [],
+      cutoffHz: null
+    }));
+
+    const sweepRows = [];
+
+    // 4. Barrido en frecuencia: ensamblar Y(jω) y resolver para cada frecuencia
+    for (let fi = 0; fi < frequencies.length; fi++) {
+      const freq = frequencies[fi];
+      const w = 2 * Math.PI * freq;
+
+      A_real.fill(0);
+      A_imag.fill(0);
+      b_real.fill(0);
+      b_imag.fill(0);
+
+      const stampAdmittance = (n1, n2, gReal, bImag) => {
+        if (n1 > 0) {
+          A_real[n1 * stride + n1] += gReal;
+          A_imag[n1 * stride + n1] += bImag;
+        }
+        if (n2 > 0) {
+          A_real[n2 * stride + n2] += gReal;
+          A_imag[n2 * stride + n2] += bImag;
+        }
+        if (n1 > 0 && n2 > 0) {
+          A_real[n1 * stride + n2] -= gReal;
+          A_imag[n1 * stride + n2] -= bImag;
+          A_real[n2 * stride + n1] -= gReal;
+          A_imag[n2 * stride + n1] -= bImag;
+        }
+      };
+
+      // Corriente compleja saliendo de n1 y entrando a n2
+      const stampCurrentSourceComplex = (n1, n2, iReal, iImag = 0) => {
+        if (n1 > 0) {
+          b_real[n1] -= iReal;
+          b_imag[n1] -= iImag;
+        }
+        if (n2 > 0) {
+          b_real[n2] += iReal;
+          b_imag[n2] += iImag;
+        }
+      };
+
+      // Equivalente Norton de fuente de tensión compleja con resistencia interna rInt
+      const stampVoltageNortonComplex = (nPos, nNeg, vReal, vImag = 0, rInt = 0.005) => {
+        const g = 1.0 / rInt;
+        stampAdmittance(nPos, nNeg, g, 0);
+        stampCurrentSourceComplex(nNeg, nPos, vReal * g, vImag * g);
+      };
+
+      // Estabilidad G_MIN en la diagonal real
+      for (let i = 1; i <= numNodes; i++) {
+        A_real[i * stride + i] += G_MIN;
+      }
+
+      // Estampar cables y puentes equipotenciales de etiquetas de red
+      for (const seg of subSegments) {
+        stampAdmittance(seg.n1, seg.n2, G_WIRE, 0);
+      }
+      if (netLinks) {
+        for (const link of netLinks) {
+          stampAdmittance(link.n1, link.n2, G_WIRE, 0);
+        }
+      }
+
+      // Estampar componentes según su admitancia compleja en frecuencia ω
+      for (const c of components) {
+        if (c.burned) continue;
+        const pm = compPinNodes.get(c.id);
+        if (!pm) continue;
+        const p = c.props || {};
+
+        switch (c.type) {
+          case 'gnd':
+          case 'net_label':
+          case 'osc_probe':
+            break;
+
+          case 'resistor': {
+            const r = Math.max(0.01, Number(p.resistance) || 220);
+            stampAdmittance(pm.a, pm.b, 1.0 / r, 0);
+            break;
+          }
+
+          case 'potentiometer': {
+            const rTot = Math.max(1, Number(p.resistance) || 10000);
+            const pos = Math.min(0.999, Math.max(0.001, Number(p.position) || 0.5));
+            const r1 = Math.max(0.1, rTot * pos);
+            const r2 = Math.max(0.1, rTot * (1 - pos));
+            stampAdmittance(pm.a, pm.wiper, 1.0 / r1, 0);
+            stampAdmittance(pm.wiper, pm.b, 1.0 / r2, 0);
+            break;
+          }
+
+          case 'lamp': {
+            const vNom = Math.max(1, Number(p.nominalVoltage) || 12);
+            const pNom = Math.max(0.1, Number(p.nominalPower) || 6);
+            const rLamp = (vNom * vNom) / pNom;
+            stampAdmittance(pm.a, pm.b, 1.0 / rLamp, 0);
+            break;
+          }
+
+          case 'ldr': {
+            const rLdr = this.computeLdrResistance(p);
+            stampAdmittance(pm.a, pm.b, 1.0 / rLdr, 0);
+            break;
+          }
+
+          case 'thermistor': {
+            const rNtc = this.computeNtcResistance(p);
+            stampAdmittance(pm.a, pm.b, 1.0 / rNtc, 0);
+            break;
+          }
+
+          case 'buzzer': {
+            const rBz = Math.max(10, Number(p.resistance) || 150);
+            stampAdmittance(pm.pos, pm.neg, 1.0 / rBz, 0);
+            break;
+          }
+
+          case 'capacitor': {
+            const cap = Math.max(1e-12, Number(p.capacitance) || 47e-6);
+            // Y_C = 0 + j * (ω * C)
+            stampAdmittance(pm.a, pm.b, 0, w * cap);
+            break;
+          }
+
+          case 'inductor': {
+            const ind = Math.max(1e-6, Number(p.inductance) || 0.05);
+            // Y_L = g_int - j / (ω * L), con conductancia real ínfima para evitar singularidades
+            const bInd = -1.0 / Math.max(1e-12, w * ind);
+            stampAdmittance(pm.a, pm.b, 1e-7, bInd);
+            break;
+          }
+
+          case 'ac_voltage': {
+            // La primera fuente AC actúa como estímulo (Vin = 1∠0° V, rInt = 0.005 Ω); el resto se apaga (0 V)
+            const vStim = c === stimulusComp ? 1.0 : 0.0;
+            stampVoltageNortonComplex(pm.pos, pm.neg, vStim, 0, 0.005);
+            break;
+          }
+
+          case 'dc_voltage': {
+            // Las fuentes DC se apagan en AC (0 V = cortocircuito AC con rInt = 0.005 Ω), salvo que sea fallback único
+            const vStim = c === stimulusComp ? 1.0 : 0.0;
+            stampVoltageNortonComplex(pm.pos, pm.neg, vStim, 0, 0.005);
+            break;
+          }
+
+          case 'current_source': {
+            // Fuente de corriente DC apagada en pequeña señal AC (circuito abierto con 10 MΩ)
+            stampAdmittance(pm.in, pm.out, G_PARASITIC, 0);
+            break;
+          }
+
+          case 'switch_spst':
+          case 'push_button': {
+            const closed = p.closed === true || p.closed === 'true';
+            stampAdmittance(pm.a, pm.b, closed ? 50000.0 : 1e-12, 0);
+            break;
+          }
+
+          case 'switch_spdt': {
+            const pos = Number(p.position) === 1 ? 1 : 0;
+            stampAdmittance(pm.com, pm.b1, pos === 0 ? 50000.0 : 1e-12, 0);
+            stampAdmittance(pm.com, pm.b2, pos === 1 ? 50000.0 : 1e-12, 0);
+            break;
+          }
+
+          case 'voltmeter': {
+            stampAdmittance(pm.pos, pm.neg, G_PARASITIC, 0); // 10 MΩ
+            break;
+          }
+
+          case 'ammeter': {
+            stampAdmittance(pm.pos, pm.neg, 1000.0, 0); // 1 mΩ
+            break;
+          }
+
+          // Semiconductores y bloques no lineales: resistencias parásitas de 10 MΩ para mantener matriz estable
+          default: {
+            const pinIndices = Object.values(pm).filter((idx) => idx > 0);
+            for (let a = 0; a < pinIndices.length; a++) {
+              stampAdmittance(pinIndices[a], 0, G_PARASITIC, 0);
+              for (let b = a + 1; b < pinIndices.length; b++) {
+                stampAdmittance(pinIndices[a], pinIndices[b], G_PARASITIC, 0);
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      // Fijar nodos de tierra (GND) a 0 + j0 V en la matriz compleja
+      for (const gIdx of groundNodes) {
+        for (let col = 1; col <= numNodes; col++) {
+          A_real[gIdx * stride + col] = 0;
+          A_imag[gIdx * stride + col] = 0;
+        }
+        A_real[gIdx * stride + gIdx] = 1.0;
+        A_imag[gIdx * stride + gIdx] = 0.0;
+        b_real[gIdx] = 0.0;
+        b_imag[gIdx] = 0.0;
+      }
+
+      // 5. Resolver Y(jω) * V = b usando el solver complejo con pivoteo parcial
+      this.solveLinearSystemComplex(
+        A_real,
+        A_imag,
+        numNodes,
+        stride,
+        outX_real,
+        outX_imag,
+        b_real,
+        b_imag
+      );
+
+      // 6. Extraer magnitud en dB (20*log10(|V|/|Vin|)) y fase en grados (atan2(Im, Re)) para cada sonda
+      const vInMag = 1.0;
+      const row = {
+        freqHz: Number(freq.toPrecision(5))
+      };
+
+      for (let pi = 0; pi < probeTraces.length; pi++) {
+        const tr = probeTraces[pi];
+        const re = outX_real[tr.nodeIdx] || 0;
+        const im = outX_imag[tr.nodeIdx] || 0;
+        const magRatio = Math.hypot(re, im) / vInMag;
+        const magDb = 20 * Math.log10(Math.max(1e-18, magRatio));
+        const phaseDeg = (Math.atan2(im, re) * 180) / Math.PI;
+
+        tr.magnitudesLinear.push(magRatio);
+        tr.magnitudesDb.push(magDb);
+        tr.phasesDeg.push(phaseDeg);
+
+        if (pi === 0) {
+          row.magnitudeDb = Number(magDb.toFixed(3));
+          row.phaseDeg = Number(phaseDeg.toFixed(2));
+        }
+        if (probeTraces.length > 1) {
+          row[`${tr.label}_dB`] = Number(magDb.toFixed(3));
+          row[`${tr.label}_deg`] = Number(phaseDeg.toFixed(2));
+        }
+      }
+
+      sweepRows.push(row);
+    }
+
+    // 7. Estimar automáticamente la frecuencia de corte a -3.01 dB para cada sonda
+    for (const tr of probeTraces) {
+      if (tr.magnitudesDb.length < 2) continue;
+      const maxDb = Math.max(...tr.magnitudesDb);
+      const targetDb = maxDb - 3.0103;
+      for (let i = 1; i < tr.magnitudesDb.length; i++) {
+        const y0 = tr.magnitudesDb[i - 1];
+        const y1 = tr.magnitudesDb[i];
+        if ((y0 >= targetDb && y1 <= targetDb) || (y0 <= targetDb && y1 >= targetDb)) {
+          const dy = y1 - y0;
+          const frac = Math.abs(dy) > 1e-9 ? (targetDb - y0) / dy : 0.5;
+          const logF0 = Math.log10(frequencies[i - 1]);
+          const logF1 = Math.log10(frequencies[i]);
+          tr.cutoffHz = Math.pow(10, logF0 + frac * (logF1 - logF0));
+          break;
+        }
+      }
+    }
+
+    // Adjuntar metadatos completos al array devuelto para facilitar tanto console.table() como el futuro trazado en Canvas
+    sweepRows.frequencies = frequencies;
+    sweepRows.probes = probeTraces;
+    sweepRows.stimulus = stimulusComp ? stimulusComp.name || stimulusComp.id : null;
+
+    return sweepRows;
   }
 }
 
@@ -10269,6 +10686,9 @@ class ProtoSimApp {
       this.renderer.showCurrentDots = !this.renderer.proMode;
       e.currentTarget.classList.toggle('btn-active', this.renderer.proMode);
     });
+    document.getElementById('btnBodePlot')?.addEventListener('click', () => {
+      this.runBodePlotSweep();
+    });
     document.getElementById('btnRotate').addEventListener('click', () => this.rotateSelectedOrTool());
     document.getElementById('btnDuplicate')?.addEventListener('click', () => this.duplicateSelected());
     document.getElementById('btnDelete').addEventListener('click', () => this.deleteSelected());
@@ -14126,6 +14546,41 @@ class ProtoSimApp {
     } catch (err) {
       window.prompt('Copiá la tabla CSV:', lines.join('\n'));
     }
+  }
+
+  runBodePlotSweep(fMin = 1, fMax = 100000, pointsPerDecade = 20) {
+    const extraTargets = this.getDisplayedMonitorIds ? this.getDisplayedMonitorIds() : this.pinnedMonitors || [];
+    const sweep = this.solver.runACSweep(this.components, this.wires, fMin, fMax, pointsPerDecade, extraTargets);
+    this._lastBodeSweep = sweep;
+
+    if (!sweep || sweep.length === 0) {
+      console.warn('[Bode Plot AC] No se pudo ejecutar el barrido AC: circuito vacío o sin nodos activos.');
+      this.showToast('Agregá una fuente AC y una sonda para correr el Análisis AC');
+      return sweep;
+    }
+
+    const probes = sweep.probes || [];
+    const firstProbe = probes[0];
+    console.log(
+      `%c=== ANÁLISIS AC (BODE SWEEP): ${fMin} Hz → ${fMax} Hz (${pointsPerDecade} pts/década) ===`,
+      'color:#38bdf8;font-weight:bold;font-size:12px;'
+    );
+    console.log('Fuente de estímulo AC (1∠0° V):', sweep.stimulus || 'Auto');
+    for (const p of probes) {
+      const fcInfo = p.cutoffHz ? ` | Frecuencia de corte (-3 dB): ${p.cutoffHz.toFixed(2)} Hz` : '';
+      console.log(`Sonda / Nodo medido: ${p.label} [Nodo ${p.nodeKey}]${fcInfo}`);
+    }
+    console.table(sweep);
+
+    if (firstProbe && firstProbe.cutoffHz) {
+      this.showToast(
+        `Barrido AC listo en Consola (F12) • fc (-3dB) ≈ ${window.ProtoSim.formatSI(firstProbe.cutoffHz, 'Hz', 2)}`
+      );
+    } else {
+      this.showToast(`Barrido AC (${sweep.length} frec.) impreso en Consola (F12)`);
+    }
+
+    return sweep;
   }
 
   loop() {
