@@ -2521,6 +2521,12 @@ body.is-resizing-panel .sidebar-resizer {
           <span id="bodeStimulusBadge" class="bode-badge">Estímulo AC: 1∠0° V</span>
         </div>
         <div class="bode-controls">
+          <label class="bode-ctrl-label">Eje Y Izq.
+            <select id="bodeYAxisMode" class="bode-ctrl-select" title="Alternar entre Magnitud en Decibelios (dB) o Tensión Lineal (V)">
+              <option value="db" selected>Magnitud (dB)</option>
+              <option value="linear">Tensión Lineal (V)</option>
+            </select>
+          </label>
           <label class="bode-ctrl-label">f<sub>min</sub> (Hz)
             <input type="number" id="bodeFMin" class="bode-ctrl-input" value="1" min="0.01" step="any" />
           </label>
@@ -14699,6 +14705,7 @@ class ProtoSimApp {
     const fMinInput = document.getElementById('bodeFMin');
     const fMaxInput = document.getElementById('bodeFMax');
     const ptsSelect = document.getElementById('bodePtsDec');
+    const yAxisSelect = document.getElementById('bodeYAxisMode');
     const bodeCanvas = document.getElementById('bodeCanvas');
 
     closeBtn?.addEventListener('click', () => this.closeBodeModal());
@@ -14717,6 +14724,16 @@ class ProtoSimApp {
     fMinInput?.addEventListener('change', triggerRecalc);
     fMaxInput?.addEventListener('change', triggerRecalc);
     ptsSelect?.addEventListener('change', triggerRecalc);
+    yAxisSelect?.addEventListener('change', () => {
+      const readout = document.getElementById('bodeCursorReadout');
+      if (readout && typeof this._bodeHoverX !== 'number') {
+        const isLin = yAxisSelect.value === 'linear';
+        readout.textContent = isLin
+          ? 'Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Tensión (V) y Fase (°)'
+          : 'Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Magnitud (dB) y Fase (°)';
+      }
+      this.renderBodePlot();
+    });
 
     if (bodeCanvas) {
       bodeCanvas.addEventListener('mousemove', (e) => {
@@ -14731,8 +14748,10 @@ class ProtoSimApp {
         this._bodeHoverY = null;
         const readout = document.getElementById('bodeCursorReadout');
         if (readout) {
-          readout.textContent =
-            'Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Magnitud (dB) y Fase (°)';
+          const isLin = document.getElementById('bodeYAxisMode')?.value === 'linear';
+          readout.textContent = isLin
+            ? 'Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Tensión (V) y Fase (°)'
+            : 'Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Magnitud (dB) y Fase (°)';
         }
         this.renderBodePlot();
       });
@@ -14873,9 +14892,13 @@ class ProtoSimApp {
     const logMax = Math.log10(fMax);
     const logSpan = Math.max(1e-6, logMax - logMin);
 
-    // Determinar rango del eje Y izquierdo: Magnitud (dB)
+    const yAxisMode = document.getElementById('bodeYAxisMode')?.value || 'db';
+    const isLinearMode = yAxisMode === 'linear';
+
+    // Determinar rango del eje Y izquierdo: Magnitud (dB) o Tensión Lineal (V)
     let minDbData = 0;
     let maxDbData = 0;
+    let maxLinData = 0;
     for (const tr of probes) {
       for (const db of tr.magnitudesDb || []) {
         if (Number.isFinite(db)) {
@@ -14883,7 +14906,13 @@ class ProtoSimApp {
           if (db > maxDbData) maxDbData = db;
         }
       }
+      for (const v of tr.magnitudesLinear || []) {
+        if (Number.isFinite(v) && v > maxLinData) {
+          maxLinData = v;
+        }
+      }
     }
+
     let dbMax = Math.ceil((maxDbData + 4) / 10) * 10;
     let dbMin = Math.floor((minDbData - 4) / 10) * 10;
     if (dbMax < 10) dbMax = 10;
@@ -14891,6 +14920,21 @@ class ProtoSimApp {
     if (dbMin < -100) dbMin = -100;
     if (dbMax - dbMin < 30) dbMin = dbMax - 40;
     const dbSpan = Math.max(10, dbMax - dbMin);
+
+    // Escala para modo Tensión Lineal (V)
+    const vMin = 0;
+    const rawVMax = maxLinData > 1e-6 ? maxLinData * 1.12 : 1.0;
+    let vStep = 0.2;
+    if (rawVMax <= 0.12) vStep = 0.02;
+    else if (rawVMax <= 0.3) vStep = 0.05;
+    else if (rawVMax <= 0.6) vStep = 0.1;
+    else if (rawVMax <= 1.5) vStep = 0.2;
+    else if (rawVMax <= 3.0) vStep = 0.5;
+    else if (rawVMax <= 7.0) vStep = 1.0;
+    else if (rawVMax <= 15.0) vStep = 2.0;
+    else vStep = Math.ceil(rawVMax / 6);
+    const vMax = Math.max(vStep * 2, Math.ceil(rawVMax / vStep) * vStep);
+    const vSpan = Math.max(1e-6, vMax - vMin);
 
     // Determinar rango del eje Y derecho: Fase (grados)
     let minPhData = 0;
@@ -14915,6 +14959,10 @@ class ProtoSimApp {
     const dbToY = (db) => {
       const clamped = Math.max(dbMin, Math.min(dbMax, db));
       return padTop + ((dbMax - clamped) / dbSpan) * plotH;
+    };
+    const linToY = (v) => {
+      const clamped = Math.max(vMin, Math.min(vMax, v));
+      return padTop + ((vMax - clamped) / vSpan) * plotH;
     };
     const phaseToY = (deg) => {
       const clamped = Math.max(phMin, Math.min(phMax, deg));
@@ -14964,35 +15012,69 @@ class ProtoSimApp {
       }
     }
 
-    // 2. GRILLA HORIZONTAL Y EJES Y (Izquierdo: Magnitud dB | Derecho: Fase °)
-    const dbStep = dbSpan <= 50 ? 10 : 20;
-    for (let db = dbMin; db <= dbMax + 0.001; db += dbStep) {
-      const y = dbToY(db);
-      ctx.strokeStyle = Math.abs(db) < 0.01 ? 'rgba(226, 232, 240, 0.28)' : 'rgba(148, 163, 184, 0.12)';
-      ctx.beginPath();
-      ctx.moveTo(padLeft, y);
-      ctx.lineTo(padLeft + plotW, y);
-      ctx.stroke();
+    // 2. GRILLA HORIZONTAL Y EJES Y (Izquierdo: Magnitud dB o Tensión V | Derecho: Fase °)
+    if (!isLinearMode) {
+      const dbStep = dbSpan <= 50 ? 10 : 20;
+      for (let db = dbMin; db <= dbMax + 0.001; db += dbStep) {
+        const y = dbToY(db);
+        ctx.strokeStyle = Math.abs(db) < 0.01 ? 'rgba(226, 232, 240, 0.28)' : 'rgba(148, 163, 184, 0.12)';
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(padLeft + plotW, y);
+        ctx.stroke();
 
-      // Etiqueta eje Y izquierdo (Magnitud dB)
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = '11px "JetBrains Mono", Consolas, monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText(`${db > 0 ? '+' : ''}${Math.round(db)} dB`, padLeft - 8, y + 4);
-    }
+        // Etiqueta eje Y izquierdo (Magnitud dB)
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '11px "JetBrains Mono", Consolas, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${db > 0 ? '+' : ''}${Math.round(db)} dB`, padLeft - 8, y + 4);
+      }
 
-    // Línea horizontal tenue de referencia en -3 dB (si cae dentro del rango)
-    const refDb = (probes[0]?.magnitudesDb?.[0] || 0) - 3.0103;
-    if (refDb >= dbMin && refDb <= dbMax) {
-      const y3dB = dbToY(refDb);
-      ctx.save();
-      ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
-      ctx.beginPath();
-      ctx.moveTo(padLeft, y3dB);
-      ctx.lineTo(padLeft + plotW, y3dB);
-      ctx.stroke();
-      ctx.restore();
+      // Línea horizontal tenue de referencia en -3 dB (si cae dentro del rango)
+      const refDb = (probes[0]?.magnitudesDb?.[0] || 0) - 3.0103;
+      if (refDb >= dbMin && refDb <= dbMax) {
+        const y3dB = dbToY(refDb);
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y3dB);
+        ctx.lineTo(padLeft + plotW, y3dB);
+        ctx.stroke();
+        ctx.restore();
+      }
+    } else {
+      const decimals = vStep < 0.1 ? 2 : vStep < 1 ? 1 : 0;
+      for (let v = vMin; v <= vMax + vStep * 0.01; v += vStep) {
+        const y = linToY(v);
+        ctx.strokeStyle = Math.abs(v) < 1e-6 ? 'rgba(226, 232, 240, 0.28)' : 'rgba(148, 163, 184, 0.12)';
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(padLeft + plotW, y);
+        ctx.stroke();
+
+        // Etiqueta eje Y izquierdo (Tensión Lineal V)
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '11px "JetBrains Mono", Consolas, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${v.toFixed(decimals)} V`, padLeft - 8, y + 4);
+      }
+
+      // Línea horizontal tenue de referencia en Vmax / √2 (0.707 Vmax, punto de -3 dB en tensión lineal)
+      const firstLinArr = probes[0]?.magnitudesLinear || [];
+      const maxFirstV = firstLinArr.length > 0 ? Math.max(...firstLinArr) : 0;
+      const refV = maxFirstV * Math.SQRT1_2;
+      if (refV > vMin && refV <= vMax) {
+        const yRefV = linToY(refV);
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+        ctx.beginPath();
+        ctx.moveTo(padLeft, yRefV);
+        ctx.lineTo(padLeft + plotW, yRefV);
+        ctx.stroke();
+        ctx.restore();
+      }
     }
 
     // Etiquetas eje Y derecho (Fase en grados)
@@ -15012,7 +15094,11 @@ class ProtoSimApp {
 
     ctx.fillStyle = '#38bdf8';
     ctx.textAlign = 'left';
-    ctx.fillText('Magnitud (dB) — Línea Continua', padLeft, padTop - 12);
+    ctx.fillText(
+      isLinearMode ? 'Tensión Lineal (V) — Línea Continua' : 'Magnitud (dB) — Línea Continua',
+      padLeft,
+      padTop - 12
+    );
 
     ctx.fillStyle = '#94a3b8';
     ctx.textAlign = 'right';
@@ -15023,7 +15109,7 @@ class ProtoSimApp {
     ctx.lineWidth = 1;
     ctx.strokeRect(padLeft, padTop, plotW, plotH);
 
-    // 3. DIBUJAR CURVAS DE PROBETRACES (Magnitud en dB y Fase en grados)
+    // 3. DIBUJAR CURVAS DE PROBETRACES (Magnitud en dB o Tensión en V, y Fase en grados)
     const palette = [
       { mag: '#38bdf8', phase: 'rgba(125, 211, 252, 0.58)' },
       { mag: '#34d399', phase: 'rgba(110, 231, 183, 0.58)' },
@@ -15038,7 +15124,8 @@ class ProtoSimApp {
 
     probes.forEach((tr, idx) => {
       const col = palette[idx % palette.length];
-      const mags = tr.magnitudesDb || [];
+      const magsDb = tr.magnitudesDb || [];
+      const magsLin = tr.magnitudesLinear || [];
       const phases = tr.phasesDeg || [];
 
       // Curva de Fase (grados) — punteada y color más apagado
@@ -15056,25 +15143,35 @@ class ProtoSimApp {
       ctx.stroke();
       ctx.restore();
 
-      // Curva de Magnitud (dB) — continua y vibrante
+      // Curva principal (Magnitud en dB o Tensión Lineal en V) — continua y vibrante
       ctx.save();
       ctx.strokeStyle = col.mag;
       ctx.lineWidth = 2.4;
       ctx.beginPath();
       for (let i = 0; i < freqs.length; i++) {
         const x = freqToX(freqs[i]);
-        const y = dbToY(mags[i]);
+        const y = isLinearMode ? linToY(magsLin[i]) : dbToY(magsDb[i]);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
       ctx.stroke();
       ctx.restore();
 
-      // Marca y etiqueta en la Frecuencia de Corte (-3 dB) si existe
+      // Marca y etiqueta en la Frecuencia de Corte (-3 dB / 0.707 Vmax) si existe
       if (tr.cutoffHz && tr.cutoffHz >= fMin && tr.cutoffHz <= fMax) {
         const xc = freqToX(tr.cutoffHz);
-        const maxDbTrace = Math.max(...mags);
-        const yc = dbToY(maxDbTrace - 3.0103);
+        let yc;
+        let labelTxt;
+        if (isLinearMode) {
+          const maxVTrace = Math.max(...magsLin);
+          const cutV = maxVTrace * Math.SQRT1_2;
+          yc = linToY(cutV);
+          labelTxt = `fc = ${formatFreq(tr.cutoffHz)} (${cutV.toFixed(2)} V)`;
+        } else {
+          const maxDbTrace = Math.max(...magsDb);
+          yc = dbToY(maxDbTrace - 3.0103);
+          labelTxt = `fc = ${formatFreq(tr.cutoffHz)} (-3 dB)`;
+        }
 
         ctx.save();
         ctx.setLineDash([4, 3]);
@@ -15086,7 +15183,7 @@ class ProtoSimApp {
         ctx.stroke();
         ctx.restore();
 
-        // Punto destacado en (fc, -3dB)
+        // Punto destacado en fc
         ctx.fillStyle = '#f59e0b';
         ctx.beginPath();
         ctx.arc(xc, yc, 4.5, 0, Math.PI * 2);
@@ -15096,7 +15193,6 @@ class ProtoSimApp {
         ctx.stroke();
 
         // Etiqueta de frecuencia de corte fc
-        const labelTxt = `fc = ${formatFreq(tr.cutoffHz)} (-3 dB)`;
         ctx.font = 'bold 11px "JetBrains Mono", Consolas, monospace';
         const tw = ctx.measureText(labelTxt).width + 12;
         const lx = xc + 8 + tw < padLeft + plotW ? xc + 8 : xc - tw - 8;
@@ -15153,12 +15249,22 @@ class ProtoSimApp {
 
       probes.forEach((tr, idx) => {
         const col = palette[idx % palette.length];
-        const magVal = tr.magnitudesDb[nearestIdx];
         const phVal = tr.phasesDeg[nearestIdx];
-        const ym = dbToY(magVal);
         const yp = phaseToY(phVal);
 
-        // Punto sobre la curva de Magnitud
+        let ym;
+        let valText;
+        if (isLinearMode) {
+          const linVal = tr.magnitudesLinear[nearestIdx];
+          ym = linToY(linVal);
+          valText = `${linVal.toFixed(3)} V`;
+        } else {
+          const magVal = tr.magnitudesDb[nearestIdx];
+          ym = dbToY(magVal);
+          valText = `${magVal >= 0 ? '+' : ''}${magVal.toFixed(2)} dB`;
+        }
+
+        // Punto sobre la curva principal (Magnitud dB o Tensión V)
         ctx.fillStyle = col.mag;
         ctx.beginPath();
         ctx.arc(cx, ym, 4.2, 0, Math.PI * 2);
@@ -15174,7 +15280,7 @@ class ProtoSimApp {
         ctx.fill();
 
         tooltipLines.push(
-          `${tr.label}: ${magVal >= 0 ? '+' : ''}${magVal.toFixed(2)} dB  |  ∠ ${phVal >= 0 ? '+' : ''}${phVal.toFixed(1)}°`
+          `${tr.label}: ${valText}  |  ∠ ${phVal >= 0 ? '+' : ''}${phVal.toFixed(1)}°`
         );
       });
 
