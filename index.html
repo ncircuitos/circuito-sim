@@ -1887,6 +1887,155 @@ body.is-resizing-panel .sidebar-resizer {
   color: var(--text-muted);
 }
 
+/* Controles de Sincronización de Señal (Trigger) del Osciloscopio */
+.osc-trigger-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 7px 10px;
+  background: rgba(10, 15, 26, 0.92);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.osc-trigger-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.osc-trig-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.osc-trig-edge-field {
+  flex: 0 0 92px;
+}
+
+.osc-trig-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #94a3b8;
+}
+
+.osc-trig-select,
+.osc-trig-edge {
+  width: 100%;
+  padding: 3px 6px;
+  font-size: 11px;
+}
+
+.osc-trig-level-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.osc-trig-input {
+  width: 68px;
+  flex: 1;
+  min-width: 52px;
+  padding: 3px 6px;
+  font-size: 11px;
+  height: 24px;
+}
+
+.osc-trig-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #f97316;
+}
+
+.osc-trig-status-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.4px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  background: rgba(16, 185, 129, 0.14);
+  color: #34d399;
+}
+
+.osc-trig-status-badge.status-trig {
+  border-color: rgba(52, 211, 153, 0.45);
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+}
+
+.osc-trig-status-badge.status-auto {
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.osc-trig-status-badge.status-free {
+  border-color: rgba(148, 163, 184, 0.3);
+  background: rgba(51, 65, 85, 0.35);
+  color: #94a3b8;
+}
+
+/* Grupo compacto de Trigger en el Analizador de Precisión superior */
+.exp-trigger-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.exp-trig-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #fb923c;
+  letter-spacing: 0.4px;
+}
+
+.exp-trig-select {
+  padding: 2px 5px;
+  font-size: 11px;
+  max-width: 135px;
+}
+
+.exp-trig-level-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.exp-trig-sublabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.exp-trig-input {
+  width: 56px;
+  padding: 2px 5px;
+  font-size: 11px;
+  height: 22px;
+}
+
+.exp-trig-edge {
+  padding: 2px 5px;
+  font-size: 11px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 960px) {
   .palette-sidebar {
@@ -1941,6 +2090,23 @@ body.is-resizing-panel .sidebar-resizer {
             </div>
 
             <div class="expanded-graph-controls">
+              <div class="exp-trigger-group" id="expTriggerGroup">
+                <span class="exp-trig-tag">TRIGGER</span>
+                <select class="select-input exp-trig-select" id="expTriggerSource" title="Trigger Source (elegir canal)">
+                  <option value="auto">Auto (Canal activo)</option>
+                  <option value="off">Off (Libre)</option>
+                </select>
+                <div class="exp-trig-level-box" title="Trigger Level en Voltios (V)">
+                  <span class="exp-trig-sublabel">Lvl</span>
+                  <input type="number" class="prop-input exp-trig-input" id="expTriggerLevel" value="0" step="0.5" />
+                  <span class="exp-trig-sublabel">V</span>
+                  <button type="button" class="unit-btn" id="btnExpTrig50" title="Centrar Trigger Level al 50% de la onda">50%</button>
+                </div>
+                <select class="select-input exp-trig-edge" id="expTriggerEdge" title="Edge: Pendiente Rising (Subida) o Falling (Bajada)">
+                  <option value="rising" selected>↑ Rising</option>
+                  <option value="falling">↓ Falling</option>
+                </select>
+              </div>
               <button class="btn btn-active" id="btnToggleGraphCursors" style="padding:4px 9px;font-size:11px;" title="Activar / Ocultar barras de cursores para medir ΔV y Δt (ms)">
                 Cursores ΔV / Δt
               </button>
@@ -2131,6 +2297,39 @@ body.is-resizing-panel .sidebar-resizer {
               <button class="unit-btn" id="btnCloseRightSidebar" title="Desmarcar y cerrar panel (Esc)">✕</button>
             </div>
           </div>
+          <!-- CONTROLES DE TRIGGER DEL OSCILOSCOPIO -->
+          <div class="osc-trigger-bar" id="oscTriggerBar">
+            <div class="osc-trigger-row">
+              <div class="osc-trig-field" title="Trigger Source: Elegir canal de referencia para sincronizar la señal">
+                <label class="osc-trig-label" for="oscTriggerSource">Trigger Source</label>
+                <select class="select-input osc-trig-select" id="oscTriggerSource">
+                  <option value="auto">Auto (Canal activo)</option>
+                  <option value="off">Off (Libre)</option>
+                </select>
+              </div>
+              <div class="osc-trig-field osc-trig-edge-field" title="Edge: Pendiente del flanco de disparo (Rising / Falling)">
+                <label class="osc-trig-label" for="oscTriggerEdge">Edge</label>
+                <select class="select-input osc-trig-edge" id="oscTriggerEdge">
+                  <option value="rising" selected>↑ Rising</option>
+                  <option value="falling">↓ Falling</option>
+                </select>
+              </div>
+            </div>
+            <div class="osc-trigger-row">
+              <div class="osc-trig-field osc-trig-level-field" title="Trigger Level: Nivel de disparo en Voltios (V)">
+                <label class="osc-trig-label" for="oscTriggerLevel">Trigger Level (V)</label>
+                <div class="osc-trig-level-wrap">
+                  <input type="number" class="prop-input osc-trig-input" id="oscTriggerLevel" value="0" step="0.5" />
+                  <span class="osc-trig-unit">V</span>
+                  <button type="button" class="unit-btn" id="btnOscTrig50" title="Ajustar Trigger Level al 50% (punto medio) de la señal actual">50%</button>
+                  <button type="button" class="unit-btn" id="btnOscTrigZero" title="Fijar Trigger Level en 0 V">0V</button>
+                </div>
+              </div>
+              <div class="osc-trig-status-badge status-trig" id="oscTriggerStatus" title="Estado del Trigger: TRIG'D (Sincronizado) / AUTO (Esperando cruce) / FREE (Desactivado)">
+                TRIG'D
+              </div>
+            </div>
+          </div>
           <div class="pinned-graphs-list" id="pinnedGraphsList"></div>
         </div>
 
@@ -2230,9 +2429,7 @@ body.is-resizing-panel .sidebar-resizer {
     </div>
   </div>
 
-  <script>
-
-// === components.js ===
+    <script>
 // ============================================================================
 // PROTO-SIM: Catálogo de Componentes Electrónicos, Pines y Utilidades SI
 // ============================================================================
@@ -3191,8 +3388,6 @@ window.ProtoSim.COMPONENT_SHORTCUTS = COMPONENT_SHORTCUTS;
 window.ProtoSim.COMPONENT_LIBRARY = COMPONENT_LIBRARY;
 window.ProtoSim.getPinWorldGrid = getPinWorldGrid;
 
-
-// === solver.js ===
 // ============================================================================
 // PROTO-SIM: Motor MNA (Modified Nodal Analysis) en Tiempo Real + Newton-Raphson
 // ============================================================================
@@ -4650,8 +4845,6 @@ class CircuitSolver {
 
 window.ProtoSim.CircuitSolver = CircuitSolver;
 
-
-// === renderer.js ===
 // ============================================================================
 // PROTO-SIM: Renderizador Canvas de Alta Precisión estilo PROTO
 // ============================================================================
@@ -7065,8 +7258,6 @@ window.ProtoSim.GRID_SIZE = GRID_SIZE;
 window.ProtoSim.voltageToColor = voltageToColor;
 window.ProtoSim.CircuitRenderer = CircuitRenderer;
 
-
-// === oscilloscope.js ===
 // ============================================================================
 // PROTO-SIM: Osciloscopio Multicanal + Monitores Múltiples Anclados a la Derecha
 // ============================================================================
@@ -7104,6 +7295,17 @@ class Oscilloscope {
     this.draggingCursor = null; // 'A' | 'B' | 'V1' | 'V2' | null
     this.expHoverX = null;
 
+    // Estado de Sincronización de Señal (Trigger) estilo osciloscopio real
+    this.triggerEnabled = true;
+    this.triggerSource = 'auto'; // 'auto' | 'off' | id de canal o componente
+    this.triggerLevel = 0; // Nivel de disparo en V
+    this.triggerEdge = 'rising'; // 'rising' (Flanco de subida) | 'falling' (Flanco de bajada)
+    this.triggerPosition = 0.25; // Posición horizontal fija del punto de cruce (25% del ancho de pantalla)
+    this.lastTriggeredState = false;
+    this._lastTriggerOptionsSig = '';
+
+    this.initTriggerUI();
+
     if (this.canvas) {
       this.canvas.addEventListener('mousemove', (e) => {
         const rect = this.canvas.getBoundingClientRect();
@@ -7139,21 +7341,19 @@ class Oscilloscope {
     const maxS = this.maxSamples;
     const trimThreshold = maxS + 600;
 
-    if (this.canvas) {
-      const channels = this.getActiveChannels(appState);
-      const sample = { t: simTime, ch: {} };
+    const channels = this.getActiveChannels(appState);
+    const sample = { t: simTime, ch: {} };
 
-      for (const ch of channels) {
-        sample.ch[ch.id] = {
-          v: ch.getV(),
-          i: ch.getI()
-        };
-      }
+    for (const ch of channels) {
+      sample.ch[ch.id] = {
+        v: ch.getV(),
+        i: ch.getI()
+      };
+    }
 
-      this.history.push(sample);
-      if (this.history.length >= trimThreshold) {
-        this.history.splice(0, this.history.length - maxS);
-      }
+    this.history.push(sample);
+    if (this.history.length >= trimThreshold) {
+      this.history.splice(0, this.history.length - maxS);
     }
 
     // Guardar historial individual de todos los componentes para los gráficos de la derecha
@@ -7256,6 +7456,7 @@ class Oscilloscope {
         includedCompIds.add(c.id);
         list.push({
           id: `probe_${c.id}`,
+          compId: c.id,
           label: c.name || 'CH',
           color: c.props.channelColor || CHANNEL_COLORS[colorIdx++ % CHANNEL_COLORS.length],
           getV: () => c.vDiff || 0,
@@ -7273,6 +7474,7 @@ class Oscilloscope {
           includedCompIds.add(comp.id);
           list.push({
             id: `comp_${comp.id}`,
+            compId: comp.id,
             label: comp.name || comp.type.toUpperCase(),
             color: color || CHANNEL_COLORS[colorIdx++ % CHANNEL_COLORS.length],
             getV: () => comp.vDiff || 0,
@@ -7290,6 +7492,7 @@ class Oscilloscope {
         if (!includedCompIds.has(sel.id)) {
           list.push({
             id: `sel_${sel.id}`,
+            compId: sel.id,
             label: `${sel.name}`,
             color: '#00ff9d',
             getV: () => sel.vDiff || 0,
@@ -7304,7 +7507,586 @@ class Oscilloscope {
     return list;
   }
 
+  // Inicializa y enlaza los controles de UI de Trigger ('Trigger Source', 'Trigger Level', 'Edge')
+  initTriggerUI() {
+    if (typeof document === 'undefined') return;
+
+    // 1. Insertar barra de controles de Trigger en la sección de gráficos del panel derecho (#pinnedGraphsSection)
+    const graphsSection = document.getElementById('pinnedGraphsSection');
+    const graphsList = document.getElementById('pinnedGraphsList');
+    if (graphsSection && graphsList && !document.getElementById('oscTriggerBar')) {
+      const bar = document.createElement('div');
+      bar.className = 'osc-trigger-bar';
+      bar.id = 'oscTriggerBar';
+      bar.innerHTML = `
+        <div class="osc-trigger-row">
+          <div class="osc-trig-field" title="Trigger Source: Elegir canal de referencia para sincronizar la señal">
+            <label class="osc-trig-label" for="oscTriggerSource">Trigger Source</label>
+            <select class="select-input osc-trig-select" id="oscTriggerSource">
+              <option value="auto">Auto (Canal activo)</option>
+              <option value="off">Off (Libre)</option>
+            </select>
+          </div>
+          <div class="osc-trig-field osc-trig-edge-field" title="Edge: Pendiente del flanco de disparo (Rising / Falling)">
+            <label class="osc-trig-label" for="oscTriggerEdge">Edge</label>
+            <select class="select-input osc-trig-edge" id="oscTriggerEdge">
+              <option value="rising" selected>↑ Rising</option>
+              <option value="falling">↓ Falling</option>
+            </select>
+          </div>
+        </div>
+        <div class="osc-trigger-row">
+          <div class="osc-trig-field osc-trig-level-field" title="Trigger Level: Nivel de disparo en Voltios (V)">
+            <label class="osc-trig-label" for="oscTriggerLevel">Trigger Level (V)</label>
+            <div class="osc-trig-level-wrap">
+              <input type="number" class="prop-input osc-trig-input" id="oscTriggerLevel" value="0" step="0.5" />
+              <span class="osc-trig-unit">V</span>
+              <button type="button" class="unit-btn" id="btnOscTrig50" title="Ajustar Trigger Level al 50% (punto medio) de la señal actual">50%</button>
+              <button type="button" class="unit-btn" id="btnOscTrigZero" title="Fijar Trigger Level en 0 V">0V</button>
+            </div>
+          </div>
+          <div class="osc-trig-status-badge" id="oscTriggerStatus" title="Estado del Trigger: TRIG'D (Sincronizado) / AUTO (Esperando cruce) / FREE (Desactivado)">
+            TRIG'D
+          </div>
+        </div>
+      `;
+      graphsSection.insertBefore(bar, graphsList);
+    }
+
+    // 2. Insertar controles compactos de Trigger en el Analizador de Precisión superior (#topExpandedGraphDock)
+    const expControls = document.querySelector('#topExpandedGraphDock .expanded-graph-controls');
+    if (expControls && !document.getElementById('expTriggerGroup')) {
+      const expGroup = document.createElement('div');
+      expGroup.className = 'exp-trigger-group';
+      expGroup.id = 'expTriggerGroup';
+      expGroup.innerHTML = `
+        <span class="exp-trig-tag">TRIGGER</span>
+        <select class="select-input exp-trig-select" id="expTriggerSource" title="Trigger Source (elegir canal)">
+          <option value="auto">Auto (Canal)</option>
+          <option value="off">Off (Libre)</option>
+        </select>
+        <div class="exp-trig-level-box" title="Trigger Level en Voltios (V)">
+          <span class="exp-trig-sublabel">Lvl</span>
+          <input type="number" class="prop-input exp-trig-input" id="expTriggerLevel" value="0" step="0.5" />
+          <span class="exp-trig-sublabel">V</span>
+          <button type="button" class="unit-btn" id="btnExpTrig50" title="Centrar Trigger Level al 50% de la onda">50%</button>
+        </div>
+        <select class="select-input exp-trig-edge" id="expTriggerEdge" title="Edge: Pendiente Rising (Subida) o Falling (Bajada)">
+          <option value="rising" selected>↑ Rising</option>
+          <option value="falling">↓ Falling</option>
+        </select>
+      `;
+      expControls.insertBefore(expGroup, expControls.firstChild);
+    }
+
+    // 3. Enlazar eventos de cambio de Trigger Source, Trigger Level y Edge (idempotente)
+    const bindSelectSource = (el) => {
+      if (!el || el._trigBound) return;
+      el._trigBound = true;
+      el.addEventListener('click', (e) => e.stopPropagation());
+      el.addEventListener('change', (e) => {
+        this.setTriggerSource(e.target.value);
+      });
+    };
+
+    const bindInputLevel = (el) => {
+      if (!el || el._trigBound) return;
+      el._trigBound = true;
+      el.addEventListener('click', (e) => e.stopPropagation());
+      el.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (!isNaN(val)) {
+          this.setTriggerLevel(val, e.target);
+        }
+      });
+      el.addEventListener('change', (e) => {
+        const val = parseFloat(e.target.value);
+        this.setTriggerLevel(isNaN(val) ? 0 : val);
+      });
+    };
+
+    const bindSelectEdge = (el) => {
+      if (!el || el._trigBound) return;
+      el._trigBound = true;
+      el.addEventListener('click', (e) => e.stopPropagation());
+      el.addEventListener('change', (e) => {
+        this.setTriggerEdge(e.target.value);
+      });
+    };
+
+    bindSelectSource(document.getElementById('oscTriggerSource'));
+    bindSelectSource(document.getElementById('expTriggerSource'));
+    bindInputLevel(document.getElementById('oscTriggerLevel'));
+    bindInputLevel(document.getElementById('expTriggerLevel'));
+    bindSelectEdge(document.getElementById('oscTriggerEdge'));
+    bindSelectEdge(document.getElementById('expTriggerEdge'));
+
+    const btn50 = document.getElementById('btnOscTrig50');
+    if (btn50 && !btn50._trigBound) {
+      btn50._trigBound = true;
+      btn50.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setTriggerLevelToMidpoint(this._lastAppState);
+      });
+    }
+
+    const btnExp50 = document.getElementById('btnExpTrig50');
+    if (btnExp50 && !btnExp50._trigBound) {
+      btnExp50._trigBound = true;
+      btnExp50.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setTriggerLevelToMidpoint(this._lastAppState);
+      });
+    }
+
+    const btnZero = document.getElementById('btnOscTrigZero');
+    if (btnZero && !btnZero._trigBound) {
+      btnZero._trigBound = true;
+      btnZero.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setTriggerLevel(0);
+      });
+    }
+  }
+
+  setTriggerSource(sourceVal) {
+    this.triggerSource = sourceVal || 'auto';
+    this.triggerEnabled = this.triggerSource !== 'off';
+    const s1 = document.getElementById('oscTriggerSource');
+    const s2 = document.getElementById('expTriggerSource');
+    if (s1 && s1.value !== this.triggerSource) s1.value = this.triggerSource;
+    if (s2 && s2.value !== this.triggerSource) s2.value = this.triggerSource;
+  }
+
+  setTriggerLevel(levelV, activeInput = null) {
+    const num = Number(levelV);
+    this.triggerLevel = isFinite(num) ? Math.round(num * 1000) / 1000 : 0;
+    const i1 = document.getElementById('oscTriggerLevel');
+    const i2 = document.getElementById('expTriggerLevel');
+    if (i1 && i1 !== activeInput && document.activeElement !== i1) {
+      i1.value = String(this.triggerLevel);
+    }
+    if (i2 && i2 !== activeInput && document.activeElement !== i2) {
+      i2.value = String(this.triggerLevel);
+    }
+  }
+
+  setTriggerEdge(edgeVal) {
+    this.triggerEdge = edgeVal === 'falling' ? 'falling' : 'rising';
+    const e1 = document.getElementById('oscTriggerEdge');
+    const e2 = document.getElementById('expTriggerEdge');
+    if (e1 && e1.value !== this.triggerEdge) e1.value = this.triggerEdge;
+    if (e2 && e2.value !== this.triggerEdge) e2.value = this.triggerEdge;
+  }
+
+  // Ajusta automáticamente el Trigger Level al 50% pico-a-pico del canal de Trigger activo
+  setTriggerLevelToMidpoint(appState) {
+    if (!appState) return;
+    const rawKey = this.resolveTriggerHistoryKey(appState);
+    const hist = rawKey ? this.compHistory.get(rawKey) : null;
+    if (hist && hist.length >= 2) {
+      const recent = hist.slice(-Math.max(this.viewSamples, 800));
+      let vMin = Infinity;
+      let vMax = -Infinity;
+      for (const pt of recent) {
+        if (pt.v < vMin) vMin = pt.v;
+        if (pt.v > vMax) vMax = pt.v;
+      }
+      if (isFinite(vMin) && isFinite(vMax)) {
+        const mid = Math.round(((vMin + vMax) * 0.5) * 100) / 100;
+        this.setTriggerLevel(mid);
+        return;
+      }
+    }
+    this.setTriggerLevel(0);
+  }
+
+  // Sincroniza dinámicamente las opciones de 'Trigger Source' según los canales y componentes activos
+  syncTriggerUI(appState) {
+    this._lastAppState = appState;
+    this.initTriggerUI();
+
+    const graphsList = document.getElementById('pinnedGraphsList');
+    const trigBar = document.getElementById('oscTriggerBar');
+    if (graphsList && trigBar) {
+      trigBar.style.display = graphsList.style.display === 'none' ? 'none' : '';
+    }
+
+    if (!appState) return;
+
+    const options = [{ value: 'auto', label: 'Auto (Canal activo)' }];
+    const seen = new Set(['auto', 'off']);
+
+    // 1. Incluir canales activos del osciloscopio y monitores visibles
+    const activeChannels = this.getActiveChannels(appState);
+    for (const ch of activeChannels) {
+      const key = ch.compId || ch.id;
+      if (!seen.has(key)) {
+        seen.add(key);
+        options.push({ value: key, label: `CH: ${ch.label}` });
+      }
+    }
+
+    const monitorIds = appState.getDisplayedMonitorIds
+      ? appState.getDisplayedMonitorIds()
+      : appState.pinnedMonitors || [];
+    for (const mId of monitorIds) {
+      if (seen.has(mId)) continue;
+      seen.add(mId);
+      if (typeof mId === 'string' && mId.startsWith('node_')) {
+        options.push({ value: mId, label: `Nodo (${mId.slice(5)})` });
+      } else if (typeof mId === 'string' && mId.startsWith('wire_')) {
+        options.push({ value: mId, label: 'Cable Conductor' });
+      } else {
+        const comp = (appState.components || []).find((c) => c.id === mId);
+        if (comp) {
+          const def = window.ProtoSim.COMPONENT_LIBRARY?.[comp.type];
+          options.push({ value: comp.id, label: `${comp.name} (${def?.name || comp.type})` });
+        }
+      }
+    }
+
+    // 2. Incluir el resto de componentes del circuito para poder disparar desde cualquier fuente (ej: generador AC)
+    for (const comp of appState.components || []) {
+      if (comp.type === 'gnd' || seen.has(comp.id)) continue;
+      seen.add(comp.id);
+      const def = window.ProtoSim.COMPONENT_LIBRARY?.[comp.type];
+      options.push({ value: comp.id, label: `${comp.name} (${def?.name || comp.type})` });
+    }
+
+    options.push({ value: 'off', label: 'Off (Sin Trigger / Libre)' });
+
+    // Si el canal elegido ya no existe en el circuito, volver a 'auto'
+    const rawSelected = this.stripChannelPrefix(this.triggerSource);
+    if (this.triggerSource !== 'auto' && this.triggerSource !== 'off' && !seen.has(this.triggerSource) && !seen.has(rawSelected)) {
+      this.triggerSource = 'auto';
+      this.triggerEnabled = true;
+    }
+
+    const sig = options.map((o) => `${o.value}:${o.label}`).join('|');
+    if (sig !== this._lastTriggerOptionsSig) {
+      this._lastTriggerOptionsSig = sig;
+      const html = options.map((o) => `<option value="${o.value}">${o.label}</option>`).join('');
+      const sel1 = document.getElementById('oscTriggerSource');
+      const sel2 = document.getElementById('expTriggerSource');
+      const valToSet = seen.has(this.triggerSource) ? this.triggerSource : (seen.has(rawSelected) ? rawSelected : 'auto');
+      if (sel1 && document.activeElement !== sel1) {
+        sel1.innerHTML = html;
+        sel1.value = valToSet;
+      }
+      if (sel2 && document.activeElement !== sel2) {
+        sel2.innerHTML = html;
+        sel2.value = valToSet;
+      }
+    }
+  }
+
+  updateTriggerStatusBadge(triggered) {
+    this.lastTriggeredState = Boolean(triggered);
+    const badge = document.getElementById('oscTriggerStatus');
+    if (!badge) return;
+    if (!this.triggerEnabled || this.triggerSource === 'off') {
+      badge.textContent = 'FREE';
+      badge.className = 'osc-trig-status-badge status-free';
+    } else if (triggered) {
+      badge.textContent = "TRIG'D";
+      badge.className = 'osc-trig-status-badge status-trig';
+    } else {
+      badge.textContent = 'AUTO';
+      badge.className = 'osc-trig-status-badge status-auto';
+    }
+  }
+
+  stripChannelPrefix(sourceId) {
+    if (!sourceId || typeof sourceId !== 'string') return 'auto';
+    if (sourceId.startsWith('probe_')) return sourceId.slice(6);
+    if (sourceId.startsWith('comp_')) return sourceId.slice(5);
+    if (sourceId.startsWith('sel_')) return sourceId.slice(4);
+    return sourceId;
+  }
+
+  // Resuelve la clave de historial (compHistory) correspondiente al Trigger Source seleccionado
+  resolveTriggerHistoryKey(appState, fallbackMonitorId = null) {
+    if (!this.triggerEnabled || this.triggerSource === 'off') return null;
+    if (this.triggerSource && this.triggerSource !== 'auto') {
+      const raw = this.stripChannelPrefix(this.triggerSource);
+      if (this.compHistory.has(raw)) return raw;
+      if (this.compHistory.has(this.triggerSource)) return this.triggerSource;
+    }
+    if (fallbackMonitorId && this.compHistory.has(fallbackMonitorId)) {
+      return fallbackMonitorId;
+    }
+    if (appState?.expandedMonitorId && this.compHistory.has(appState.expandedMonitorId)) {
+      return appState.expandedMonitorId;
+    }
+    const monitorIds = appState?.getDisplayedMonitorIds
+      ? appState.getDisplayedMonitorIds()
+      : appState?.pinnedMonitors || [];
+    if (monitorIds.length > 0 && this.compHistory.has(monitorIds[0])) {
+      return monitorIds[0];
+    }
+    const channels = appState ? this.getActiveChannels(appState) : [];
+    if (channels.length > 0) {
+      const raw = channels[0].compId || this.stripChannelPrefix(channels[0].id);
+      if (this.compHistory.has(raw)) return raw;
+    }
+    return null;
+  }
+
+  // Busca en el historial el último cruce del Trigger Level con la pendiente correcta (Rising / Falling)
+  // y calcula la ventana alineada para que el cruce quede siempre fijo en la misma posición X de pantalla
+  findTriggerCrossing(historyArr, getV) {
+    const N = historyArr ? historyArr.length : 0;
+    const viewS = this.viewSamples;
+    const denom = Math.max(1, viewS - 1);
+    const preSamples = Math.round(denom * this.triggerPosition);
+    const postSamples = viewS - preSamples;
+
+    if (!this.triggerEnabled || this.triggerSource === 'off' || N < 2 || typeof getV !== 'function') {
+      const sliceStart = Math.max(0, N - viewS);
+      return {
+        triggered: false,
+        crossIdx: -1,
+        frac: 0,
+        offsetFromEnd: 0,
+        sliceStart,
+        sliceEnd: N,
+        data: historyArr ? historyArr.slice(sliceStart) : [],
+        baseOffset: 0,
+        preSamples,
+        denom
+      };
+    }
+
+    const level = Number(this.triggerLevel) || 0;
+    const isRising = this.triggerEdge !== 'falling';
+
+    const isCrossingAt = (idx) => {
+      const vPrev = getV(historyArr[idx - 1], idx - 1);
+      const vCurr = getV(historyArr[idx], idx);
+      if (vPrev === undefined || vCurr === undefined) return false;
+      return isRising
+        ? vPrev < level && vCurr >= level && vCurr > vPrev
+        : vPrev > level && vCurr <= level && vCurr < vPrev;
+    };
+
+    let crossIdx = -1;
+
+    // 1. Buscar hacia atrás el último cruce que tenga suficientes muestras post-trigger para llenar la pantalla
+    const maxFullIdx = N - postSamples;
+    const minFullIdx = Math.max(1, preSamples);
+    for (let i = maxFullIdx; i >= minFullIdx; i--) {
+      if (isCrossingAt(i)) {
+        crossIdx = i;
+        break;
+      }
+    }
+
+    // 2. Si el historial aún se está llenando o el período es largo, buscar en todo el rango disponible
+    if (crossIdx === -1) {
+      for (let i = N - 1; i >= 1; i--) {
+        if (isCrossingAt(i)) {
+          crossIdx = i;
+          break;
+        }
+      }
+    }
+
+    // Si no hubo cruce (ej: señal DC pura o Trigger Level fuera de rango), modo Auto sin disparo
+    if (crossIdx === -1) {
+      const sliceStart = Math.max(0, N - viewS);
+      return {
+        triggered: false,
+        crossIdx: -1,
+        frac: 0,
+        offsetFromEnd: 0,
+        sliceStart,
+        sliceEnd: N,
+        data: historyArr.slice(sliceStart),
+        baseOffset: 0,
+        preSamples,
+        denom
+      };
+    }
+
+    // Interpolación sub-muestra para eliminar cualquier jitter horizontal entre pasos discretos Δt
+    const vPrev = getV(historyArr[crossIdx - 1], crossIdx - 1);
+    const vCurr = getV(historyArr[crossIdx], crossIdx);
+    const dv = vCurr - vPrev;
+    const frac = Math.abs(dv) > 1e-12 ? Math.max(0, Math.min(1, (level - vPrev) / dv)) : 0;
+
+    const sliceStart = Math.max(0, crossIdx - preSamples - 1);
+    const sliceEnd = Math.min(N, crossIdx + postSamples + 1);
+    const data = historyArr.slice(sliceStart, sliceEnd);
+
+    // Alinear el dibujo para que el punto exacto de cruce (crossIdx - 1 + frac) caiga siempre en samplePos = preSamples
+    const baseOffset = sliceStart - (crossIdx - preSamples) + (1 - frac);
+
+    return {
+      triggered: true,
+      crossIdx,
+      frac,
+      offsetFromEnd: N - 1 - crossIdx,
+      sliceStart,
+      sliceEnd,
+      data,
+      baseOffset,
+      preSamples,
+      denom
+    };
+  }
+
+  // Obtiene la ventana sincronizada por Trigger para un monitor específico (compHistory)
+  getMonitorTriggeredWindow(monitorId, appState) {
+    const fullHist = this.compHistory.get(monitorId) || [];
+    const N = fullHist.length;
+    const viewS = this.viewSamples;
+    const denom = Math.max(1, viewS - 1);
+    const preSamples = Math.round(denom * this.triggerPosition);
+    const postSamples = viewS - preSamples;
+
+    if (!this.triggerEnabled || this.triggerSource === 'off' || N < 2) {
+      const sliceStart = Math.max(0, N - viewS);
+      return {
+        triggered: false,
+        data: fullHist.slice(sliceStart),
+        baseOffset: 0,
+        preSamples,
+        denom,
+        isTriggerSource: false
+      };
+    }
+
+    // Determinar el canal fuente de Trigger ('auto' usa el propio monitor; si eligió un canal específico, sincroniza todos a ese canal)
+    const sourceKey =
+      this.triggerSource === 'auto'
+        ? monitorId
+        : this.resolveTriggerHistoryKey(appState, monitorId);
+
+    const sourceHist = sourceKey ? this.compHistory.get(sourceKey) : null;
+    if (!sourceHist || sourceHist.length < 2) {
+      return {
+        ...this.findTriggerCrossing(fullHist, (pt) => pt?.v),
+        isTriggerSource: true
+      };
+    }
+
+    if (sourceKey === monitorId) {
+      return {
+        ...this.findTriggerCrossing(fullHist, (pt) => pt?.v),
+        isTriggerSource: true
+      };
+    }
+
+    // Sincronizar este monitor usando el instante exacto de cruce del canal elegido en 'Trigger Source'
+    const refTrig = this.findTriggerCrossing(sourceHist, (pt) => pt?.v);
+    if (!refTrig.triggered) {
+      const sliceStart = Math.max(0, N - viewS);
+      return {
+        triggered: false,
+        data: fullHist.slice(sliceStart),
+        baseOffset: 0,
+        preSamples,
+        denom,
+        isTriggerSource: false
+      };
+    }
+
+    const targetCrossIdx = N - 1 - refTrig.offsetFromEnd;
+    if (targetCrossIdx < 1 || targetCrossIdx >= N) {
+      const sliceStart = Math.max(0, N - viewS);
+      return {
+        triggered: false,
+        data: fullHist.slice(sliceStart),
+        baseOffset: 0,
+        preSamples,
+        denom,
+        isTriggerSource: false
+      };
+    }
+
+    const sliceStart = Math.max(0, targetCrossIdx - preSamples - 1);
+    const sliceEnd = Math.min(N, targetCrossIdx + postSamples + 1);
+    const data = fullHist.slice(sliceStart, sliceEnd);
+    const baseOffset = sliceStart - (targetCrossIdx - preSamples) + (1 - refTrig.frac);
+
+    return {
+      triggered: true,
+      crossIdx: targetCrossIdx,
+      frac: refTrig.frac,
+      offsetFromEnd: refTrig.offsetFromEnd,
+      sliceStart,
+      sliceEnd,
+      data,
+      baseOffset,
+      preSamples,
+      denom,
+      isTriggerSource: false
+    };
+  }
+
+  // Dibuja los indicadores visuales del Trigger sobre el canvas (posición X fija de disparo y línea de Trigger Level)
+  drawTriggerOverlay(ctx, w, h, mapYV, trigWin, showLevelLine = true) {
+    if (!this.triggerEnabled || this.triggerSource === 'off' || !trigWin) return;
+
+    const trigX = (trigWin.preSamples / trigWin.denom) * w;
+    const yTrig = mapYV(this.triggerLevel);
+    const edgeArrow = this.triggerEdge === 'falling' ? '↓' : '↑';
+
+    ctx.save();
+
+    // 1. Guía vertical fija de posición X del Trigger
+    ctx.strokeStyle = trigWin.triggered ? 'rgba(249, 115, 22, 0.32)' : 'rgba(148, 163, 184, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath();
+    ctx.moveTo(trigX, 0);
+    ctx.lineTo(trigX, h);
+    ctx.stroke();
+
+    // 2. Línea horizontal de Trigger Level (si aplica a la escala vertical de este canal)
+    if (showLevelLine && yTrig >= 2 && yTrig <= h - 2) {
+      ctx.strokeStyle = trigWin.triggered ? 'rgba(249, 115, 22, 0.55)' : 'rgba(249, 115, 22, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(0, yTrig);
+      ctx.lineTo(w, yTrig);
+      ctx.stroke();
+
+      // Punto de anclaje exacto (trigX, yTrig) donde la onda cruza el Trigger Level
+      if (trigWin.triggered) {
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#f97316';
+        ctx.shadowColor = '#f97316';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(trigX, yTrig, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    // 3. Marcador superior [▼ T] en la coordenada X fija del Trigger
+    ctx.setLineDash([]);
+    ctx.fillStyle = trigWin.triggered ? '#f97316' : '#64748b';
+    ctx.beginPath();
+    ctx.moveTo(trigX - 5, 0);
+    ctx.lineTo(trigX + 5, 0);
+    ctx.lineTo(trigX, 6);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`T${edgeArrow}`, trigX + 6, 9);
+
+    ctx.restore();
+  }
+
   render(appState) {
+    this.syncTriggerUI(appState);
+
     if (!this.canvas || !this.ctx) {
       this.renderPinnedMonitors(appState);
       this.renderExpandedGraph(appState);
@@ -7348,8 +8130,40 @@ class Oscilloscope {
     ctx.setLineDash([]);
 
     const channels = this.getActiveChannels(appState);
-    const sliceStart = Math.max(0, this.history.length - this.viewSamples);
-    const visibleHistory = this.history.slice(sliceStart);
+
+    // Resolver canal de Trigger Source y buscar el último cruce del Trigger Level con la pendiente correcta
+    const rawTrigSource = this.stripChannelPrefix(this.triggerSource);
+    const trigChannel =
+      this.triggerSource === 'off' || !this.triggerEnabled
+        ? null
+        : channels.find(
+            (c) => c.id === this.triggerSource || c.compId === this.triggerSource || c.compId === rawTrigSource
+          ) || channels[0] || null;
+
+    const extTrigHist =
+      this.triggerSource !== 'auto' && this.triggerSource !== 'off'
+        ? this.compHistory.get(rawTrigSource)
+        : null;
+
+    const trigWin = this.findTriggerCrossing(this.history, (sample, idx) => {
+      if (!sample) return undefined;
+      if (trigChannel && sample.ch[trigChannel.id] !== undefined) {
+        return sample.ch[trigChannel.id].v;
+      }
+      if (extTrigHist && extTrigHist.length > 0) {
+        const extIdx = extTrigHist.length - (this.history.length - idx);
+        if (extIdx >= 0 && extIdx < extTrigHist.length) {
+          return extTrigHist[extIdx].v;
+        }
+      }
+      const firstCh = channels[0];
+      return firstCh && sample.ch[firstCh.id] !== undefined ? sample.ch[firstCh.id].v : undefined;
+    });
+
+    const visibleHistory = trigWin.data;
+    const baseOffset = trigWin.baseOffset;
+    const denom = trigWin.denom;
+    this.updateTriggerStatusBadge(trigWin.triggered);
 
     if (channels.length === 0 || visibleHistory.length < 2) {
       ctx.fillStyle = '#64748b';
@@ -7372,7 +8186,8 @@ class Oscilloscope {
     if (this.autoScale) {
       maxAbsV = 1.0;
       maxAbsI = 0.005;
-      for (const s of visibleHistory) {
+      const scaleSamples = this.history.slice(-Math.max(this.viewSamples, 1200));
+      for (const s of scaleSamples) {
         for (const ch of channels) {
           const val = s.ch[ch.id];
           if (val) {
@@ -7390,8 +8205,10 @@ class Oscilloscope {
     const scaleY = (h * 0.42) / Math.max(0.5, maxAbsV);
     const scaleI = (h * 0.38) / Math.max(1e-4, maxAbsI);
 
+    // Dibujar guías de Trigger (nivel horizontal y posición X fija del cruce)
+    this.drawTriggerOverlay(ctx, w, h, (v) => midY - v * scaleY, trigWin, true);
+
     const stats = [];
-    const denom = Math.max(1, this.viewSamples - 1);
 
     for (const ch of channels) {
       let vMin = Infinity;
@@ -7410,7 +8227,7 @@ class Oscilloscope {
       for (let i = 0; i < visibleHistory.length; i++) {
         const item = visibleHistory[i].ch[ch.id];
         if (!item) continue;
-        const x = (i / denom) * w;
+        const x = ((i + baseOffset) / denom) * w;
         const y = midY - item.v * scaleY;
         if (item.v < vMin) vMin = item.v;
         if (item.v > vMax) vMax = item.v;
@@ -7438,7 +8255,7 @@ class Oscilloscope {
         for (let i = 0; i < visibleHistory.length; i++) {
           const item = visibleHistory[i].ch[ch.id];
           if (!item) continue;
-          const x = (i / denom) * w;
+          const x = ((i + baseOffset) / denom) * w;
           const y = midY - item.i * scaleI;
           if (!startedI) {
             ctx.moveTo(x, y);
@@ -7472,11 +8289,11 @@ class Oscilloscope {
     if (this.hoverX !== null && visibleHistory.length > 1) {
       const idx = Math.min(
         visibleHistory.length - 1,
-        Math.max(0, Math.round((this.hoverX / w) * denom))
+        Math.max(0, Math.round((this.hoverX / w) * denom - baseOffset))
       );
       const sample = visibleHistory[idx];
       if (sample) {
-        const cx = (idx / denom) * w;
+        const cx = ((idx + baseOffset) / denom) * w;
         ctx.strokeStyle = 'rgba(248, 250, 252, 0.45)';
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -7508,11 +8325,15 @@ class Oscilloscope {
     const monitorIds = appState.getDisplayedMonitorIds
       ? appState.getDisplayedMonitorIds()
       : appState.pinnedMonitors || [];
-    if (!monitorIds || monitorIds.length === 0) return;
+    if (!monitorIds || monitorIds.length === 0) {
+      this.updateTriggerStatusBadge(false);
+      return;
+    }
 
     const dpr = window.devicePixelRatio || 1;
     const f = window.ProtoSim.formatSI;
     const numVisible = this.viewSamples;
+    let anyTriggered = false;
 
     for (const compId of monitorIds) {
       const canvas = document.getElementById(`pinCanvas_${compId}`);
@@ -7565,7 +8386,12 @@ class Oscilloscope {
 
       const midY = h / 2;
       const fullHist = this.compHistory.get(compId) || [];
-      const data = fullHist.slice(-numVisible);
+      const trigWin = this.getMonitorTriggeredWindow(compId, appState);
+      const data = trigWin.data;
+      const baseOffset = trigWin.baseOffset;
+      const denom = trigWin.denom;
+      if (trigWin.triggered) anyTriggered = true;
+
       if (data.length < 2) {
         ctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
         ctx.setLineDash([3, 3]);
@@ -7585,6 +8411,14 @@ class Oscilloscope {
       let iMax = -Infinity;
       let sumSqV = 0;
 
+      // Escala vertical estabilizada para evitar saltos de amplitud al hacer zoom horizontal en un flanco
+      const scaleWindow = fullHist.slice(-Math.max(numVisible, 1200));
+      for (const pt of scaleWindow) {
+        if (pt.v < vMin) vMin = pt.v;
+        if (pt.v > vMax) vMax = pt.v;
+        if (pt.i < iMin) iMin = pt.i;
+        if (pt.i > iMax) iMax = pt.i;
+      }
       for (const pt of data) {
         if (pt.v < vMin) vMin = pt.v;
         if (pt.v > vMax) vMax = pt.v;
@@ -7643,7 +8477,8 @@ class Oscilloscope {
         ctx.setLineDash([]);
       }
 
-      const denom = Math.max(1, numVisible - 1);
+      // Indicador visual de Trigger (posición X fija y nivel de cruce)
+      this.drawTriggerOverlay(ctx, w, h, mapYV, trigWin, trigWin.isTriggerSource);
 
       // Curva de Corriente I(t) (Amarillo punteado, solo en componentes y cables)
       if (!isNodeMonitor) {
@@ -7654,7 +8489,7 @@ class Oscilloscope {
         ctx.setLineDash([3, 3]);
         ctx.beginPath();
         for (let i = 0; i < data.length; i++) {
-          const x = (i / denom) * w;
+          const x = ((i + baseOffset) / denom) * w;
           const y = mapYI(data[i].i);
           if (i === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
@@ -7671,7 +8506,7 @@ class Oscilloscope {
       ctx.lineWidth = 2.1;
       ctx.beginPath();
       for (let i = 0; i < data.length; i++) {
-        const x = (i / denom) * w;
+        const x = ((i + baseOffset) / denom) * w;
         const y = mapYV(data[i].v);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
@@ -7706,11 +8541,11 @@ class Oscilloscope {
       let displayPt = lastPt;
       const hx = this.pinHoverX.get(compId);
       if (hx !== undefined && hx >= 0 && hx <= w) {
-        const idx = Math.min(data.length - 1, Math.max(0, Math.round((hx / w) * denom)));
+        const idx = Math.min(data.length - 1, Math.max(0, Math.round((hx / w) * denom - baseOffset)));
         const hPt = data[idx];
         if (hPt) {
           displayPt = hPt;
-          const cx = (idx / denom) * w;
+          const cx = ((idx + baseOffset) / denom) * w;
           const cyV = mapYV(hPt.v);
 
           ctx.save();
@@ -7749,13 +8584,15 @@ class Oscilloscope {
 
       ctx.restore();
     }
+
+    this.updateTriggerStatusBadge(anyTriggered);
   }
 
   // Posiciona automáticamente Cursor A en el mínimo y Cursor B en el máximo de la ventana visible
   autoPlaceCursorsMinMax(compId) {
     if (!compId) return;
-    const fullHist = this.compHistory.get(compId) || [];
-    const data = fullHist.slice(-this.viewSamples);
+    const trigWin = this.getMonitorTriggeredWindow(compId, this._lastAppState);
+    const data = trigWin.data;
     if (data.length < 2) return;
 
     let minIdx = 0;
@@ -7779,8 +8616,8 @@ class Oscilloscope {
   // Posiciona automáticamente Cursor A al inicio del último flanco/escalón y Cursor B al 63.21% (1 constante de tiempo τ)
   autoPlaceCursorsTau(compId) {
     if (!compId) return;
-    const fullHist = this.compHistory.get(compId) || [];
-    const data = fullHist.slice(-this.viewSamples);
+    const trigWin = this.getMonitorTriggeredWindow(compId, this._lastAppState);
+    const data = trigWin.data;
     if (data.length < 4) return;
 
     // Buscar el punto donde arranca la mayor variación (inicio de escalón exponencial)
@@ -7976,7 +8813,10 @@ class Oscilloscope {
     ctx.stroke();
 
     const fullHist = this.compHistory.get(compId) || [];
-    const data = fullHist.slice(-this.viewSamples);
+    const trigWin = this.getMonitorTriggeredWindow(compId, appState);
+    const data = trigWin.data;
+    const baseOffset = trigWin.baseOffset;
+    const denom = trigWin.denom;
     if (data.length < 2) {
       ctx.restore();
       return;
@@ -7988,6 +8828,13 @@ class Oscilloscope {
     let iMin = Infinity;
     let iMax = -Infinity;
 
+    const scaleWindow = fullHist.slice(-Math.max(this.viewSamples, 1200));
+    for (const pt of scaleWindow) {
+      if (pt.v < vMin) vMin = pt.v;
+      if (pt.v > vMax) vMax = pt.v;
+      if (pt.i < iMin) iMin = pt.i;
+      if (pt.i > iMax) iMax = pt.i;
+    }
     for (const pt of data) {
       if (pt.v < vMin) vMin = pt.v;
       if (pt.v > vMax) vMax = pt.v;
@@ -8043,7 +8890,8 @@ class Oscilloscope {
       ctx.setLineDash([]);
     }
 
-    const denom = Math.max(1, data.length - 1);
+    // Indicador visual de Trigger en el analizador ampliado
+    this.drawTriggerOverlay(ctx, w, h, mapYV, trigWin, trigWin.isTriggerSource);
 
     // Curva de Corriente I(t)
     if (!isNodeMonitor) {
@@ -8054,7 +8902,7 @@ class Oscilloscope {
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
       for (let i = 0; i < data.length; i++) {
-        const x = (i / denom) * w;
+        const x = ((i + baseOffset) / denom) * w;
         const y = mapYI(data[i].i);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
@@ -8071,7 +8919,7 @@ class Oscilloscope {
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     for (let i = 0; i < data.length; i++) {
-      const x = (i / denom) * w;
+      const x = ((i + baseOffset) / denom) * w;
       const y = mapYV(data[i].v);
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
@@ -8091,13 +8939,13 @@ class Oscilloscope {
 
     // Dibujar Cursores Interactivos A (T1) y B (T2) para medir Δt (ms), ΔV, ΔI, 1/Δt y Pendiente
     if (this.cursorsEnabled) {
-      const idxA = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorA * denom)));
-      const idxB = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorB * denom)));
+      const idxA = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorA * denom - baseOffset)));
+      const idxB = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorB * denom - baseOffset)));
       const ptA = data[idxA];
       const ptB = data[idxB];
 
-      const xA = (idxA / denom) * w;
-      const xB = (idxB / denom) * w;
+      const xA = ((idxA + baseOffset) / denom) * w;
+      const xB = ((idxB + baseOffset) / denom) * w;
 
       let v1 = ptA.v;
       let v2 = ptB.v;
@@ -8257,8 +9105,6 @@ class Oscilloscope {
 window.ProtoSim.Oscilloscope = Oscilloscope;
 window.ProtoSim.CHANNEL_COLORS = CHANNEL_COLORS;
 
-
-// === examples.js ===
 // ============================================================================
 // PROTO-SIM: Circuitos de Ejemplo Precargados
 // ============================================================================
@@ -8550,8 +9396,6 @@ const EXAMPLE_CIRCUITS = {
 
 window.ProtoSim.EXAMPLE_CIRCUITS = EXAMPLE_CIRCUITS;
 
-
-// === app.js ===
 // ============================================================================
 // PROTO-SIM: Controlador Principal de Interfaz, Secciones, Resizer y Atajos
 // ============================================================================
@@ -12624,7 +13468,6 @@ class ProtoSimApp {
 window.addEventListener('DOMContentLoaded', () => {
   window.protoApp = new ProtoSimApp();
 });
-
 
 </script>
 </body>
