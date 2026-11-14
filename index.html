@@ -3401,6 +3401,128 @@ window.ProtoSim.getPinWorldGrid = getPinWorldGrid;
 
 window.ProtoSim = window.ProtoSim || {};
 
+// Clase auxiliar para aritmética de Números Complejos (Análisis AC / Respuesta en Frecuencia)
+class Complex {
+  constructor(re = 0, im = 0) {
+    this.re = Number(re) || 0;
+    this.im = Number(im) || 0;
+  }
+
+  get real() {
+    return this.re;
+  }
+  set real(val) {
+    this.re = Number(val) || 0;
+  }
+
+  get imag() {
+    return this.im;
+  }
+  set imag(val) {
+    this.im = Number(val) || 0;
+  }
+
+  static from(val, im = 0) {
+    if (val instanceof Complex) return new Complex(val.re, val.im);
+    if (val && typeof val === 'object') {
+      const r = val.re !== undefined ? val.re : val.real;
+      const i = val.im !== undefined ? val.im : val.imag;
+      return new Complex(r, i);
+    }
+    return new Complex(val, im);
+  }
+
+  static fromPolar(mag, phaseRad) {
+    return new Complex(mag * Math.cos(phaseRad), mag * Math.sin(phaseRad));
+  }
+
+  clone() {
+    return new Complex(this.re, this.im);
+  }
+
+  add(other) {
+    const b = Complex.from(other);
+    return new Complex(this.re + b.re, this.im + b.im);
+  }
+
+  sub(other) {
+    const b = Complex.from(other);
+    return new Complex(this.re - b.re, this.im - b.im);
+  }
+
+  mul(other) {
+    const b = Complex.from(other);
+    return new Complex(
+      this.re * b.re - this.im * b.im,
+      this.re * b.im + this.im * b.re
+    );
+  }
+
+  div(other) {
+    const b = Complex.from(other);
+    const denom = b.re * b.re + b.im * b.im;
+    if (denom < 1e-36) {
+      return new Complex(0, 0);
+    }
+    return new Complex(
+      (this.re * b.re + this.im * b.im) / denom,
+      (this.im * b.re - this.re * b.im) / denom
+    );
+  }
+
+  conj() {
+    return new Complex(this.re, -this.im);
+  }
+
+  magnitude() {
+    return Math.hypot(this.re, this.im);
+  }
+
+  phase() {
+    return Math.atan2(this.im, this.re);
+  }
+
+  phaseDeg() {
+    return (Math.atan2(this.im, this.re) * 180) / Math.PI;
+  }
+
+  db() {
+    return 20 * Math.log10(Math.max(1e-18, this.magnitude()));
+  }
+
+  static add(a, b) {
+    return Complex.from(a).add(b);
+  }
+
+  static sub(a, b) {
+    return Complex.from(a).sub(b);
+  }
+
+  static mul(a, b) {
+    return Complex.from(a).mul(b);
+  }
+
+  static div(a, b) {
+    return Complex.from(a).div(b);
+  }
+
+  static magnitude(re, im = 0) {
+    if (re instanceof Complex || (re && typeof re === 'object')) {
+      const c = Complex.from(re);
+      return Math.hypot(c.re, c.im);
+    }
+    return Math.hypot(re, im);
+  }
+
+  static phase(re, im = 0) {
+    if (re instanceof Complex || (re && typeof re === 'object')) {
+      const c = Complex.from(re);
+      return Math.atan2(c.im, c.re);
+    }
+    return Math.atan2(im, re);
+  }
+}
+
 class CircuitSolver {
   constructor() {
     this.simTime = 0;
@@ -4848,8 +4970,217 @@ class CircuitSolver {
 
     return x;
   }
+
+  // Resuelve el sistema complejo A * x = b mediante eliminación Gaussiana con pivoteo parcial por magnitud.
+  // Soporta indexación 1..n (estándar MNA de CircuitSolver) o 0..n-1, y vector independiente b_real/b_imag
+  // explícito o integrado en la columna n+1 de la matriz aumentada.
+  solveLinearSystemComplex(
+    A_real,
+    A_imag,
+    n,
+    stride,
+    outX_real = null,
+    outX_imag = null,
+    b_real = null,
+    b_imag = null
+  ) {
+    const isOneBased =
+      A_real.length >= (n + 1) * stride &&
+      (!b_real || b_real.length >= n + 1) &&
+      (!outX_real || outX_real.length >= n + 1);
+    const startIdx = isOneBased ? 1 : 0;
+    const endIdx = isOneBased ? n : n - 1;
+    const vecLen = isOneBased ? n + 1 : n;
+
+    const xR = outX_real && outX_real.length >= vecLen ? outX_real : new Float64Array(vecLen);
+    const xI = outX_imag && outX_imag.length >= vecLen ? outX_imag : new Float64Array(vecLen);
+    xR.fill(0);
+    xI.fill(0);
+
+    const rhsR = new Float64Array(vecLen);
+    const rhsI = new Float64Array(vecLen);
+    const useAugmentedCol = !b_real && stride >= endIdx + 2;
+
+    for (let i = startIdx; i <= endIdx; i++) {
+      if (b_real) {
+        rhsR[i] = b_real[i] || 0;
+        rhsI[i] = b_imag ? b_imag[i] || 0 : 0;
+      } else if (useAugmentedCol) {
+        rhsR[i] = A_real[i * stride + (endIdx + 1)] || 0;
+        rhsI[i] = A_imag[i * stride + (endIdx + 1)] || 0;
+      }
+    }
+
+    for (let k = startIdx; k <= endIdx; k++) {
+      // 1. Pivoteo parcial comparando magnitudes complejas |A[i, k]| = hypot(re, im)
+      let maxRow = k;
+      let maxMag = Math.hypot(A_real[k * stride + k], A_imag[k * stride + k]);
+      for (let i = k + 1; i <= endIdx; i++) {
+        const mag = Math.hypot(A_real[i * stride + k], A_imag[i * stride + k]);
+        if (mag > maxMag) {
+          maxMag = mag;
+          maxRow = i;
+        }
+      }
+
+      if (maxMag < 1e-18) continue;
+
+      // 2. Intercambio de filas en A_real, A_imag y vector independiente rhs
+      if (maxRow !== k) {
+        for (let j = k; j <= endIdx; j++) {
+          const idxK = k * stride + j;
+          const idxM = maxRow * stride + j;
+
+          const tmpR = A_real[idxK];
+          A_real[idxK] = A_real[idxM];
+          A_real[idxM] = tmpR;
+
+          const tmpI = A_imag[idxK];
+          A_imag[idxK] = A_imag[idxM];
+          A_imag[idxM] = tmpI;
+        }
+
+        const tmpBr = rhsR[k];
+        rhsR[k] = rhsR[maxRow];
+        rhsR[maxRow] = tmpBr;
+
+        const tmpBi = rhsI[k];
+        rhsI[k] = rhsI[maxRow];
+        rhsI[maxRow] = tmpBi;
+      }
+
+      // 3. Eliminación hacia adelante con división y multiplicación compleja
+      const pivR = A_real[k * stride + k];
+      const pivI = A_imag[k * stride + k];
+      const pivDenom = pivR * pivR + pivI * pivI;
+      if (pivDenom < 1e-36) continue;
+
+      for (let i = k + 1; i <= endIdx; i++) {
+        const aR = A_real[i * stride + k];
+        const aI = A_imag[i * stride + k];
+        if (aR === 0 && aI === 0) continue;
+
+        // factor = (aR + j*aI) / (pivR + j*pivI)
+        const fR = (aR * pivR + aI * pivI) / pivDenom;
+        const fI = (aI * pivR - aR * pivI) / pivDenom;
+
+        A_real[i * stride + k] = 0;
+        A_imag[i * stride + k] = 0;
+
+        for (let j = k + 1; j <= endIdx; j++) {
+          const kj = k * stride + j;
+          const ij = i * stride + j;
+          const akR = A_real[kj];
+          const akI = A_imag[kj];
+          // A[i,j] -= factor * A[k,j]
+          A_real[ij] -= fR * akR - fI * akI;
+          A_imag[ij] -= fR * akI + fI * akR;
+        }
+
+        // rhs[i] -= factor * rhs[k]
+        const rkR = rhsR[k];
+        const rkI = rhsI[k];
+        rhsR[i] -= fR * rkR - fI * rkI;
+        rhsI[i] -= fR * rkI + fI * rkR;
+      }
+    }
+
+    // 4. Sustitución hacia atrás compleja
+    for (let i = endIdx; i >= startIdx; i--) {
+      let sumR = rhsR[i];
+      let sumI = rhsI[i];
+
+      for (let j = i + 1; j <= endIdx; j++) {
+        const ij = i * stride + j;
+        const aR = A_real[ij];
+        const aI = A_imag[ij];
+        const xjR = xR[j];
+        const xjI = xI[j];
+        // sum -= A[i,j] * x[j]
+        sumR -= aR * xjR - aI * xjI;
+        sumI -= aR * xjI + aI * xjR;
+      }
+
+      const dR = A_real[i * stride + i];
+      const dI = A_imag[i * stride + i];
+      const dDenom = dR * dR + dI * dI;
+      if (dDenom > 1e-36) {
+        xR[i] = (sumR * dR + sumI * dI) / dDenom;
+        xI[i] = (sumI * dR - sumR * dI) / dDenom;
+      } else {
+        xR[i] = 0;
+        xI[i] = 0;
+      }
+
+      if (useAugmentedCol) {
+        A_real[i * stride + (endIdx + 1)] = xR[i];
+        A_imag[i * stride + (endIdx + 1)] = xI[i];
+      }
+    }
+
+    return { real: xR, imag: xI };
+  }
+
+  // Auto-test matemático de la clase Complex y del solver lineal complejo con pivoteo parcial
+  verifyComplexSolver() {
+    // 1. Prueba de operaciones de la clase Complex
+    const z1 = new Complex(3, 4); // |z1| = 5
+    const z2 = new Complex(1, -2);
+    const sum = z1.add(z2); // 4 + j2
+    const diff = z1.sub(z2); // 2 + j6
+    const prod = z1.mul(z2); // (3+8) + j(-6+4) = 11 - j2
+    const quot = prod.div(z2); // debe recuperar z1 = 3 + j4
+
+    const opsOk =
+      Math.abs(z1.magnitude() - 5) < 1e-12 &&
+      Math.abs(sum.re - 4) < 1e-12 &&
+      Math.abs(sum.im - 2) < 1e-12 &&
+      Math.abs(diff.re - 2) < 1e-12 &&
+      Math.abs(diff.im - 6) < 1e-12 &&
+      Math.abs(prod.re - 11) < 1e-12 &&
+      Math.abs(prod.im - -2) < 1e-12 &&
+      Math.abs(quot.re - 3) < 1e-12 &&
+      Math.abs(quot.im - 4) < 1e-12;
+
+    // 2. Prueba de solveLinearSystemComplex con pivoteo parcial forzado (A[1,1] = 0 + j0)
+    // Sistema 2x2 (1-based, n = 2, stride = 4):
+    // Fila 1: (0 + j0)*x1 + (2 + j1)*x2 = (1 + j7)
+    // Fila 2: (1 + j1)*x1 + (1 - j1)*x2 = (2 + j4)
+    // Solución exacta: x1 = 1 + j2, x2 = 1 + j3
+    const n = 2;
+    const stride = 4;
+    const Ar = new Float64Array((n + 1) * stride);
+    const Ai = new Float64Array((n + 1) * stride);
+    const br = new Float64Array([0, 1, 2]);
+    const bi = new Float64Array([0, 7, 4]);
+    const xr = new Float64Array(n + 1);
+    const xi = new Float64Array(n + 1);
+
+    // Fila 1: A[1,1] = 0, A[1,2] = 2 + j1
+    Ar[1 * stride + 1] = 0;
+    Ai[1 * stride + 1] = 0;
+    Ar[1 * stride + 2] = 2;
+    Ai[1 * stride + 2] = 1;
+
+    // Fila 2: A[2,1] = 1 + j1, A[2,2] = 1 - j1
+    Ar[2 * stride + 1] = 1;
+    Ai[2 * stride + 1] = 1;
+    Ar[2 * stride + 2] = 1;
+    Ai[2 * stride + 2] = -1;
+
+    this.solveLinearSystemComplex(Ar, Ai, n, stride, xr, xi, br, bi);
+
+    const solverOk =
+      Math.abs(xr[1] - 1) < 1e-11 &&
+      Math.abs(xi[1] - 2) < 1e-11 &&
+      Math.abs(xr[2] - 1) < 1e-11 &&
+      Math.abs(xi[2] - 3) < 1e-11;
+
+    return { ok: opsOk && solverOk, opsOk, solverOk, x1: new Complex(xr[1], xi[1]), x2: new Complex(xr[2], xi[2]) };
+  }
 }
 
+window.ProtoSim.Complex = Complex;
 window.ProtoSim.CircuitSolver = CircuitSolver;
 
 
