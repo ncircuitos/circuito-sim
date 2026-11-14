@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -2036,6 +2036,101 @@ body.is-resizing-panel .sidebar-resizer {
   font-size: 11px;
 }
 
+/* Modal Gigante de Diagrama de Bode Interactivo (Análisis AC) */
+.bode-modal {
+  background: #0b111e;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: 12px;
+  width: 92vw;
+  max-width: 1180px;
+  height: 84vh;
+  max-height: 780px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+}
+
+.bode-badge {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 10.5px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
+}
+
+.bode-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bode-ctrl-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #cbd5e1;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+.bode-ctrl-input,
+.bode-ctrl-select {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 6px;
+  color: #f8fafc;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  outline: none;
+}
+
+.bode-ctrl-input {
+  width: 78px;
+}
+
+.bode-ctrl-input:focus,
+.bode-ctrl-select:focus {
+  border-color: #38bdf8;
+}
+
+.bode-subheader {
+  padding: 7px 14px;
+  background: #070b14;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+.bode-cursor-readout {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.bode-canvas-wrap {
+  flex: 1;
+  position: relative;
+  min-height: 360px;
+  background: #050811;
+  overflow: hidden;
+}
+
+#bodeCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
 /* Responsive adjustments */
 @media (max-width: 960px) {
   .palette-sidebar {
@@ -2049,7 +2144,7 @@ body.is-resizing-panel .sidebar-resizer {
   }
 }
 
-  </style>
+</style>
 </head>
 <body>
   <div class="app-container">
@@ -2417,6 +2512,43 @@ body.is-resizing-panel .sidebar-resizer {
     </div>
   </div>
 
+  <!-- MODAL: DIAGRAMA DE BODE INTERACTIVO (ANÁLISIS AC) -->
+  <div class="modal-backdrop" id="bodeModal">
+    <div class="bode-modal">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="color:#38bdf8;font-weight:700;">Diagrama de Bode — Análisis AC (Barrido en Frecuencia)</span>
+          <span id="bodeStimulusBadge" class="bode-badge">Estímulo AC: 1∠0° V</span>
+        </div>
+        <div class="bode-controls">
+          <label class="bode-ctrl-label">f<sub>min</sub> (Hz)
+            <input type="number" id="bodeFMin" class="bode-ctrl-input" value="1" min="0.01" step="any" />
+          </label>
+          <label class="bode-ctrl-label">f<sub>max</sub> (Hz)
+            <input type="number" id="bodeFMax" class="bode-ctrl-input" value="100000" min="1" step="any" />
+          </label>
+          <label class="bode-ctrl-label">Pts/década
+            <select id="bodePtsDec" class="bode-ctrl-select">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="40">40</option>
+              <option value="80">80</option>
+            </select>
+          </label>
+          <button class="btn" id="btnRecalcBode" style="padding:4px 10px;font-size:11px;">Recalcular</button>
+          <button class="btn" id="btnCloseBodeModal" style="padding:4px 10px;font-size:11px;">Cerrar</button>
+        </div>
+      </div>
+      <div class="bode-subheader" id="bodeModalMeta">
+        <span id="bodeTraceSummary">Sondas medidas: —</span>
+        <span id="bodeCursorReadout" class="bode-cursor-readout">Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Magnitud (dB) y Fase (°)</span>
+      </div>
+      <div class="bode-canvas-wrap">
+        <canvas id="bodeCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- POP-UP MODAL SELECTOR RÁPIDO DE COMPONENTES (AL BUSCAR Y DARLE ENTER) -->
   <div class="modal-backdrop" id="catalogPopupModal">
     <div class="catalog-popup-modal">
@@ -2435,7 +2567,7 @@ body.is-resizing-panel .sidebar-resizer {
     </div>
   </div>
 
-  <!-- SCRIPTS INTEGRADOS DE PROTO-SIM -->
+  <!-- SCRIPTS MODULARES DE PROTO-SIM -->
   <script>
 // ============================================================================
 // PROTO-SIM: Catálogo de Componentes Electrónicos, Pines y Utilidades SI
@@ -3395,7 +3527,8 @@ window.ProtoSim.COMPONENT_SHORTCUTS = COMPONENT_SHORTCUTS;
 window.ProtoSim.COMPONENT_LIBRARY = COMPONENT_LIBRARY;
 window.ProtoSim.getPinWorldGrid = getPinWorldGrid;
 
-
+</script>
+  <script>
 // ============================================================================
 // PROTO-SIM: Motor MNA (Modified Nodal Analysis) en Tiempo Real + Newton-Raphson
 // ============================================================================
@@ -5600,7 +5733,8 @@ class CircuitSolver {
 window.ProtoSim.Complex = Complex;
 window.ProtoSim.CircuitSolver = CircuitSolver;
 
-
+</script>
+  <script>
 // ============================================================================
 // PROTO-SIM: Renderizador Canvas de Alta Precisión estilo PROTO
 // ============================================================================
@@ -8245,7 +8379,8 @@ window.ProtoSim.GRID_SIZE = GRID_SIZE;
 window.ProtoSim.voltageToColor = voltageToColor;
 window.ProtoSim.CircuitRenderer = CircuitRenderer;
 
-
+</script>
+  <script>
 // ============================================================================
 // PROTO-SIM: Osciloscopio Multicanal + Monitores Múltiples Anclados a la Derecha
 // ============================================================================
@@ -10107,7 +10242,8 @@ class Oscilloscope {
 window.ProtoSim.Oscilloscope = Oscilloscope;
 window.ProtoSim.CHANNEL_COLORS = CHANNEL_COLORS;
 
-
+</script>
+  <script>
 // ============================================================================
 // PROTO-SIM: Circuitos de Ejemplo Precargados
 // ============================================================================
@@ -10399,7 +10535,8 @@ const EXAMPLE_CIRCUITS = {
 
 window.ProtoSim.EXAMPLE_CIRCUITS = EXAMPLE_CIRCUITS;
 
-
+</script>
+  <script>
 // ============================================================================
 // PROTO-SIM: Controlador Principal de Interfaz, Secciones, Resizer y Atajos
 // ============================================================================
@@ -10536,6 +10673,9 @@ class ProtoSimApp {
     window.addEventListener('resize', () => {
       this.renderer.resize();
       this.oscilloscope.resize();
+      if (document.getElementById('bodeModal')?.classList.contains('visible')) {
+        this.renderBodePlot();
+      }
     });
 
     // Pestañas de categorías
@@ -10787,6 +10927,9 @@ class ProtoSimApp {
     opModal?.addEventListener('click', (e) => {
       if (e.target === opModal) this.closeOperatingPoint();
     });
+
+    // Modal de Diagrama de Bode Interactivo (Análisis AC)
+    this.initBodeModalEvents();
   }
 
   // Divisores arrastrables para la barra izquierda (Catálogo), barra derecha (Inspector) y gráfico expandido superior
@@ -12083,6 +12226,7 @@ class ProtoSimApp {
       if (e.key === 'Escape') {
         document.getElementById('shortcutsModal')?.classList.remove('visible');
         this.closeOperatingPoint();
+        this.closeBodeModal();
         this.wiringStart = null;
         this.setActiveTool(null);
         return;
@@ -14548,9 +14692,81 @@ class ProtoSimApp {
     }
   }
 
-  runBodePlotSweep(fMin = 1, fMax = 100000, pointsPerDecade = 20) {
+  initBodeModalEvents() {
+    const bodeModal = document.getElementById('bodeModal');
+    const closeBtn = document.getElementById('btnCloseBodeModal');
+    const recalcBtn = document.getElementById('btnRecalcBode');
+    const fMinInput = document.getElementById('bodeFMin');
+    const fMaxInput = document.getElementById('bodeFMax');
+    const ptsSelect = document.getElementById('bodePtsDec');
+    const bodeCanvas = document.getElementById('bodeCanvas');
+
+    closeBtn?.addEventListener('click', () => this.closeBodeModal());
+    bodeModal?.addEventListener('click', (e) => {
+      if (e.target === bodeModal) this.closeBodeModal();
+    });
+
+    const triggerRecalc = () => {
+      const fMin = Math.max(0.01, parseFloat(fMinInput?.value) || 1);
+      const fMax = Math.max(fMin * 2, parseFloat(fMaxInput?.value) || 100000);
+      const pts = Math.max(5, parseInt(ptsSelect?.value, 10) || 20);
+      this.runBodePlotSweep(fMin, fMax, pts);
+    };
+
+    recalcBtn?.addEventListener('click', triggerRecalc);
+    fMinInput?.addEventListener('change', triggerRecalc);
+    fMaxInput?.addEventListener('change', triggerRecalc);
+    ptsSelect?.addEventListener('change', triggerRecalc);
+
+    if (bodeCanvas) {
+      bodeCanvas.addEventListener('mousemove', (e) => {
+        const rect = bodeCanvas.getBoundingClientRect();
+        this._bodeHoverX = e.clientX - rect.left;
+        this._bodeHoverY = e.clientY - rect.top;
+        this.renderBodePlot();
+      });
+
+      bodeCanvas.addEventListener('mouseleave', () => {
+        this._bodeHoverX = null;
+        this._bodeHoverY = null;
+        const readout = document.getElementById('bodeCursorReadout');
+        if (readout) {
+          readout.textContent =
+            'Pasá el mouse sobre el gráfico para inspeccionar Frecuencia, Magnitud (dB) y Fase (°)';
+        }
+        this.renderBodePlot();
+      });
+    }
+  }
+
+  openBodeModal() {
+    const bodeModal = document.getElementById('bodeModal');
+    if (!bodeModal) return;
+    bodeModal.classList.add('visible');
+    requestAnimationFrame(() => {
+      this.renderBodePlot();
+    });
+  }
+
+  closeBodeModal() {
+    document.getElementById('bodeModal')?.classList.remove('visible');
+  }
+
+  runBodePlotSweep(fMin = null, fMax = null, pointsPerDecade = null) {
+    const fMinEl = document.getElementById('bodeFMin');
+    const fMaxEl = document.getElementById('bodeFMax');
+    const ptsEl = document.getElementById('bodePtsDec');
+
+    const effFMin = fMin !== null ? fMin : Math.max(0.01, parseFloat(fMinEl?.value) || 1);
+    const effFMax = fMax !== null ? fMax : Math.max(effFMin * 2, parseFloat(fMaxEl?.value) || 100000);
+    const effPts = pointsPerDecade !== null ? pointsPerDecade : Math.max(5, parseInt(ptsEl?.value, 10) || 20);
+
+    if (fMinEl) fMinEl.value = String(effFMin);
+    if (fMaxEl) fMaxEl.value = String(effFMax);
+    if (ptsEl) ptsEl.value = String(effPts);
+
     const extraTargets = this.getDisplayedMonitorIds ? this.getDisplayedMonitorIds() : this.pinnedMonitors || [];
-    const sweep = this.solver.runACSweep(this.components, this.wires, fMin, fMax, pointsPerDecade, extraTargets);
+    const sweep = this.solver.runACSweep(this.components, this.wires, effFMin, effFMax, effPts, extraTargets);
     this._lastBodeSweep = sweep;
 
     if (!sweep || sweep.length === 0) {
@@ -14562,7 +14778,7 @@ class ProtoSimApp {
     const probes = sweep.probes || [];
     const firstProbe = probes[0];
     console.log(
-      `%c=== ANÁLISIS AC (BODE SWEEP): ${fMin} Hz → ${fMax} Hz (${pointsPerDecade} pts/década) ===`,
+      `%c=== ANÁLISIS AC (BODE SWEEP): ${effFMin} Hz → ${effFMax} Hz (${effPts} pts/década) ===`,
       'color:#38bdf8;font-weight:bold;font-size:12px;'
     );
     console.log('Fuente de estímulo AC (1∠0° V):', sweep.stimulus || 'Auto');
@@ -14572,15 +14788,430 @@ class ProtoSimApp {
     }
     console.table(sweep);
 
+    // Actualizar encabezados del modal y abrir el Diagrama de Bode interactivo
+    const stimBadge = document.getElementById('bodeStimulusBadge');
+    if (stimBadge) {
+      stimBadge.textContent = `Estímulo AC: ${sweep.stimulus || 'Auto'} (1∠0° V)`;
+    }
+    const summaryEl = document.getElementById('bodeTraceSummary');
+    if (summaryEl) {
+      if (probes.length > 0) {
+        const desc = probes
+          .map((p) => {
+            const fcTxt = p.cutoffHz ? ` [fc ≈ ${window.ProtoSim.formatSI(p.cutoffHz, 'Hz', 2)}]` : '';
+            return `${p.label} (Nodo ${p.nodeKey})${fcTxt}`;
+          })
+          .join(' • ');
+        summaryEl.textContent = `Trazas: ${desc}`;
+      } else {
+        summaryEl.textContent = 'Sin sondas activas';
+      }
+    }
+
+    this.openBodeModal();
+
     if (firstProbe && firstProbe.cutoffHz) {
       this.showToast(
-        `Barrido AC listo en Consola (F12) • fc (-3dB) ≈ ${window.ProtoSim.formatSI(firstProbe.cutoffHz, 'Hz', 2)}`
+        `Diagrama de Bode AC • fc (-3dB) ≈ ${window.ProtoSim.formatSI(firstProbe.cutoffHz, 'Hz', 2)}`
       );
     } else {
-      this.showToast(`Barrido AC (${sweep.length} frec.) impreso en Consola (F12)`);
+      this.showToast(`Diagrama de Bode AC (${sweep.length} puntos calculados)`);
     }
 
     return sweep;
+  }
+
+  renderBodePlot() {
+    const canvas = document.getElementById('bodeCanvas');
+    if (!canvas) return;
+    const rect = canvas.parentElement?.getBoundingClientRect();
+    const width = Math.max(320, Math.floor(rect?.width || 800));
+    const height = Math.max(240, Math.floor(rect?.height || 460));
+
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.floor(width * dpr) || canvas.height !== Math.floor(height * dpr)) {
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+    }
+
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    ctx.scale(dpr, dpr);
+
+    // Fondo oscuro estilo analizador de espectro / Bode
+    ctx.fillStyle = '#050811';
+    ctx.fillRect(0, 0, width, height);
+
+    const sweep = this._lastBodeSweep;
+    const freqs = sweep?.frequencies || [];
+    const probes = sweep?.probes || [];
+
+    if (!sweep || freqs.length < 2 || probes.length === 0) {
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '13px "Inter", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        'No hay datos de barrido AC para graficar. Colocá una Fuente AC y una Sonda o componente en el circuito.',
+        width / 2,
+        height / 2
+      );
+      ctx.restore();
+      return;
+    }
+
+    // Márgenes del área de trazado
+    const padLeft = 66;
+    const padRight = 66;
+    const padTop = 36;
+    const padBottom = 46;
+    const plotW = Math.max(100, width - padLeft - padRight);
+    const plotH = Math.max(100, height - padTop - padBottom);
+
+    const fMin = freqs[0];
+    const fMax = freqs[freqs.length - 1];
+    const logMin = Math.log10(fMin);
+    const logMax = Math.log10(fMax);
+    const logSpan = Math.max(1e-6, logMax - logMin);
+
+    // Determinar rango del eje Y izquierdo: Magnitud (dB)
+    let minDbData = 0;
+    let maxDbData = 0;
+    for (const tr of probes) {
+      for (const db of tr.magnitudesDb || []) {
+        if (Number.isFinite(db)) {
+          if (db < minDbData) minDbData = db;
+          if (db > maxDbData) maxDbData = db;
+        }
+      }
+    }
+    let dbMax = Math.ceil((maxDbData + 4) / 10) * 10;
+    let dbMin = Math.floor((minDbData - 4) / 10) * 10;
+    if (dbMax < 10) dbMax = 10;
+    if (dbMin > -40) dbMin = -40;
+    if (dbMin < -100) dbMin = -100;
+    if (dbMax - dbMin < 30) dbMin = dbMax - 40;
+    const dbSpan = Math.max(10, dbMax - dbMin);
+
+    // Determinar rango del eje Y derecho: Fase (grados)
+    let minPhData = 0;
+    let maxPhData = 0;
+    for (const tr of probes) {
+      for (const ph of tr.phasesDeg || []) {
+        if (Number.isFinite(ph)) {
+          if (ph < minPhData) minPhData = ph;
+          if (ph > maxPhData) maxPhData = ph;
+        }
+      }
+    }
+    const useFullPhase = minPhData < -95 || maxPhData > 95;
+    const phMin = useFullPhase ? -180 : -90;
+    const phMax = useFullPhase ? 180 : 90;
+    const phStep = useFullPhase ? 45 : 30;
+    const phSpan = phMax - phMin;
+
+    // Funciones de mapeo a coordenadas de pantalla
+    const freqToX = (f) => padLeft + ((Math.log10(Math.max(fMin, f)) - logMin) / logSpan) * plotW;
+    const xToFreq = (x) => Math.pow(10, logMin + ((x - padLeft) / plotW) * logSpan);
+    const dbToY = (db) => {
+      const clamped = Math.max(dbMin, Math.min(dbMax, db));
+      return padTop + ((dbMax - clamped) / dbSpan) * plotH;
+    };
+    const phaseToY = (deg) => {
+      const clamped = Math.max(phMin, Math.min(phMax, deg));
+      return padTop + ((phMax - clamped) / phSpan) * plotH;
+    };
+
+    const formatFreq = (hz) => {
+      if (hz >= 1e6) return `${+(hz / 1e6).toPrecision(3)} MHz`;
+      if (hz >= 1e3) return `${+(hz / 1e3).toPrecision(3)} kHz`;
+      if (hz >= 1) return `${+hz.toPrecision(3)} Hz`;
+      return `${hz.toFixed(2)} Hz`;
+    };
+
+    // 1. GRILLA LOGARÍTMICA VERTICAL (Eje X: Frecuencia)
+    const startExp = Math.floor(logMin);
+    const endExp = Math.ceil(logMax);
+
+    ctx.lineWidth = 1;
+    for (let exp = startExp; exp <= endExp; exp++) {
+      const baseFreq = Math.pow(10, exp);
+      // Líneas secundarias (2..9 * 10^exp)
+      for (let m = 2; m <= 9; m++) {
+        const subFreq = m * baseFreq;
+        if (subFreq < fMin || subFreq > fMax) continue;
+        const x = freqToX(subFreq);
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
+        ctx.beginPath();
+        ctx.moveTo(x, padTop);
+        ctx.lineTo(x, padTop + plotH);
+        ctx.stroke();
+      }
+
+      // Línea principal de década (10^exp)
+      if (baseFreq >= fMin * 0.999 && baseFreq <= fMax * 1.001) {
+        const x = freqToX(baseFreq);
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.24)';
+        ctx.beginPath();
+        ctx.moveTo(x, padTop);
+        ctx.lineTo(x, padTop + plotH);
+        ctx.stroke();
+
+        // Etiqueta de década en el eje X
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '11px "JetBrains Mono", Consolas, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(formatFreq(baseFreq), x, padTop + plotH + 18);
+      }
+    }
+
+    // 2. GRILLA HORIZONTAL Y EJES Y (Izquierdo: Magnitud dB | Derecho: Fase °)
+    const dbStep = dbSpan <= 50 ? 10 : 20;
+    for (let db = dbMin; db <= dbMax + 0.001; db += dbStep) {
+      const y = dbToY(db);
+      ctx.strokeStyle = Math.abs(db) < 0.01 ? 'rgba(226, 232, 240, 0.28)' : 'rgba(148, 163, 184, 0.12)';
+      ctx.beginPath();
+      ctx.moveTo(padLeft, y);
+      ctx.lineTo(padLeft + plotW, y);
+      ctx.stroke();
+
+      // Etiqueta eje Y izquierdo (Magnitud dB)
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '11px "JetBrains Mono", Consolas, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${db > 0 ? '+' : ''}${Math.round(db)} dB`, padLeft - 8, y + 4);
+    }
+
+    // Línea horizontal tenue de referencia en -3 dB (si cae dentro del rango)
+    const refDb = (probes[0]?.magnitudesDb?.[0] || 0) - 3.0103;
+    if (refDb >= dbMin && refDb <= dbMax) {
+      const y3dB = dbToY(refDb);
+      ctx.save();
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+      ctx.beginPath();
+      ctx.moveTo(padLeft, y3dB);
+      ctx.lineTo(padLeft + plotW, y3dB);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Etiquetas eje Y derecho (Fase en grados)
+    for (let ph = phMin; ph <= phMax + 0.001; ph += phStep) {
+      const y = phaseToY(ph);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px "JetBrains Mono", Consolas, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${ph > 0 ? '+' : ''}${Math.round(ph)}°`, padLeft + plotW + 8, y + 4);
+    }
+
+    // Títulos de los ejes
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 11px "Inter", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Frecuencia (Escala Logarítmica)', padLeft + plotW / 2, height - 8);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.textAlign = 'left';
+    ctx.fillText('Magnitud (dB) — Línea Continua', padLeft, padTop - 12);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'right';
+    ctx.fillText('Fase (°) — Línea Punteada', padLeft + plotW, padTop - 12);
+
+    // Marco del gráfico
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(padLeft, padTop, plotW, plotH);
+
+    // 3. DIBUJAR CURVAS DE PROBETRACES (Magnitud en dB y Fase en grados)
+    const palette = [
+      { mag: '#38bdf8', phase: 'rgba(125, 211, 252, 0.58)' },
+      { mag: '#34d399', phase: 'rgba(110, 231, 183, 0.58)' },
+      { mag: '#f472b6', phase: 'rgba(249, 168, 212, 0.58)' },
+      { mag: '#facc15', phase: 'rgba(253, 224, 71, 0.58)' }
+    ];
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padLeft, padTop, plotW, plotH);
+    ctx.clip();
+
+    probes.forEach((tr, idx) => {
+      const col = palette[idx % palette.length];
+      const mags = tr.magnitudesDb || [];
+      const phases = tr.phasesDeg || [];
+
+      // Curva de Fase (grados) — punteada y color más apagado
+      ctx.save();
+      ctx.strokeStyle = col.phase;
+      ctx.lineWidth = 1.75;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      for (let i = 0; i < freqs.length; i++) {
+        const x = freqToX(freqs[i]);
+        const y = phaseToY(phases[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Curva de Magnitud (dB) — continua y vibrante
+      ctx.save();
+      ctx.strokeStyle = col.mag;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      for (let i = 0; i < freqs.length; i++) {
+        const x = freqToX(freqs[i]);
+        const y = dbToY(mags[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Marca y etiqueta en la Frecuencia de Corte (-3 dB) si existe
+      if (tr.cutoffHz && tr.cutoffHz >= fMin && tr.cutoffHz <= fMax) {
+        const xc = freqToX(tr.cutoffHz);
+        const maxDbTrace = Math.max(...mags);
+        const yc = dbToY(maxDbTrace - 3.0103);
+
+        ctx.save();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(xc, padTop);
+        ctx.lineTo(xc, padTop + plotH);
+        ctx.stroke();
+        ctx.restore();
+
+        // Punto destacado en (fc, -3dB)
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(xc, yc, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#050811';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Etiqueta de frecuencia de corte fc
+        const labelTxt = `fc = ${formatFreq(tr.cutoffHz)} (-3 dB)`;
+        ctx.font = 'bold 11px "JetBrains Mono", Consolas, monospace';
+        const tw = ctx.measureText(labelTxt).width + 12;
+        const lx = xc + 8 + tw < padLeft + plotW ? xc + 8 : xc - tw - 8;
+        const ly = Math.max(padTop + 18, Math.min(padTop + plotH - 12, yc - 8));
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.fillRect(lx, ly - 13, tw, 20);
+        ctx.strokeRect(lx, ly - 13, tw, 20);
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.textAlign = 'left';
+        ctx.fillText(labelTxt, lx + 6, ly + 1);
+      }
+    });
+
+    ctx.restore();
+
+    // 4. CURSOR INTERACTIVO Y TOOLTIP EN MOUSEMOVE
+    if (
+      typeof this._bodeHoverX === 'number' &&
+      this._bodeHoverX >= padLeft &&
+      this._bodeHoverX <= padLeft + plotW
+    ) {
+      const hoverFreq = xToFreq(this._bodeHoverX);
+
+      // Buscar el índice más cercano en freqs
+      let nearestIdx = 0;
+      let bestDist = Infinity;
+      for (let i = 0; i < freqs.length; i++) {
+        const d = Math.abs(Math.log10(freqs[i]) - Math.log10(hoverFreq));
+        if (d < bestDist) {
+          bestDist = d;
+          nearestIdx = i;
+        }
+      }
+
+      const snapFreq = freqs[nearestIdx];
+      const cx = freqToX(snapFreq);
+
+      // Línea vertical del cursor
+      ctx.save();
+      ctx.strokeStyle = 'rgba(248, 250, 252, 0.65)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(cx, padTop);
+      ctx.lineTo(cx, padTop + plotH);
+      ctx.stroke();
+      ctx.restore();
+
+      const tooltipLines = [`Frecuencia: ${formatFreq(snapFreq)}`];
+
+      probes.forEach((tr, idx) => {
+        const col = palette[idx % palette.length];
+        const magVal = tr.magnitudesDb[nearestIdx];
+        const phVal = tr.phasesDeg[nearestIdx];
+        const ym = dbToY(magVal);
+        const yp = phaseToY(phVal);
+
+        // Punto sobre la curva de Magnitud
+        ctx.fillStyle = col.mag;
+        ctx.beginPath();
+        ctx.arc(cx, ym, 4.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#050811';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+
+        // Punto sobre la curva de Fase
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.arc(cx, yp, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        tooltipLines.push(
+          `${tr.label}: ${magVal >= 0 ? '+' : ''}${magVal.toFixed(2)} dB  |  ∠ ${phVal >= 0 ? '+' : ''}${phVal.toFixed(1)}°`
+        );
+      });
+
+      const readout = document.getElementById('bodeCursorReadout');
+      if (readout) {
+        readout.textContent = tooltipLines.join('   •   ');
+      }
+
+      // Dibujar recuadro flotante (tooltip) en el canvas
+      ctx.font = '11.5px "JetBrains Mono", Consolas, monospace';
+      let maxW = 0;
+      for (const line of tooltipLines) {
+        const w = ctx.measureText(line).width;
+        if (w > maxW) maxW = w;
+      }
+      const boxW = maxW + 18;
+      const boxH = tooltipLines.length * 18 + 10;
+      const boxX = cx + 14 + boxW < padLeft + plotW ? cx + 14 : cx - boxW - 14;
+      const boxY = Math.max(
+        padTop + 8,
+        Math.min(padTop + plotH - boxH - 8, (this._bodeHoverY || padTop + 30) - boxH / 2)
+      );
+
+      ctx.fillStyle = 'rgba(11, 17, 30, 0.94)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+      ctx.lineWidth = 1.2;
+      ctx.fillRect(boxX, boxY, boxW, boxH);
+      ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+      tooltipLines.forEach((line, i) => {
+        ctx.fillStyle = i === 0 ? '#f8fafc' : palette[(i - 1) % palette.length].mag;
+        ctx.textAlign = 'left';
+        ctx.fillText(line, boxX + 9, boxY + 17 + i * 18);
+      });
+    }
+
+    ctx.restore();
   }
 
   loop() {
@@ -14612,6 +15243,6 @@ window.addEventListener('DOMContentLoaded', () => {
   window.protoApp = new ProtoSimApp();
 });
 
-  </script>
+</script>
 </body>
 </html>
