@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -665,18 +665,27 @@ body.is-resizing-panel .top-expanded-graph-dock {
   border-bottom: 1px solid var(--border-color);
   overflow-x: auto;
   font-family: 'JetBrains Mono', Consolas, monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 .delta-pill {
   display: inline-flex;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
   padding: 3px 9px;
+  min-width: 145px;
   background: rgba(22, 31, 48, 0.75);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 11px;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.delta-pill.cursor-a,
+.delta-pill.cursor-b {
+  min-width: 242px;
 }
 
 .delta-pill .delta-tag {
@@ -2573,8 +2582,9 @@ body.is-resizing-panel .sidebar-resizer {
     </div>
   </div>
 
-  <!-- SCRIPTS MODULARES DE PROTO-SIM -->
   <script>
+
+// === components.js ===
 // ============================================================================
 // PROTO-SIM: Catálogo de Componentes Electrónicos, Pines y Utilidades SI
 // ============================================================================
@@ -3533,8 +3543,8 @@ window.ProtoSim.COMPONENT_SHORTCUTS = COMPONENT_SHORTCUTS;
 window.ProtoSim.COMPONENT_LIBRARY = COMPONENT_LIBRARY;
 window.ProtoSim.getPinWorldGrid = getPinWorldGrid;
 
-</script>
-  <script>
+
+// === solver.js ===
 // ============================================================================
 // PROTO-SIM: Motor MNA (Modified Nodal Analysis) en Tiempo Real + Newton-Raphson
 // ============================================================================
@@ -3727,10 +3737,52 @@ class CircuitSolver {
     }
   }
 
-  // Avanza la simulación un frame visual (ejecuta N sub-pasos físicos reutilizando la topología estática del frame)
+  // Calcula una firma estructural rápida para detectar si cambió la topología (componentes, posiciones, rotaciones, cables o etiquetas de red)
+  _computeTopologyKey(components, wires) {
+    let h1 = components.length | 0;
+    let h2 = wires.length | 0;
+    for (let i = 0; i < components.length; i++) {
+      const c = components[i];
+      const rot = c.rotation || 0;
+      h1 = (Math.imul(h1 ^ (c.gx | 0), 16777619) + (c.gy | 0) * 31 + rot) | 0;
+      const idStr = String(c.id || '');
+      for (let k = 0; k < idStr.length; k++) {
+        h1 = (Math.imul(h1, 31) + idStr.charCodeAt(k)) | 0;
+      }
+      if (c.type === 'net_label') {
+        const nn = String(c.props?.netName || 'NET');
+        for (let k = 0; k < nn.length; k++) {
+          h2 = (Math.imul(h2, 31) + nn.charCodeAt(k)) | 0;
+        }
+      }
+    }
+    for (let i = 0; i < wires.length; i++) {
+      const w = wires[i];
+      h2 = (Math.imul(h2, 16777619) ^ ((w.gx1 | 0) + ((w.gy1 | 0) << 8) + ((w.gx2 | 0) << 16) + ((w.gy2 | 0) << 24))) | 0;
+    }
+    return `${components.length}:${wires.length}:${h1}:${h2}`;
+  }
+
+  getTopology(components, wires) {
+    if (components.length === 0) return null;
+    const key = this._computeTopologyKey(components, wires);
+    if (
+      this._cachedTopo &&
+      this._cachedTopoKey === key &&
+      (wires.length === 0 || wires[0]._subSegments !== undefined)
+    ) {
+      return this._cachedTopo;
+    }
+    const topo = this.buildTopology(components, wires);
+    this._cachedTopo = topo;
+    this._cachedTopoKey = key;
+    return topo;
+  }
+
+  // Avanza la simulación un frame visual (ejecuta N sub-pasos físicos reutilizando la topología estática)
   stepFrame(components, wires, onSubStep = null) {
     if (components.length === 0) return null;
-    const topo = this.buildTopology(components, wires);
+    const topo = this.getTopology(components, wires);
     if (!topo || topo.numNodes === 0) return null;
 
     let anyNewBurn = null;
@@ -4013,23 +4065,66 @@ class CircuitSolver {
     }
     const netGroupsList = Array.from(netGroupsMap.values());
 
+    // Precalcular pares de pines por componente y nodos de extremos de cables para evitar asignaciones por sub-paso
+    const compPinEntries = new Map();
+    for (const [cid, pm] of compPinNodes.entries()) {
+      compPinEntries.set(cid, Object.entries(pm));
+    }
+    const wireEndNodes = new Int32Array(wires.length * 2);
+    for (let wi = 0; wi < wires.length; wi++) {
+      const w = wires[wi];
+      wireEndNodes[wi * 2] = nodeIndexMap.get(`${w.gx1},${w.gy1}`) || 0;
+      wireEndNodes[wi * 2 + 1] = nodeIndexMap.get(`${w.gx2},${w.gy2}`) || 0;
+    }
+
     const stride = numNodes + 2;
     const A = new Float64Array((numNodes + 1) * stride);
+    const staticA = new Float64Array((numNodes + 1) * stride);
+    const baseA = new Float64Array((numNodes + 1) * stride);
     const V = new Float64Array(numNodes + 1);
     const solvedV = new Float64Array(numNodes + 1);
+    const equiV = new Float64Array(numNodes + 1);
+
+    // Pre-estampar en staticA la red conductora fija (G_MIN + sub-segmentos de cables + puentes de Etiquetas de Red)
+    const G_WIRE = 100000.0;
+    const G_MIN = 1e-12;
+    for (let i = 1; i <= numNodes; i++) {
+      staticA[i * stride + i] += G_MIN;
+    }
+    const stampStaticG = (n1, n2, g) => {
+      if (n1 > 0) staticA[n1 * stride + n1] += g;
+      if (n2 > 0) staticA[n2 * stride + n2] += g;
+      if (n1 > 0 && n2 > 0) {
+        staticA[n1 * stride + n2] -= g;
+        staticA[n2 * stride + n1] -= g;
+      }
+    };
+    for (let si = 0; si < subSegments.length; si++) {
+      const seg = subSegments[si];
+      stampStaticG(seg.n1, seg.n2, G_WIRE);
+    }
+    for (let li = 0; li < netLinks.length; li++) {
+      const link = netLinks[li];
+      stampStaticG(link.n1, link.n2, G_WIRE);
+    }
 
     return {
       numNodes,
       stride,
       indexKeyMap,
       compPinNodes,
+      compPinEntries,
+      wireEndNodes,
       subSegments,
       netLinks,
       groundNodes,
       netGroupsList,
       A,
+      staticA,
+      baseA,
       V,
-      solvedV
+      solvedV,
+      equiV
     };
   }
 
@@ -4051,7 +4146,7 @@ class CircuitSolver {
   stepPhysics(components, wires, dt, topo = null) {
     if (components.length === 0) return null;
 
-    const activeTopo = topo || this.buildTopology(components, wires);
+    const activeTopo = topo || this.getTopology(components, wires);
     if (!activeTopo || activeTopo.numNodes === 0) return null;
 
     const {
@@ -4059,13 +4154,18 @@ class CircuitSolver {
       stride,
       indexKeyMap,
       compPinNodes,
+      compPinEntries,
+      wireEndNodes,
       subSegments,
       netLinks,
       groundNodes,
       netGroupsList,
       A,
+      staticA,
+      baseA,
       V,
-      solvedV
+      solvedV,
+      equiV
     } = activeTopo;
 
     // Vector de voltajes de nodo V[1..numNodes] inicializado con estado previo
@@ -4078,7 +4178,8 @@ class CircuitSolver {
 
     // Detectar si hay semiconductores no lineales para decidir número de iteraciones Newton-Raphson
     let hasNonlinear = false;
-    for (const c of components) {
+    for (let ci = 0; ci < components.length; ci++) {
+      const c = components[ci];
       if (
         !c.burned &&
         (c.type === 'diode' ||
@@ -4098,181 +4199,193 @@ class CircuitSolver {
     const maxIter = hasNonlinear ? 10 : 1;
 
     const G_WIRE = 100000.0; // 10 uOhm por segmento de cable (conductor ideal)
-    const G_MIN = 1e-12; // 1 TOhm a tierra para estabilidad numérica sin afectar resistencias de MOhm
+
+    // Pre-estampar en baseA una sola vez por sub-paso los cables (staticA) y todos los componentes lineales (invariantes durante las iteraciones de Newton-Raphson)
+    baseA.set(staticA);
+
+    const stampBaseConductance = (n1, n2, g) => {
+      if (n1 > 0) baseA[n1 * stride + n1] += g;
+      if (n2 > 0) baseA[n2 * stride + n2] += g;
+      if (n1 > 0 && n2 > 0) {
+        baseA[n1 * stride + n2] -= g;
+        baseA[n2 * stride + n1] -= g;
+      }
+    };
+    const stampBaseCurrentSource = (n1, n2, cur) => {
+      if (n1 > 0) baseA[n1 * stride + (numNodes + 1)] -= cur;
+      if (n2 > 0) baseA[n2 * stride + (numNodes + 1)] += cur;
+    };
+    const stampBaseVoltageNorton = (nPos, nNeg, vSrc, rInt = 0.002) => {
+      const g = 1.0 / rInt;
+      stampBaseConductance(nPos, nNeg, g);
+      stampBaseCurrentSource(nNeg, nPos, vSrc * g);
+    };
+
+    const iterComps = [];
+    for (let ci = 0; ci < components.length; ci++) {
+      const c = components[ci];
+      if (c.burned) continue;
+      const pm = compPinNodes.get(c.id);
+      if (!pm) continue;
+      const p = c.props;
+
+      switch (c.type) {
+        case 'gnd':
+        case 'net_label':
+        case 'osc_probe':
+          break;
+        case 'dc_voltage':
+          stampBaseVoltageNorton(pm.pos, pm.neg, Number(p.voltage) || 0, 0.002);
+          break;
+        case 'ac_voltage': {
+          const amp = Number(p.amplitude) || 10;
+          const freq = Number(p.frequency) || 60;
+          const offset = Number(p.offset) || 0;
+          const phase = 2 * Math.PI * freq * this.simTime;
+          let wave = 0;
+          if (p.waveform === 'square') {
+            wave = Math.sin(phase) >= 0 ? 1 : -1;
+          } else if (p.waveform === 'triangle') {
+            wave = (2 / Math.PI) * Math.asin(Math.sin(phase));
+          } else {
+            wave = Math.sin(phase);
+          }
+          const vInst = offset + amp * wave;
+          c._lastSourceV = vInst;
+          stampBaseVoltageNorton(pm.pos, pm.neg, vInst, 0.005);
+          break;
+        }
+        case 'current_source':
+          stampBaseCurrentSource(pm.in, pm.out, Number(p.current) || 0.01);
+          break;
+        case 'resistor':
+          stampBaseConductance(pm.a, pm.b, 1.0 / Math.max(0.01, Number(p.resistance) || 220));
+          break;
+        case 'potentiometer': {
+          const rTot = Math.max(1, Number(p.resistance) || 10000);
+          const pos = Math.min(0.999, Math.max(0.001, Number(p.position) || 0.5));
+          const r1 = Math.max(0.1, rTot * pos);
+          const r2 = Math.max(0.1, rTot * (1 - pos));
+          stampBaseConductance(pm.a, pm.wiper, 1.0 / r1);
+          stampBaseConductance(pm.wiper, pm.b, 1.0 / r2);
+          break;
+        }
+        case 'lamp': {
+          const vNom = Math.max(1, Number(p.nominalVoltage) || 12);
+          const pNom = Math.max(0.1, Number(p.nominalPower) || 6);
+          stampBaseConductance(pm.a, pm.b, pNom / (vNom * vNom));
+          break;
+        }
+        case 'ldr': {
+          const rLdr = this.computeLdrResistance(p);
+          c._effR = rLdr;
+          stampBaseConductance(pm.a, pm.b, 1.0 / rLdr);
+          break;
+        }
+        case 'thermistor': {
+          const rNtc = this.computeNtcResistance(p);
+          c._effR = rNtc;
+          stampBaseConductance(pm.a, pm.b, 1.0 / rNtc);
+          break;
+        }
+        case 'buzzer':
+          stampBaseConductance(pm.pos, pm.neg, 1.0 / Math.max(10, Number(p.resistance) || 150));
+          break;
+        case 'capacitor': {
+          const cap = Math.max(1e-12, Number(p.capacitance) || 47e-6);
+          const gEq = cap / dt;
+          const vPrev = c._capV || 0;
+          stampBaseConductance(pm.a, pm.b, gEq);
+          stampBaseCurrentSource(pm.b, pm.a, gEq * vPrev);
+          break;
+        }
+        case 'inductor': {
+          const ind = Math.max(1e-6, Number(p.inductance) || 0.05);
+          const rWinding = 0.05;
+          const gEq = 1.0 / (rWinding + ind / dt);
+          const iPrev = c._indI || 0;
+          const iHist = gEq * (ind / dt) * iPrev;
+          stampBaseConductance(pm.a, pm.b, gEq);
+          stampBaseCurrentSource(pm.a, pm.b, iHist);
+          break;
+        }
+        case 'switch_spst':
+        case 'push_button': {
+          const closed = p.closed === true || p.closed === 'true';
+          stampBaseConductance(pm.a, pm.b, closed ? 50000.0 : 1e-12);
+          break;
+        }
+        case 'switch_spdt': {
+          const pos = Number(p.position) === 1 ? 1 : 0;
+          stampBaseConductance(pm.com, pm.b1, pos === 0 ? 50000.0 : 1e-12);
+          stampBaseConductance(pm.com, pm.b2, pos === 1 ? 50000.0 : 1e-12);
+          break;
+        }
+        case 'voltmeter':
+          stampBaseConductance(pm.pos, pm.neg, 1e-7);
+          break;
+        case 'ammeter':
+          stampBaseConductance(pm.pos, pm.neg, 1000.0);
+          break;
+        case 'logic_in': {
+          const vHigh = Number(p.highVoltage) || 5.0;
+          const isHigh = Number(p.state) === 1;
+          stampBaseVoltageNorton(pm.out, 0, isHigh ? vHigh : 0.0, 5.0);
+          break;
+        }
+        case 'logic_clock': {
+          const vHigh = Number(p.highVoltage) || 5.0;
+          const freq = Number(p.frequency) || 5.0;
+          const isHigh = Math.sin(2 * Math.PI * freq * this.simTime) >= 0;
+          c._clockState = isHigh ? 1 : 0;
+          stampBaseVoltageNorton(pm.out, 0, isHigh ? vHigh : 0.0, 5.0);
+          break;
+        }
+        case 'logic_probe':
+          stampBaseConductance(pm.in, 0, 1e-6);
+          break;
+        case 'seven_seg':
+          stampBaseConductance(pm.b0, 0, 1e-6);
+          stampBaseConductance(pm.b1, 0, 1e-6);
+          stampBaseConductance(pm.b2, 0, 1e-6);
+          stampBaseConductance(pm.b3, 0, 1e-6);
+          break;
+        default:
+          iterComps.push(c);
+          break;
+      }
+    }
+
+    const stampConductance = (n1, n2, g) => {
+      if (n1 > 0) A[n1 * stride + n1] += g;
+      if (n2 > 0) A[n2 * stride + n2] += g;
+      if (n1 > 0 && n2 > 0) {
+        A[n1 * stride + n2] -= g;
+        A[n2 * stride + n1] -= g;
+      }
+    };
+    const stampCurrentSource = (n1, n2, cur) => {
+      if (n1 > 0) A[n1 * stride + (numNodes + 1)] -= cur;
+      if (n2 > 0) A[n2 * stride + (numNodes + 1)] += cur;
+    };
+    const stampVoltageNorton = (nPos, nNeg, vSrc, rInt = 0.002) => {
+      const g = 1.0 / rInt;
+      stampConductance(nPos, nNeg, g);
+      stampCurrentSource(nNeg, nPos, vSrc * g);
+    };
 
     // 3. Iteración de Newton-Raphson para el sub-paso actual
     for (let iter = 0; iter < maxIter; iter++) {
-      // Limpiar matriz aumentada A reutilizando el Float64Array preasignado
-      A.fill(0);
+      // Restaurar la matriz base (cables + elementos lineales) con copia nativa tipada
+      A.set(baseA);
 
-      const stampConductance = (n1, n2, g) => {
-        if (n1 > 0) A[n1 * stride + n1] += g;
-        if (n2 > 0) A[n2 * stride + n2] += g;
-        if (n1 > 0 && n2 > 0) {
-          A[n1 * stride + n2] -= g;
-          A[n2 * stride + n1] -= g;
-        }
-      };
-
-      // Corriente saliendo de n1 y entrando a n2 (n1 -> n2)
-      const stampCurrentSource = (n1, n2, cur) => {
-        if (n1 > 0) A[n1 * stride + (numNodes + 1)] -= cur;
-        if (n2 > 0) A[n2 * stride + (numNodes + 1)] += cur;
-      };
-
-      // Fuente de tensión con resistencia interna Rint: V(nPos) - V(nNeg) = Vsrc
-      const stampVoltageNorton = (nPos, nNeg, vSrc, rInt = 0.002) => {
-        const g = 1.0 / rInt;
-        stampConductance(nPos, nNeg, g);
-        stampCurrentSource(nNeg, nPos, vSrc * g);
-      };
-
-      // Estabilidad G_MIN en cada nodo
-      for (let i = 1; i <= numNodes; i++) {
-        A[i * stride + i] += G_MIN;
-      }
-
-      // Estampar cables y puentes de Etiquetas de Red (Net Labels)
-      for (const seg of subSegments) {
-        stampConductance(seg.n1, seg.n2, G_WIRE);
-      }
-      if (netLinks) {
-        for (const link of netLinks) {
-          stampConductance(link.n1, link.n2, G_WIRE);
-        }
-      }
-
-      // Estampar cada componente
-      for (const c of components) {
-        if (c.burned) continue; // Componente quemado = circuito abierto
+      // Estampar únicamente los componentes dependientes de voltaje en cada iteración
+      for (let ci = 0; ci < iterComps.length; ci++) {
+        const c = iterComps[ci];
         const pm = compPinNodes.get(c.id);
-        if (!pm) continue;
         const p = c.props;
 
         switch (c.type) {
-          case 'gnd':
-          case 'net_label':
-            break;
-
-          case 'dc_voltage': {
-            stampVoltageNorton(pm.pos, pm.neg, Number(p.voltage) || 0, 0.002);
-            break;
-          }
-
-          case 'ac_voltage': {
-            const amp = Number(p.amplitude) || 10;
-            const freq = Number(p.frequency) || 60;
-            const offset = Number(p.offset) || 0;
-            const phase = 2 * Math.PI * freq * this.simTime;
-            let wave = 0;
-            if (p.waveform === 'square') {
-              wave = Math.sin(phase) >= 0 ? 1 : -1;
-            } else if (p.waveform === 'triangle') {
-              wave = (2 / Math.PI) * Math.asin(Math.sin(phase));
-            } else {
-              wave = Math.sin(phase);
-            }
-            const vInst = offset + amp * wave;
-            c._lastSourceV = vInst;
-            stampVoltageNorton(pm.pos, pm.neg, vInst, 0.005);
-            break;
-          }
-
-          case 'current_source': {
-            const cur = Number(p.current) || 0.01;
-            stampCurrentSource(pm.in, pm.out, cur);
-            break;
-          }
-
-          case 'resistor': {
-            const r = Math.max(0.01, Number(p.resistance) || 220);
-            stampConductance(pm.a, pm.b, 1.0 / r);
-            break;
-          }
-
-          case 'potentiometer': {
-            const rTot = Math.max(1, Number(p.resistance) || 10000);
-            const pos = Math.min(0.999, Math.max(0.001, Number(p.position) || 0.5));
-            const r1 = Math.max(0.1, rTot * pos);
-            const r2 = Math.max(0.1, rTot * (1 - pos));
-            stampConductance(pm.a, pm.wiper, 1.0 / r1);
-            stampConductance(pm.wiper, pm.b, 1.0 / r2);
-            break;
-          }
-
-          case 'lamp': {
-            const vNom = Math.max(1, Number(p.nominalVoltage) || 12);
-            const pNom = Math.max(0.1, Number(p.nominalPower) || 6);
-            const rLamp = (vNom * vNom) / pNom;
-            stampConductance(pm.a, pm.b, 1.0 / rLamp);
-            break;
-          }
-
-          case 'ldr': {
-            const rLdr = this.computeLdrResistance(p);
-            c._effR = rLdr;
-            stampConductance(pm.a, pm.b, 1.0 / rLdr);
-            break;
-          }
-
-          case 'thermistor': {
-            const rNtc = this.computeNtcResistance(p);
-            c._effR = rNtc;
-            stampConductance(pm.a, pm.b, 1.0 / rNtc);
-            break;
-          }
-
-          case 'buzzer': {
-            const rBz = Math.max(10, Number(p.resistance) || 150);
-            stampConductance(pm.pos, pm.neg, 1.0 / rBz);
-            break;
-          }
-
-          case 'capacitor': {
-            const cap = Math.max(1e-12, Number(p.capacitance) || 47e-6);
-            const gEq = cap / dt;
-            const vPrev = c._capV || 0;
-            stampConductance(pm.a, pm.b, gEq);
-            // Corriente histórica acompaña al nodo positivo
-            stampCurrentSource(pm.b, pm.a, gEq * vPrev);
-            break;
-          }
-
-          case 'inductor': {
-            const ind = Math.max(1e-6, Number(p.inductance) || 0.05);
-            const rWinding = 0.05; // pequeña resistencia serie de bobinado
-            const gEq = 1.0 / (rWinding + ind / dt);
-            const iPrev = c._indI || 0;
-            const iHist = gEq * (ind / dt) * iPrev;
-            stampConductance(pm.a, pm.b, gEq);
-            stampCurrentSource(pm.a, pm.b, iHist);
-            break;
-          }
-
-          case 'switch_spst':
-          case 'push_button': {
-            const closed = p.closed === true || p.closed === 'true';
-            const g = closed ? 50000.0 : 1e-12;
-            stampConductance(pm.a, pm.b, g);
-            break;
-          }
-
-          case 'switch_spdt': {
-            const pos = Number(p.position) === 1 ? 1 : 0;
-            stampConductance(pm.com, pm.b1, pos === 0 ? 50000.0 : 1e-12);
-            stampConductance(pm.com, pm.b2, pos === 1 ? 50000.0 : 1e-12);
-            break;
-          }
-
-          case 'voltmeter': {
-            stampConductance(pm.pos, pm.neg, 1e-7); // 10 MOhm
-            break;
-          }
-
-          case 'ammeter': {
-            stampConductance(pm.pos, pm.neg, 1000.0); // 1 mOhm
-            break;
-          }
 
           case 'diode':
           case 'led': {
@@ -4597,19 +4710,23 @@ class CircuitSolver {
       }
       const allNodes = g.nodes;
       for (let k = 0; k < allNodes.length; k++) {
-        this.nodeVoltages.set(indexKeyMap[allNodes[k]], vEqui);
+        const nIdx = allNodes[k];
+        equiV[nIdx] = vEqui;
+        this.nodeVoltages.set(indexKeyMap[nIdx], vEqui);
       }
     }
 
-    for (const w of wires) {
-      const k1 = `${w.gx1},${w.gy1}`;
-      const k2 = `${w.gx2},${w.gy2}`;
-      w.v1 = this.nodeVoltages.get(k1) || 0;
-      w.v2 = this.nodeVoltages.get(k2) || 0;
-      if (w._subSegments && w._subSegments.length > 0) {
+    for (let wi = 0; wi < wires.length; wi++) {
+      const w = wires[wi];
+      const n1 = wireEndNodes[wi * 2];
+      const n2 = wireEndNodes[wi * 2 + 1];
+      w.v1 = n1 > 0 ? equiV[n1] : 0;
+      w.v2 = n2 > 0 ? equiV[n2] : 0;
+      const subs = w._subSegments;
+      if (subs && subs.length > 0) {
         let sumI = 0;
-        for (const s of w._subSegments) sumI += s.current;
-        w.current = sumI / w._subSegments.length;
+        for (let si = 0; si < subs.length; si++) sumI += subs[si].current;
+        w.current = sumI / subs.length;
       } else {
         w.current = 0;
       }
@@ -4618,12 +4735,17 @@ class CircuitSolver {
     // 6. Actualizar telemetría y estados dinámicos (C, L, Sobrecarga) de cada componente
     let newlyBurned = null;
 
-    for (const c of components) {
+    for (let ci = 0; ci < components.length; ci++) {
+      const c = components[ci];
       const pm = compPinNodes.get(c.id);
       if (!pm) continue;
-      c.pinVoltages = {};
-      for (const [pinId, nIdx] of Object.entries(pm)) {
-        c.pinVoltages[pinId] = V[nIdx] || 0;
+      const pv = c.pinVoltages || (c.pinVoltages = {});
+      const entries = compPinEntries.get(c.id);
+      if (entries) {
+        for (let pi = 0; pi < entries.length; pi++) {
+          const entry = entries[pi];
+          pv[entry[0]] = V[entry[1]] || 0;
+        }
       }
 
       if (c.burned) {
@@ -5067,10 +5189,12 @@ class CircuitSolver {
   solveLinearSystem(A, n, stride, outX = null) {
     const x = outX && outX.length >= n + 1 ? outX : new Float64Array(n + 1);
     x.fill(0);
+    const rhsCol = n + 1;
     for (let k = 1; k <= n; k++) {
+      const kOffset = k * stride;
       // Pivoteo parcial
       let maxRow = k;
-      let maxVal = Math.abs(A[k * stride + k]);
+      let maxVal = Math.abs(A[kOffset + k]);
       for (let i = k + 1; i <= n; i++) {
         const val = Math.abs(A[i * stride + k]);
         if (val > maxVal) {
@@ -5082,29 +5206,33 @@ class CircuitSolver {
       if (maxVal < 1e-14) continue;
 
       if (maxRow !== k) {
-        for (let j = k; j <= n + 1; j++) {
-          const tmp = A[k * stride + j];
-          A[k * stride + j] = A[maxRow * stride + j];
-          A[maxRow * stride + j] = tmp;
+        const maxOffset = maxRow * stride;
+        for (let j = k; j <= rhsCol; j++) {
+          const tmp = A[kOffset + j];
+          A[kOffset + j] = A[maxOffset + j];
+          A[maxOffset + j] = tmp;
         }
       }
 
-      const pivot = A[k * stride + k];
+      const pivot = A[kOffset + k];
       for (let i = k + 1; i <= n; i++) {
-        const factor = A[i * stride + k] / pivot;
-        if (factor === 0) continue;
-        for (let j = k; j <= n + 1; j++) {
-          A[i * stride + j] -= factor * A[k * stride + j];
+        const iOffset = i * stride;
+        const aik = A[iOffset + k];
+        if (aik === 0) continue;
+        const factor = aik / pivot;
+        for (let j = k + 1; j <= rhsCol; j++) {
+          A[iOffset + j] -= factor * A[kOffset + j];
         }
       }
     }
 
     for (let i = n; i >= 1; i--) {
-      let sum = A[i * stride + (n + 1)];
+      const iOffset = i * stride;
+      let sum = A[iOffset + rhsCol];
       for (let j = i + 1; j <= n; j++) {
-        sum -= A[i * stride + j] * x[j];
+        sum -= A[iOffset + j] * x[j];
       }
-      const diag = A[i * stride + i];
+      const diag = A[iOffset + i];
       x[i] = Math.abs(diag) > 1e-14 ? sum / diag : 0;
     }
 
@@ -5739,8 +5867,8 @@ class CircuitSolver {
 window.ProtoSim.Complex = Complex;
 window.ProtoSim.CircuitSolver = CircuitSolver;
 
-</script>
-  <script>
+
+// === renderer.js ===
 // ============================================================================
 // PROTO-SIM: Renderizador Canvas de Alta Precisión estilo PROTO
 // ============================================================================
@@ -5794,9 +5922,56 @@ class CircuitRenderer {
     this.showConnectorDots = true;
     this.proMode = false;
     this.smokeParticles = [];
+    this._sizeDirty = true;
+    this._cachedGeomKey = '';
+    this._cachedObstacles = null;
+    this._cachedJunctionData = null;
+    this._cachedNetKey = '';
+    this._cachedNetResult = null;
+    this._textWidthCache = new Map();
+    this._labelPosCache = new Map();
   }
 
-  syncSize() {
+  _computeGeometryKey(appState) {
+    const comps = appState.components || [];
+    const wires = appState.wires || [];
+    let h1 = comps.length | 0;
+    let h2 = wires.length | 0;
+    for (let i = 0; i < comps.length; i++) {
+      const c = comps[i];
+      h1 = (Math.imul(h1 ^ (c.gx | 0), 16777619) + (c.gy | 0) * 31 + (c.rotation || 0)) | 0;
+      if (c.type === 'net_label') {
+        const nn = String(c.props?.netName || 'NET');
+        for (let k = 0; k < nn.length; k++) {
+          h2 = (Math.imul(h2, 31) + nn.charCodeAt(k)) | 0;
+        }
+      }
+    }
+    for (let i = 0; i < wires.length; i++) {
+      const w = wires[i];
+      h2 = (Math.imul(h2, 16777619) ^ ((w.gx1 | 0) + ((w.gy1 | 0) << 8) + ((w.gx2 | 0) << 16) + ((w.gy2 | 0) << 24))) | 0;
+    }
+    return `${comps.length}:${wires.length}:${h1}:${h2}`;
+  }
+
+  _measureTextCached(ctx, font, text) {
+    const key = `${font}|${text}`;
+    let w = this._textWidthCache.get(key);
+    if (w === undefined) {
+      ctx.font = font;
+      w = ctx.measureText(text).width;
+      if (this._textWidthCache.size > 2500) {
+        this._textWidthCache.clear();
+      }
+      this._textWidthCache.set(key, w);
+    }
+    return w;
+  }
+
+  syncSize(force = false) {
+    if (!force && !this._sizeDirty && this.width > 0 && this.height > 0) {
+      return;
+    }
     const cRect = this.canvas.getBoundingClientRect();
     const pRect = this.canvas.parentElement ? this.canvas.parentElement.getBoundingClientRect() : cRect;
     const rawW = cRect.width > 10 ? cRect.width : pRect.width;
@@ -5819,10 +5994,12 @@ class CircuitRenderer {
       this.height = h;
       this.dpr = dpr;
     }
+    this._sizeDirty = false;
   }
 
   resize() {
-    this.syncSize();
+    this._sizeDirty = true;
+    this.syncSize(true);
   }
 
   screenToWorld(sx, sy) {
@@ -5846,6 +6023,15 @@ class CircuitRenderer {
 
   render(appState) {
     this.syncSize();
+    const geomKey = this._computeGeometryKey(appState);
+    if (geomKey !== this._cachedGeomKey) {
+      this._cachedGeomKey = geomKey;
+      this._cachedObstacles = this.buildLabelObstacles(appState);
+      this._cachedJunctionData = null;
+      this._cachedNetKey = '';
+      this._labelPosCache.clear();
+    }
+
     const ctx = this.ctx;
     ctx.save();
     ctx.scale(this.dpr, this.dpr);
@@ -5871,8 +6057,8 @@ class CircuitRenderer {
       this.drawActiveWiring(ctx, appState);
     }
 
-    // 5. Preparar obstáculos de colisión para posicionar etiquetas y dibujar componentes
-    this._labelObstacles = this.buildLabelObstacles(appState);
+    // 5. Preparar obstáculos de colisión cacheados para posicionar etiquetas y dibujar componentes
+    this._labelObstacles = this._cachedObstacles;
     this._placedLabelRects = [];
 
     for (const comp of appState.components) {
@@ -6112,7 +6298,12 @@ class CircuitRenderer {
       activeNetSeed = `${appState.selectedWire.gx1},${appState.selectedWire.gy1}`;
     }
 
-    const { netNodes, netWires } = this.computeConnectedNet(appState, activeNetSeed);
+    const netCacheKey = `${this._cachedGeomKey}|${activeNetSeed || ''}`;
+    if (this._cachedNetKey !== netCacheKey || !this._cachedNetResult) {
+      this._cachedNetKey = netCacheKey;
+      this._cachedNetResult = this.computeConnectedNet(appState, activeNetSeed);
+    }
+    const { netNodes, netWires } = this._cachedNetResult;
     this._currentNetNodes = netNodes;
     this._currentNetSeed = activeNetSeed;
 
@@ -6154,7 +6345,7 @@ class CircuitRenderer {
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
-      // Animación de puntos de corriente estilo PROTO (desactivada en Modo PRO)
+      // Animación de puntos de corriente estilo PROTO en un único path agrupado (sin shadowBlur costoso)
       if (this.showCurrentDots && !isPro) {
         const dx = x2 - x1;
         const dy = y2 - y1;
@@ -6165,19 +6356,31 @@ class CircuitRenderer {
           if (w.particleOffset < 0) w.particleOffset += 22;
 
           if (Math.abs(w.current || 0) > 1e-5) {
-            ctx.fillStyle = '#fde047';
-            ctx.shadowColor = '#facc15';
-            ctx.shadowBlur = 6;
             const spacing = 22;
+            const invLen = 1 / len;
+            // Halo suave exterior agrupado
+            ctx.fillStyle = 'rgba(250, 204, 21, 0.26)';
+            ctx.beginPath();
             for (let d = w.particleOffset; d < len; d += spacing) {
-              const t = d / len;
+              const t = d * invLen;
               const px = x1 + dx * t;
               const py = y1 + dy * t;
-              ctx.beginPath();
-              ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-              ctx.fill();
+              ctx.moveTo(px + 4.2, py);
+              ctx.arc(px, py, 4.2, 0, Math.PI * 2);
             }
-            ctx.shadowBlur = 0;
+            ctx.fill();
+
+            // Núcleo brillante agrupado
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            for (let d = w.particleOffset; d < len; d += spacing) {
+              const t = d * invLen;
+              const px = x1 + dx * t;
+              const py = y1 + dy * t;
+              ctx.moveTo(px + 2.5, py);
+              ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+            }
+            ctx.fill();
           }
         }
       }
@@ -6235,60 +6438,69 @@ class CircuitRenderer {
   }
 
   drawJunctionDots(ctx, appState) {
-    const degreeMap = new Map();
-    const wireEndpoints = new Set();
-    const userAnchors = new Set();
+    if (!this._cachedJunctionData) {
+      const degreeMap = new Map();
+      const wireEndpoints = new Set();
+      const userAnchors = new Set();
+      const nodeCoords = new Map();
 
-    const inc = (gx, gy) => {
-      const k = `${gx},${gy}`;
-      degreeMap.set(k, (degreeMap.get(k) || 0) + 1);
-    };
+      const inc = (gx, gy) => {
+        const k = `${gx},${gy}`;
+        degreeMap.set(k, (degreeMap.get(k) || 0) + 1);
+        if (!nodeCoords.has(k)) nodeCoords.set(k, { gx, gy });
+      };
 
-    for (const w of appState.wires) {
-      const k1 = `${w.gx1},${w.gy1}`;
-      const k2 = `${w.gx2},${w.gy2}`;
-      inc(w.gx1, w.gy1);
-      inc(w.gx2, w.gy2);
-      wireEndpoints.add(k1);
-      wireEndpoints.add(k2);
-      if (w.startAnchor) userAnchors.add(w.startAnchor);
-      if (w.endAnchor) userAnchors.add(w.endAnchor);
-    }
-
-    for (const c of appState.components) {
-      const def = window.ProtoSim.COMPONENT_LIBRARY[c.type];
-      if (!def) continue;
-      for (const p of def.pins) {
-        const pos = window.ProtoSim.getPinWorldGrid(c, p);
-        inc(pos.gx, pos.gy);
-      }
-    }
-
-    // Detectar uniones T (cuando el extremo de un cable o pin cae en el medio de otro cable)
-    for (const key of degreeMap.keys()) {
-      const [gx, gy] = key.split(',').map(Number);
       for (const w of appState.wires) {
-        if ((gx === w.gx1 && gy === w.gy1) || (gx === w.gx2 && gy === w.gy2)) continue;
-        const dx = w.gx2 - w.gx1;
-        const dy = w.gy2 - w.gy1;
-        const lenSq = dx * dx + dy * dy;
-        if (lenSq === 0) continue;
-        const cross = (gx - w.gx1) * dy - (gy - w.gy1) * dx;
-        if (Math.abs(cross) < 1e-5) {
-          const dot = (gx - w.gx1) * dx + (gy - w.gy1) * dy;
-          const t = dot / lenSq;
-          if (t > 0.001 && t < 0.999) {
-            degreeMap.set(key, (degreeMap.get(key) || 0) + 2);
+        const k1 = `${w.gx1},${w.gy1}`;
+        const k2 = `${w.gx2},${w.gy2}`;
+        inc(w.gx1, w.gy1);
+        inc(w.gx2, w.gy2);
+        wireEndpoints.add(k1);
+        wireEndpoints.add(k2);
+        if (w.startAnchor) userAnchors.add(w.startAnchor);
+        if (w.endAnchor) userAnchors.add(w.endAnchor);
+      }
+
+      for (const c of appState.components) {
+        const def = window.ProtoSim.COMPONENT_LIBRARY[c.type];
+        if (!def) continue;
+        for (const p of def.pins) {
+          const pos = window.ProtoSim.getPinWorldGrid(c, p);
+          inc(pos.gx, pos.gy);
+        }
+      }
+
+      // Detectar uniones T (cuando el extremo de un cable o pin cae en el medio de otro cable)
+      for (const [key, pt] of nodeCoords.entries()) {
+        const { gx, gy } = pt;
+        for (const w of appState.wires) {
+          if ((gx === w.gx1 && gy === w.gy1) || (gx === w.gx2 && gy === w.gy2)) continue;
+          const dx = w.gx2 - w.gx1;
+          const dy = w.gy2 - w.gy1;
+          const lenSq = dx * dx + dy * dy;
+          if (lenSq === 0) continue;
+          const cross = (gx - w.gx1) * dy - (gy - w.gy1) * dx;
+          if (Math.abs(cross) < 1e-5) {
+            const dot = (gx - w.gx1) * dx + (gy - w.gy1) * dy;
+            const t = dot / lenSq;
+            if (t > 0.001 && t < 0.999) {
+              degreeMap.set(key, (degreeMap.get(key) || 0) + 2);
+            }
           }
         }
       }
+
+      this._cachedJunctionData = { degreeMap, wireEndpoints, userAnchors, nodeCoords };
     }
 
+    const { degreeMap, wireEndpoints, userAnchors, nodeCoords } = this._cachedJunctionData;
     const netNodes = this._currentNetNodes || new Set();
     const isPro = Boolean(this.proMode);
 
     for (const [key, count] of degreeMap.entries()) {
-      const [gx, gy] = key.split(',').map(Number);
+      const pt = nodeCoords.get(key);
+      const gx = pt ? pt.gx : 0;
+      const gy = pt ? pt.gy : 0;
       const px = gx * GRID_SIZE;
       const py = gy * GRID_SIZE;
       const v = appState.solver.nodeVoltages.get(key) || 0;
@@ -8193,12 +8405,12 @@ class CircuitRenderer {
     }
 
     ctx.save();
-    ctx.font = 'bold 11px "JetBrains Mono", monospace';
-    const w1 = ctx.measureText(line1).width;
+    const font1 = 'bold 11px "JetBrains Mono", monospace';
+    const font2 = '500 10px "JetBrains Mono", monospace';
+    const w1 = this._measureTextCached(ctx, font1, line1);
     let w2 = 0;
     if (line2) {
-      ctx.font = '500 10px "JetBrains Mono", monospace';
-      w2 = ctx.measureText(line2).width;
+      w2 = this._measureTextCached(ctx, font2, line2);
     }
 
     const boxW = Math.ceil(Math.max(w1, w2)) + 10;
@@ -8206,106 +8418,114 @@ class CircuitRenderer {
     const cx = comp.gx * GRID_SIZE;
     const cy = comp.gy * GRID_SIZE;
 
-    // Candidatos de posición alrededor del componente: prioridad #1 a la IZQUIERDA del elemento
-    const candidates = [
-      { dx: -(24 + boxW / 2), dy: 0 }, // 1. Izquierda directa
-      { dx: -(22 + boxW / 2), dy: -(16 + boxH / 2) }, // 2. Izquierda-Arriba
-      { dx: -(22 + boxW / 2), dy: +(16 + boxH / 2) }, // 3. Izquierda-Abajo
-      { dx: -(46 + boxW / 2), dy: 0 }, // 4. Izquierda más alejada (tras el pin)
-      { dx: 0, dy: -(24 + boxH / 2) }, // 5. Arriba centrado
-      { dx: 0, dy: +(24 + boxH / 2) }, // 6. Abajo centrado
-      { dx: +(24 + boxW / 2), dy: 0 }, // 7. Derecha directa
-      { dx: +(22 + boxW / 2), dy: -(16 + boxH / 2) }, // 8. Derecha-Arriba
-      { dx: +(22 + boxW / 2), dy: +(16 + boxH / 2) }, // 9. Derecha-Abajo
-      { dx: 0, dy: -(45 + boxH / 2) }, // 10. Arriba alejado
-      { dx: 0, dy: +(45 + boxH / 2) }, // 11. Abajo alejado
-      { dx: -(44 + boxW / 2), dy: -(24 + boxH / 2) } // 12. Diagonal Izquierda-Arriba alejada
-    ];
-
-    const obs = this._labelObstacles || { nodeBoxes: [], segments: [], compBoxes: [] };
     const placed = this._placedLabelRects || [];
+    const posCacheKey = `${comp.id}:${boxW}:${boxH}:${placed.length}`;
+    let cachedPos = this._labelPosCache.get(posCacheKey);
 
-    const rectsOverlap = (a, b, pad = 0) =>
-      a.x1 - pad < b.x2 && a.x2 + pad > b.x1 && a.y1 - pad < b.y2 && a.y2 + pad > b.y1;
+    if (!cachedPos) {
+      // Candidatos de posición alrededor del componente: prioridad #1 a la IZQUIERDA del elemento
+      const candidates = [
+        { dx: -(24 + boxW / 2), dy: 0 }, // 1. Izquierda directa
+        { dx: -(22 + boxW / 2), dy: -(16 + boxH / 2) }, // 2. Izquierda-Arriba
+        { dx: -(22 + boxW / 2), dy: +(16 + boxH / 2) }, // 3. Izquierda-Abajo
+        { dx: -(46 + boxW / 2), dy: 0 }, // 4. Izquierda más alejada (tras el pin)
+        { dx: 0, dy: -(24 + boxH / 2) }, // 5. Arriba centrado
+        { dx: 0, dy: +(24 + boxH / 2) }, // 6. Abajo centrado
+        { dx: +(24 + boxW / 2), dy: 0 }, // 7. Derecha directa
+        { dx: +(22 + boxW / 2), dy: -(16 + boxH / 2) }, // 8. Derecha-Arriba
+        { dx: +(22 + boxW / 2), dy: +(16 + boxH / 2) }, // 9. Derecha-Abajo
+        { dx: 0, dy: -(45 + boxH / 2) }, // 10. Arriba alejado
+        { dx: 0, dy: +(45 + boxH / 2) }, // 11. Abajo alejado
+        { dx: -(44 + boxW / 2), dy: -(24 + boxH / 2) } // 12. Diagonal Izquierda-Arriba alejada
+      ];
 
-    const segHitsRect = (s, r, pad = 3) => {
-      const rx1 = r.x1 - pad;
-      const ry1 = r.y1 - pad;
-      const rx2 = r.x2 + pad;
-      const ry2 = r.y2 + pad;
-      if (Math.max(s.x1, s.x2) < rx1 || Math.min(s.x1, s.x2) > rx2) return false;
-      if (Math.max(s.y1, s.y2) < ry1 || Math.min(s.y1, s.y2) > ry2) return false;
+      const obs = this._labelObstacles || { nodeBoxes: [], segments: [], compBoxes: [] };
 
-      // Muestreo a lo largo del segmento para detectar cruce con la caja del texto
-      const steps = 6;
-      for (let k = 0; k <= steps; k++) {
-        const t = k / steps;
-        const px = s.x1 + (s.x2 - s.x1) * t;
-        const py = s.y1 + (s.y2 - s.y1) * t;
-        if (px >= rx1 && px <= rx2 && py >= ry1 && py <= ry2) {
-          return true;
+      const rectsOverlap = (a, b, pad = 0) =>
+        a.x1 - pad < b.x2 && a.x2 + pad > b.x1 && a.y1 - pad < b.y2 && a.y2 + pad > b.y1;
+
+      const segHitsRect = (s, r, pad = 3) => {
+        const rx1 = r.x1 - pad;
+        const ry1 = r.y1 - pad;
+        const rx2 = r.x2 + pad;
+        const ry2 = r.y2 + pad;
+        if (Math.max(s.x1, s.x2) < rx1 || Math.min(s.x1, s.x2) > rx2) return false;
+        if (Math.max(s.y1, s.y2) < ry1 || Math.min(s.y1, s.y2) > ry2) return false;
+
+        // Muestreo a lo largo del segmento para detectar cruce con la caja del texto
+        const steps = 6;
+        for (let k = 0; k <= steps; k++) {
+          const t = k / steps;
+          const px = s.x1 + (s.x2 - s.x1) * t;
+          const py = s.y1 + (s.y2 - s.y1) * t;
+          if (px >= rx1 && px <= rx2 && py >= ry1 && py <= ry2) {
+            return true;
+          }
         }
-      }
-      return false;
-    };
-
-    let bestCand = candidates[0];
-    let bestRect = null;
-    let bestScore = Infinity;
-
-    for (let i = 0; i < candidates.length; i++) {
-      const cand = candidates[i];
-      const rect = {
-        x1: cx + cand.dx - boxW / 2,
-        y1: cy + cand.dy - boxH / 2,
-        x2: cx + cand.dx + boxW / 2,
-        y2: cy + cand.dy + boxH / 2
+        return false;
       };
 
-      let score = i * 8; // Preferencia natural por la izquierda (índice 0)
+      let bestCand = candidates[0];
+      let bestRect = null;
+      let bestScore = Infinity;
 
-      // Penalizar choque con nodos / pines
-      for (const nb of obs.nodeBoxes) {
-        if (rectsOverlap(rect, nb, 2)) {
-          score += 600;
+      for (let i = 0; i < candidates.length; i++) {
+        const cand = candidates[i];
+        const rect = {
+          x1: cx + cand.dx - boxW / 2,
+          y1: cy + cand.dy - boxH / 2,
+          x2: cx + cand.dx + boxW / 2,
+          y2: cy + cand.dy + boxH / 2
+        };
+
+        let score = i * 8; // Preferencia natural por la izquierda (índice 0)
+
+        // Penalizar choque con nodos / pines
+        for (const nb of obs.nodeBoxes) {
+          if (rectsOverlap(rect, nb, 2)) {
+            score += 600;
+          }
+        }
+
+        // Penalizar choque con cuerpos de componentes
+        for (const cb of obs.compBoxes) {
+          if (rectsOverlap(rect, cb, 2)) {
+            score += 750;
+          }
+        }
+
+        // Penalizar choque con cables o patas de componentes
+        for (const seg of obs.segments) {
+          if (segHitsRect(seg, rect, 3)) {
+            score += 450;
+          }
+        }
+
+        // Penalizar choque con etiquetas ya ubicadas de otros componentes
+        for (const lr of placed) {
+          if (rectsOverlap(rect, lr, 3)) {
+            score += 500;
+          }
+        }
+
+        if (score < bestScore) {
+          bestScore = score;
+          bestCand = cand;
+          bestRect = rect;
+          if (score < 10) break; // Cero colisiones en posición prioritaria
         }
       }
 
-      // Penalizar choque con cuerpos de componentes
-      for (const cb of obs.compBoxes) {
-        if (rectsOverlap(rect, cb, 2)) {
-          score += 750;
-        }
-      }
-
-      // Penalizar choque con cables o patas de componentes
-      for (const seg of obs.segments) {
-        if (segHitsRect(seg, rect, 3)) {
-          score += 450;
-        }
-      }
-
-      // Penalizar choque con etiquetas ya ubicadas de otros componentes
-      for (const lr of placed) {
-        if (rectsOverlap(rect, lr, 3)) {
-          score += 500;
-        }
-      }
-
-      if (score < bestScore) {
-        bestScore = score;
-        bestCand = cand;
-        bestRect = rect;
-        if (score < 10) break; // Cero colisiones en posición prioritaria
-      }
+      cachedPos = { dx: bestCand.dx, dy: bestCand.dy, rect: bestRect };
+      this._labelPosCache.set(posCacheKey, cachedPos);
     }
 
-    if (bestRect && this._placedLabelRects) {
-      this._placedLabelRects.push(bestRect);
+    if (cachedPos.rect && this._placedLabelRects) {
+      this._placedLabelRects.push(cachedPos.rect);
     }
 
-    const drawX = bestCand.dx;
-    const drawY = bestCand.dy;
+    const drawX = cachedPos.dx;
+    const drawY = cachedPos.dy;
 
     // Fondo sutil translúcido para máxima legibilidad sobre la grilla
     ctx.fillStyle = 'rgba(7, 10, 16, 0.78)';
@@ -8385,8 +8605,8 @@ window.ProtoSim.GRID_SIZE = GRID_SIZE;
 window.ProtoSim.voltageToColor = voltageToColor;
 window.ProtoSim.CircuitRenderer = CircuitRenderer;
 
-</script>
-  <script>
+
+// === oscilloscope.js ===
 // ============================================================================
 // PROTO-SIM: Osciloscopio Multicanal + Monitores Múltiples Anclados a la Derecha
 // ============================================================================
@@ -8407,6 +8627,9 @@ class Oscilloscope {
     // Historial continuo por cada componente del circuito: comp.id -> Array de { t, v, i }
     this.compHistory = new Map();
     this.pinHoverX = new Map(); // comp.id -> coordenada X del mouse sobre el gráfico derecho
+    this._samplePool = []; // Pool de objetos { t, v, i } reciclados para evitar presión sobre el Garbage Collector
+    this._nodeKeyCache = new Map(); // nKey -> "node_" + nKey
+    this._wireKeyCache = []; // idx -> "wire_" + idx
 
     this.vScale = 10;
     this.autoScale = true;
@@ -8459,7 +8682,59 @@ class Oscilloscope {
 
   clear() {
     this.history = [];
+    for (const arr of this.compHistory.values()) {
+      for (let i = 0; i < arr.length; i++) {
+        if (this._samplePool.length < 60000) {
+          this._samplePool.push(arr[i]);
+        }
+      }
+    }
     this.compHistory.clear();
+  }
+
+  _pushCompSample(histKey, t, v, i, maxS, trimThreshold) {
+    let arr = this.compHistory.get(histKey);
+    if (!arr) {
+      arr = [];
+      this.compHistory.set(histKey, arr);
+    }
+    let pt;
+    if (this._samplePool.length > 0) {
+      pt = this._samplePool.pop();
+      pt.t = t;
+      pt.v = v;
+      pt.i = i;
+    } else {
+      pt = { t, v, i };
+    }
+    arr.push(pt);
+    if (arr.length >= trimThreshold) {
+      const removeCount = arr.length - maxS;
+      const removed = arr.splice(0, removeCount);
+      for (let k = 0; k < removed.length; k++) {
+        if (this._samplePool.length < 60000) {
+          this._samplePool.push(removed[k]);
+        }
+      }
+    }
+  }
+
+  _getNodeHistKey(nKey) {
+    let hk = this._nodeKeyCache.get(nKey);
+    if (!hk) {
+      hk = `node_${nKey}`;
+      this._nodeKeyCache.set(nKey, hk);
+    }
+    return hk;
+  }
+
+  _getWireHistKey(idx) {
+    let hk = this._wireKeyCache[idx];
+    if (!hk) {
+      hk = `wire_${idx}`;
+      this._wireKeyCache[idx] = hk;
+    }
+    return hk;
   }
 
   setTimeZoom(viewSamples) {
@@ -8470,106 +8745,71 @@ class Oscilloscope {
     const maxS = this.maxSamples;
     const trimThreshold = maxS + 600;
 
-    const channels = this.getActiveChannels(appState);
-    const sample = { t: simTime, ch: {} };
+    if (this.canvas) {
+      const channels = this.getActiveChannels(appState);
+      const sample = { t: simTime, ch: {} };
 
-    for (const ch of channels) {
-      sample.ch[ch.id] = {
-        v: ch.getV(),
-        i: ch.getI()
-      };
-    }
+      for (let k = 0; k < channels.length; k++) {
+        const ch = channels[k];
+        sample.ch[ch.id] = {
+          v: ch.getV(),
+          i: ch.getI()
+        };
+      }
 
-    this.history.push(sample);
-    if (this.history.length >= trimThreshold) {
-      this.history.splice(0, this.history.length - maxS);
+      this.history.push(sample);
+      if (this.history.length >= trimThreshold) {
+        this.history.splice(0, this.history.length - maxS);
+      }
     }
 
     // Guardar historial individual de todos los componentes para los gráficos de la derecha
-    for (const c of appState.components) {
+    const comps = appState.components;
+    for (let ci = 0; ci < comps.length; ci++) {
+      const c = comps[ci];
       if (c.type === 'gnd') continue;
-      let arr = this.compHistory.get(c.id);
-      if (!arr) {
-        arr = [];
-        this.compHistory.set(c.id, arr);
-      }
-      arr.push({
-        t: simTime,
-        v: c.vDiff || 0,
-        i: c.current || 0
-      });
-      if (arr.length >= trimThreshold) {
-        arr.splice(0, arr.length - maxS);
-      }
+      this._pushCompSample(c.id, simTime, c.vDiff || 0, c.current || 0, maxS, trimThreshold);
     }
 
     // Guardar historial de tensión de cada nodo activo del circuito (y de los nodos fijados/seleccionados)
-    if (appState.solver && appState.solver.nodeVoltages) {
-      const recordedNodes = new Set();
-      for (const [nKey, nV] of appState.solver.nodeVoltages.entries()) {
-        recordedNodes.add(nKey);
-        const histKey = `node_${nKey}`;
-        let arr = this.compHistory.get(histKey);
-        if (!arr) {
-          arr = [];
-          this.compHistory.set(histKey, arr);
-        }
-        arr.push({
-          t: simTime,
-          v: nV || 0,
-          i: 0
-        });
-        if (arr.length >= trimThreshold) {
-          arr.splice(0, arr.length - maxS);
-        }
+    const nodeVoltages = appState.solver && appState.solver.nodeVoltages;
+    if (nodeVoltages) {
+      for (const [nKey, nV] of nodeVoltages.entries()) {
+        this._pushCompSample(this._getNodeHistKey(nKey), simTime, nV || 0, 0, maxS, trimThreshold);
       }
 
       // Asegurar que nodos fijados o seleccionados sigan avanzando en el tiempo aunque queden abiertos por una llave
-      const extraNodes = [];
-      if (appState.selectedNodeKey) extraNodes.push(appState.selectedNodeKey);
-      for (const mId of appState.pinnedMonitors || []) {
-        if (typeof mId === 'string' && mId.startsWith('node_')) {
-          extraNodes.push(mId.slice(5));
-        }
+      const selNode = appState.selectedNodeKey;
+      if (selNode && !nodeVoltages.has(selNode)) {
+        this._pushCompSample(this._getNodeHistKey(selNode), simTime, 0, 0, maxS, trimThreshold);
       }
-      for (const nKey of extraNodes) {
-        if (recordedNodes.has(nKey)) continue;
-        recordedNodes.add(nKey);
-        const histKey = `node_${nKey}`;
-        let arr = this.compHistory.get(histKey);
-        if (!arr) {
-          arr = [];
-          this.compHistory.set(histKey, arr);
-        }
-        arr.push({
-          t: simTime,
-          v: appState.solver.nodeVoltages.get(nKey) || 0,
-          i: 0
-        });
-        if (arr.length >= trimThreshold) {
-          arr.splice(0, arr.length - maxS);
+      const pinned = appState.pinnedMonitors;
+      if (pinned) {
+        for (let pi = 0; pi < pinned.length; pi++) {
+          const mId = pinned[pi];
+          if (typeof mId === 'string' && mId.startsWith('node_')) {
+            const nKey = mId.slice(5);
+            if (nKey !== selNode && !nodeVoltages.has(nKey)) {
+              this._pushCompSample(mId, simTime, 0, 0, maxS, trimThreshold);
+            }
+          }
         }
       }
     }
 
     // Guardar historial de cada cable conductor
-    if (appState.wires) {
-      for (let idx = 0; idx < appState.wires.length; idx++) {
-        const w = appState.wires[idx];
-        const histKey = `wire_${idx}`;
-        let arr = this.compHistory.get(histKey);
-        if (!arr) {
-          arr = [];
-          this.compHistory.set(histKey, arr);
-        }
-        arr.push({
-          t: simTime,
-          v: ((w.v1 || 0) + (w.v2 || 0)) * 0.5,
-          i: w.current || 0
-        });
-        if (arr.length >= trimThreshold) {
-          arr.splice(0, arr.length - maxS);
-        }
+    const wires = appState.wires;
+    if (wires) {
+      for (let idx = 0; idx < wires.length; idx++) {
+        const w = wires[idx];
+        this._pushCompSample(
+          this._getWireHistKey(idx),
+          simTime,
+          ((w.v1 || 0) + (w.v2 || 0)) * 0.5,
+          w.current || 0,
+          maxS,
+          trimThreshold
+        );
       }
     }
   }
@@ -8683,7 +8923,10 @@ class Oscilloscope {
     }
 
     // 2. Insertar controles compactos de Trigger en el Analizador de Precisión superior (#topExpandedGraphDock)
-    const expControls = document.querySelector('#topExpandedGraphDock .expanded-graph-controls');
+    const expControls =
+      typeof document.querySelector === 'function'
+        ? document.querySelector('#topExpandedGraphDock .expanded-graph-controls')
+        : null;
     if (expControls && !document.getElementById('expTriggerGroup')) {
       const expGroup = document.createElement('div');
       expGroup.className = 'exp-trigger-group';
@@ -9745,13 +9988,15 @@ class Oscilloscope {
       if (data[i].v > data[maxIdx].v) maxIdx = i;
     }
 
-    const denom = Math.max(1, data.length - 1);
+    const denom = Math.max(1, trigWin.denom || data.length - 1);
+    const baseOffset = trigWin.baseOffset || 0;
+    const normX = (idx) => Math.max(0, Math.min(1, (idx + baseOffset) / denom));
     if (minIdx <= maxIdx) {
-      this.cursorA = minIdx / denom;
-      this.cursorB = maxIdx / denom;
+      this.cursorA = normX(minIdx);
+      this.cursorB = normX(maxIdx);
     } else {
-      this.cursorA = maxIdx / denom;
-      this.cursorB = minIdx / denom;
+      this.cursorA = normX(maxIdx);
+      this.cursorB = normX(minIdx);
     }
     this.cursorsEnabled = true;
   }
@@ -9788,9 +10033,10 @@ class Oscilloscope {
       }
     }
 
-    const denom = Math.max(1, data.length - 1);
-    this.cursorA = startIdx / denom;
-    this.cursorB = bestTauIdx / denom;
+    const denom = Math.max(1, trigWin.denom || data.length - 1);
+    const baseOffset = trigWin.baseOffset || 0;
+    this.cursorA = Math.max(0, Math.min(1, (startIdx + baseOffset) / denom));
+    this.cursorB = Math.max(0, Math.min(1, (bestTauIdx + baseOffset) / denom));
     this.cursorMode = 'track';
     this.cursorsEnabled = true;
   }
@@ -10080,15 +10326,64 @@ class Oscilloscope {
       ctx.fillText(f(vAtRow, 'V', 2), 6, y - 3);
     }
 
+    // Formateador con decimales fijos (sin recortar ceros finales) para evitar que los badges cambien de ancho y muevan la barra
+    const fFixed = (value, unit = '', decimals = 2) => {
+      if (value === undefined || value === null || isNaN(value)) return `0.${'0'.repeat(decimals)} ${unit}`.trim();
+      if (!isFinite(value)) return (value > 0 ? '+∞ ' : '-∞ ') + unit;
+      const absVal = Math.abs(value);
+      if (absVal < 1e-13) return `0.${'0'.repeat(decimals)}` + (unit ? ' ' + unit : '');
+      const prefixes = [
+        { exp: 9, symbol: 'G' },
+        { exp: 6, symbol: 'M' },
+        { exp: 3, symbol: 'k' },
+        { exp: 0, symbol: '' },
+        { exp: -3, symbol: 'm' },
+        { exp: -6, symbol: 'μ' },
+        { exp: -9, symbol: 'n' },
+        { exp: -12, symbol: 'p' }
+      ];
+      for (let i = 0; i < prefixes.length; i++) {
+        const p = prefixes[i];
+        const scale = Math.pow(10, p.exp);
+        if (absVal >= scale * 0.999 || i === prefixes.length - 1) {
+          const scaled = value / scale;
+          const dec = Math.abs(scaled) >= 100 ? Math.max(1, decimals - 1) : decimals;
+          return `${scaled.toFixed(dec)} ${p.symbol}${unit}`.trim();
+        }
+      }
+      return `${value.toFixed(decimals)} ${unit}`.trim();
+    };
+
     // Dibujar Cursores Interactivos A (T1) y B (T2) para medir Δt (ms), ΔV, ΔI, 1/Δt y Pendiente
     if (this.cursorsEnabled) {
-      const idxA = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorA * denom - baseOffset)));
-      const idxB = Math.min(data.length - 1, Math.max(0, Math.round(this.cursorB * denom - baseOffset)));
-      const ptA = data[idxA];
-      const ptB = data[idxB];
+      // Interpolación sub-muestra en la posición exacta del cursor para evitar saltos de ±1 muestra y fijar t1/t2 a la ventana
+      const sampleAtCursor = (normCursor) => {
+        const fIdx = Math.max(0, Math.min(data.length - 1, normCursor * denom - baseOffset));
+        const i0 = Math.floor(fIdx);
+        const i1 = Math.min(data.length - 1, i0 + 1);
+        const alpha = fIdx - i0;
+        const p0 = data[i0];
+        const p1 = data[i1];
+        return {
+          v: p0.v + (p1.v - p0.v) * alpha,
+          i: p0.i + (p1.i - p0.i) * alpha
+        };
+      };
 
-      const xA = ((idxA + baseOffset) / denom) * w;
-      const xB = ((idxB + baseOffset) / denom) * w;
+      const ptA = sampleAtCursor(this.cursorA);
+      const ptB = sampleAtCursor(this.cursorB);
+
+      const xA = this.cursorA * w;
+      const xB = this.cursorB * w;
+
+      // Paso temporal por muestra y tiempos t1, t2 relativos a la ventana visible (no suben con el tiempo total transcurrido)
+      const dtSample =
+        data.length > 1
+          ? Math.max(1e-9, (data[data.length - 1].t - data[0].t) / (data.length - 1))
+          : (appState?.solver?.dt || 1 / 2400) * Math.max(1, appState?.solver?.sampleStride || 1);
+      const windowDuration = denom * dtSample;
+      const t1Rel = this.cursorA * windowDuration;
+      const t2Rel = this.cursorB * windowDuration;
 
       let v1 = ptA.v;
       let v2 = ptB.v;
@@ -10102,7 +10397,7 @@ class Oscilloscope {
         v2 = unmapYV(y2);
       }
 
-      const dt = Math.abs(ptB.t - ptA.t);
+      const dt = Math.abs(t2Rel - t1Rel);
       const dv = v2 - v1;
       const di = ptB.i - ptA.i;
       const freq = dt > 1e-9 ? 1.0 / dt : 0;
@@ -10181,7 +10476,7 @@ class Oscilloscope {
       if (Math.abs(xB - xA) > 45) {
         const midX = (xA + xB) * 0.5;
         const badgeY = 30;
-        const label = `Δt = ${f(dt, 's', 2)}  |  ΔV = ${dv >= 0 ? '+' : ''}${f(dv, 'V', 2)}`;
+        const label = `Δt = ${fFixed(dt, 's', 2)}  |  ΔV = ${dv >= 0 ? '+' : ''}${fFixed(dv, 'V', 2)}`;
         ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
         const bw = ctx.measureText(label).width + 16;
 
@@ -10202,7 +10497,7 @@ class Oscilloscope {
         ctx.fillText(label, midX, badgeY + 3.5);
       }
 
-      // Actualizar la barra superior de lectura de Deltas en el DOM
+      // Actualizar la barra superior de lectura de Deltas en el DOM (t1 y t2 relativos a la ventana, con ancho tabular fijo)
       const elCA = document.getElementById('expStatCA');
       const elCB = document.getElementById('expStatCB');
       const elDt = document.getElementById('expStatDt');
@@ -10211,13 +10506,13 @@ class Oscilloscope {
       const elFreq = document.getElementById('expStatFreq');
       const elSlope = document.getElementById('expStatSlope');
 
-      if (elCA) elCA.textContent = `t₁ = ${f(ptA.t, 's', 3)} · V₁ = ${f(v1, 'V', 2)}`;
-      if (elCB) elCB.textContent = `t₂ = ${f(ptB.t, 's', 3)} · V₂ = ${f(v2, 'V', 2)}`;
-      if (elDt) elDt.textContent = f(dt, 's', 3);
-      if (elDv) elDv.textContent = `${dv >= 0 ? '+' : ''}${f(dv, 'V', 3)}`;
-      if (elDi) elDi.textContent = isNodeMonitor ? '—' : `${di >= 0 ? '+' : ''}${f(di, 'A', 2)}`;
-      if (elFreq) elFreq.textContent = dt > 1e-9 ? f(freq, 'Hz', 2) : '— Hz';
-      if (elSlope) elSlope.textContent = dt > 1e-9 ? `${f(slope, 'V/s', 2)}` : '0 V/s';
+      if (elCA) elCA.textContent = `t₁ = ${fFixed(t1Rel, 's', 2)} · V₁ = ${fFixed(v1, 'V', 2)}`;
+      if (elCB) elCB.textContent = `t₂ = ${fFixed(t2Rel, 's', 2)} · V₂ = ${fFixed(v2, 'V', 2)}`;
+      if (elDt) elDt.textContent = fFixed(dt, 's', 2);
+      if (elDv) elDv.textContent = `${dv >= 0 ? '+' : ''}${fFixed(dv, 'V', 2)}`;
+      if (elDi) elDi.textContent = isNodeMonitor ? '—' : `${di >= 0 ? '+' : ''}${fFixed(di, 'A', 2)}`;
+      if (elFreq) elFreq.textContent = dt > 1e-9 ? fFixed(freq, 'Hz', 2) : '— Hz';
+      if (elSlope) elSlope.textContent = dt > 1e-9 ? `${fFixed(slope, 'V/s', 2)}` : '0.00 V/s';
     }
 
     ctx.restore();
@@ -10248,8 +10543,8 @@ class Oscilloscope {
 window.ProtoSim.Oscilloscope = Oscilloscope;
 window.ProtoSim.CHANNEL_COLORS = CHANNEL_COLORS;
 
-</script>
-  <script>
+
+// === examples.js ===
 // ============================================================================
 // PROTO-SIM: Circuitos de Ejemplo Precargados
 // ============================================================================
@@ -10541,8 +10836,8 @@ const EXAMPLE_CIRCUITS = {
 
 window.ProtoSim.EXAMPLE_CIRCUITS = EXAMPLE_CIRCUITS;
 
-</script>
-  <script>
+
+// === app.js ===
 // ============================================================================
 // PROTO-SIM: Controlador Principal de Interfaz, Secciones, Resizer y Atajos
 // ============================================================================
@@ -15348,6 +15643,7 @@ class ProtoSimApp {
 window.addEventListener('DOMContentLoaded', () => {
   window.protoApp = new ProtoSimApp();
 });
+
 
 </script>
 </body>
