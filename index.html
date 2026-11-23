@@ -299,31 +299,44 @@ html, body {
   overflow: hidden;
 }
 
-/* Left Component Drawer (PROTO Categorized Palette - Overlay so it never alters canvas resolution) */
+/* Left Component Drawer (Minimalist Modern Palette - Linear / KiCad dark style) */
 .palette-sidebar {
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 245px;
-  background: rgba(15, 21, 33, 0.96);
-  backdrop-filter: blur(14px);
-  border-right: 1px solid var(--border-color);
-  box-shadow: 8px 0 28px rgba(0, 0, 0, 0.55);
+  width: 252px;
+  background: rgba(11, 15, 25, 0.96);
+  backdrop-filter: blur(16px);
+  border-right: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: 10px 0 32px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   z-index: 30;
   transform: translateX(0);
   opacity: 1;
-  transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease;
 }
 
 .palette-header {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 9px 10px 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.palette-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.palette-title-text {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
 }
 
 .search-wrapper {
@@ -335,29 +348,29 @@ html, body {
 
 .search-box {
   width: 100%;
-  background: rgba(7, 10, 16, 0.85);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  border-radius: var(--radius-sm);
-  padding: 7px 50px 7px 10px;
+  background: rgba(7, 10, 16, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 6px;
+  padding: 6px 44px 6px 9px;
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 11.5px;
   outline: none;
-  transition: all 0.15s;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .search-box:focus {
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.14);
 }
 
 .search-kbd-hint {
   position: absolute;
-  right: 8px;
+  right: 7px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 9.5px;
   color: var(--text-muted);
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 4px;
   padding: 1px 5px;
   pointer-events: none;
@@ -366,12 +379,12 @@ html, body {
 .search-clear-btn {
   position: absolute;
   right: 6px;
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.16);
   border: none;
   color: #fca5a5;
   border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 11px;
+  padding: 1px 5px;
+  font-size: 10.5px;
   cursor: pointer;
   display: none;
 }
@@ -380,89 +393,187 @@ html, body {
   display: block;
 }
 
+/* Tira fija superior: Recientes / Favoritos (máximo 6 componentes) */
+.quick-access-bar {
+  padding: 6px 10px 7px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(7, 10, 16, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.quick-access-bar:empty {
+  display: none;
+}
+
+.quick-access-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.quick-access-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.quick-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: rgba(22, 31, 48, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: grab;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+}
+
+.quick-chip:hover {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #f8fafc;
+}
+
+.quick-chip.selected-tool {
+  background: rgba(6, 182, 212, 0.16);
+  border-color: #22d3ee;
+  color: #67e8f9;
+}
+
+.quick-chip-star {
+  color: #facc15;
+  font-size: 9.5px;
+  flex-shrink: 0;
+}
+
+.quick-chip-prefix {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
+.quick-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Navegación por categorías en tira horizontal limpia de una sola fila */
 .category-tabs {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 4px;
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .cat-tab {
-  font-size: 11px;
+  flex: 0 0 auto;
+  font-size: 10.5px;
   font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: rgba(30, 41, 59, 0.5);
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(22, 31, 48, 0.55);
   color: var(--text-secondary);
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.15s;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  white-space: nowrap;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
 }
 
 .cat-tab:hover {
   color: var(--text-primary);
-  background: rgba(51, 65, 85, 0.6);
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(148, 163, 184, 0.22);
 }
 
 .cat-tab.active {
-  background: rgba(6, 182, 212, 0.18);
-  color: #22d3ee;
-  border-color: rgba(6, 182, 212, 0.4);
+  background: rgba(6, 182, 212, 0.16);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.42);
 }
 
 .component-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 10px;
+  padding: 8px 9px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 9px;
 }
 
 .comp-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .comp-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 8px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid var(--border-color);
-  border-left: 3px solid var(--accent-cyan);
+  padding: 4px 7px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 5px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #e2e8f0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #cbd5e1;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.14s ease, color 0.14s ease;
 }
 
 .comp-section-header:hover {
-  background: rgba(30, 41, 59, 0.9);
+  background: rgba(30, 41, 59, 0.75);
+  color: #f8fafc;
 }
 
 .comp-section-count {
-  font-size: 10px;
+  font-size: 9.5px;
   font-family: 'JetBrains Mono', monospace;
-  color: var(--accent-cyan);
-  background: rgba(6, 182, 212, 0.14);
-  padding: 1px 6px;
+  color: var(--text-muted);
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 0px 5px;
   border-radius: 99px;
 }
 
 .comp-section-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 7px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
 }
 
 .comp-section-grid.three-cols {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.component-list.dense-list .comp-section-grid {
+  grid-template-columns: 1fr;
+  gap: 3px;
 }
 
 .comp-section.collapsed .comp-section-grid {
@@ -472,72 +583,197 @@ html, body {
 .comp-shortcut-badge {
   position: absolute;
   top: 4px;
-  right: 5px;
+  right: 4px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9.5px;
-  font-weight: 700;
-  color: #38bdf8;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  border-radius: 4px;
-  padding: 0px 4px;
-  line-height: 1.3;
+  font-size: 9px;
+  font-weight: 600;
+  color: #94a3b8;
+  background: rgba(7, 10, 16, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 3px;
+  padding: 0px 3.5px;
+  line-height: 1.25;
+  pointer-events: none;
+}
+
+.comp-fav-btn {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  background: transparent;
+  border: none;
+  color: rgba(148, 163, 184, 0.35);
+  font-size: 11px;
+  line-height: 1;
+  padding: 1px 2px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.14s ease, color 0.14s ease;
+  z-index: 2;
+}
+
+.comp-card:hover .comp-fav-btn,
+.catalog-popup-card:hover .comp-fav-btn,
+.comp-fav-btn.active {
+  opacity: 1;
+}
+
+.comp-fav-btn.active {
+  color: #facc15;
+}
+
+.comp-fav-btn:hover {
+  color: #fde047;
 }
 
 .component-list::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 .component-list::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.25);
+  background: rgba(148, 163, 184, 0.2);
   border-radius: 4px;
 }
 
 .comp-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 8px 6px;
+  background: rgba(18, 25, 38, 0.62);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 7px;
+  padding: 6px 5px 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  transition: all 0.16s ease;
+  gap: 3px;
+  cursor: grab;
+  transition: background 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
   text-align: center;
   position: relative;
 }
 
+.comp-card:active {
+  cursor: grabbing;
+}
+
 .comp-card:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--accent-cyan);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+  background: rgba(28, 39, 58, 0.85);
+  border-color: rgba(56, 189, 248, 0.38);
 }
 
 .comp-card.selected-tool {
-  background: rgba(6, 182, 212, 0.16);
+  background: rgba(6, 182, 212, 0.14);
   border-color: #22d3ee;
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.25);
 }
 
 .comp-preview {
-  width: 64px;
-  height: 40px;
+  width: 52px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0.86;
+  transition: opacity 0.14s ease, filter 0.14s ease;
+}
+
+.comp-card:hover .comp-preview,
+.comp-card.selected-tool .comp-preview,
+.catalog-popup-card:hover .comp-preview,
+.catalog-popup-card.highlighted .comp-preview {
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.28));
+}
+
+.comp-preview svg {
+  max-width: 48px;
+  max-height: 26px;
 }
 
 .comp-name {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.2;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #e2e8f0;
+  line-height: 1.15;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .comp-tag {
-  font-size: 9.5px;
+  font-size: 9px;
   color: var(--text-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Modo Lista Densa Opcional */
+.component-list.dense-list .comp-card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4px 8px 4px 20px;
+  gap: 8px;
+  text-align: left;
+}
+
+.component-list.dense-list .comp-preview {
+  width: 34px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.component-list.dense-list .comp-tag {
+  margin-left: auto;
+  padding-right: 16px;
+}
+
+.component-list.dense-list .comp-fav-btn {
+  top: 50%;
+  transform: translateY(-50%);
+  left: 4px;
+}
+
+.component-list.dense-list .comp-shortcut-badge {
+  top: 50%;
+  transform: translateY(-50%);
+  right: 5px;
+}
+
+/* Pie fijo informativo del catálogo (descripción de 1 línea + pines) */
+.palette-info-footer {
+  padding: 6px 10px;
+  background: rgba(7, 10, 16, 0.9);
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 28px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.palette-info-desc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.palette-info-pins {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: #38bdf8;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+.palette-info-pins:empty {
+  display: none;
 }
 
 /* Canvas Area */
@@ -1820,24 +2056,25 @@ body.is-resizing-panel .sidebar-resizer {
   box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
 }
 
-/* Pop-up Modal Selector de Componentes (al pulsar Enter en el buscador) */
+/* Pop-up Modal Command Palette Selector de Componentes */
 .catalog-popup-modal {
-  background: #0d1422;
-  border: 1px solid rgba(56, 189, 248, 0.45);
-  border-radius: var(--radius-lg);
-  width: 620px;
+  background: rgba(11, 16, 27, 0.98);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  width: 640px;
   max-width: 94vw;
-  max-height: 82vh;
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.82);
   overflow: hidden;
 }
 
 .catalog-popup-search-row {
-  padding: 12px 16px;
-  background: #090e18;
-  border-bottom: 1px solid var(--border-color);
+  padding: 10px 14px;
+  background: rgba(7, 10, 16, 0.85);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1845,44 +2082,48 @@ body.is-resizing-panel .sidebar-resizer {
 
 .catalog-popup-input {
   flex: 1;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  border-radius: 8px;
-  padding: 9px 14px;
-  color: #fff;
-  font-size: 14px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 7px;
+  padding: 8px 12px;
+  color: #f8fafc;
+  font-size: 13px;
   outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.catalog-popup-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.16);
 }
 
 .catalog-popup-grid {
-  padding: 14px 16px;
+  padding: 12px 14px;
   overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 7px;
 }
 
 .catalog-popup-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 10px 8px;
+  background: rgba(18, 25, 38, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 8px;
+  padding: 8px 6px 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   cursor: pointer;
   text-align: center;
   position: relative;
-  transition: all 0.14s ease;
+  transition: background 0.14s ease, border-color 0.14s ease;
 }
 
 .catalog-popup-card:hover,
 .catalog-popup-card.highlighted {
-  background: rgba(6, 182, 212, 0.18);
-  border-color: #22d3ee;
-  transform: translateY(-2px);
-  box-shadow: 0 0 14px rgba(6, 182, 212, 0.3);
+  background: rgba(6, 182, 212, 0.15);
+  border-color: rgba(56, 189, 248, 0.55);
 }
 
 .catalog-popup-footer {
@@ -2162,21 +2403,34 @@ body.is-resizing-panel .sidebar-resizer {
       <!-- PANEL IZQUIERDO: CATÁLOGO DE COMPONENTES (SIEMPRE MINIMIZADO AL INICIAR) -->
       <aside class="palette-sidebar minimized" id="leftPaletteSidebar">
         <div class="palette-header">
-          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;">
-            <span>CATÁLOGO</span>
-            <button class="unit-btn" id="btnMinimizePalette" title="Minimizar panel lateral (Tecla B)">
-              Ocultar
-            </button>
+          <div class="palette-title-row">
+            <span class="palette-title-text">CATÁLOGO</span>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button class="unit-btn" id="btnToggleCatalogView" title="Alternar entre Grilla Compacta y Lista Densa">
+                Lista
+              </button>
+              <button class="unit-btn" id="btnOpenCommandPalette" title="Abrir Command Palette de búsqueda rápida (/ o Ctrl+F)">
+                ⌘K
+              </button>
+              <button class="unit-btn" id="btnMinimizePalette" title="Minimizar panel lateral (Tecla B)">
+                Ocultar
+              </button>
+            </div>
           </div>
           <div class="search-wrapper">
-            <input type="text" class="search-box" id="compSearch" placeholder="Buscar y Enter... (ej: LED, NPN)" />
+            <input type="text" class="search-box" id="compSearch" placeholder="Buscar por nombre, prefijo (R, C, Q) o sinónimo..." />
             <span class="search-kbd-hint" id="searchKbdHint">/</span>
             <button class="search-clear-btn" id="btnClearSearch" title="Limpiar búsqueda">✕</button>
           </div>
-          <select class="select-input" id="exampleSelect" style="width:100%;margin-top:6px;font-size:11.5px;" title="Cargar un circuito de ejemplo (reemplaza el actual)"></select>
+          <select class="select-input" id="exampleSelect" style="width:100%;margin-top:2px;font-size:11.5px;" title="Cargar un circuito de ejemplo (reemplaza el actual)"></select>
         </div>
+        <div class="quick-access-bar" id="quickAccessSection"></div>
         <div class="category-tabs" id="categoryTabs"></div>
         <div class="component-list" id="componentList"></div>
+        <div class="palette-info-footer" id="paletteInfoFooter">
+          <span class="palette-info-desc" id="paletteInfoDesc">Clic o arrastrá al lienzo para insertar</span>
+          <span class="palette-info-pins" id="paletteInfoPins"></span>
+        </div>
       </aside>
 
       <!-- DIVISOR ARRASTRABLE IZQUIERDO (OCULTO CUANDO EL CATÁLOGO ESTÁ MINIMIZADO) -->
@@ -2567,19 +2821,22 @@ body.is-resizing-panel .sidebar-resizer {
     </div>
   </div>
 
-  <!-- POP-UP MODAL SELECTOR RÁPIDO DE COMPONENTES (AL BUSCAR Y DARLE ENTER) -->
+  <!-- POP-UP MODAL COMMAND PALETTE SELECTOR RÁPIDO DE COMPONENTES -->
   <div class="modal-backdrop" id="catalogPopupModal">
     <div class="catalog-popup-modal">
       <div class="modal-header">
-        <span>Seleccionar Componente del Catálogo</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span>Buscar e Insertar Componente</span>
+          <span class="bode-badge" style="font-size:10px;">Command Palette</span>
+        </div>
         <button class="btn" id="btnCloseCatalogPopup" style="padding:3px 9px;">Esc</button>
       </div>
       <div class="catalog-popup-search-row">
-        <input type="text" class="catalog-popup-input" id="catalogPopupInput" placeholder="Escribí para filtrar (ej: resistencia, capacitor, led, npn) y pulsá Enter" />
+        <input type="text" class="catalog-popup-input" id="catalogPopupInput" placeholder="Buscar por nombre, prefijo (R, C, L, Q, M) o sinónimo (bobina, pila, transistor, pwm)..." />
       </div>
       <div class="catalog-popup-grid" id="catalogPopupGrid"></div>
       <div class="catalog-popup-footer">
-        <span>Usá las <b>Flechas</b> y <b>Enter</b> (o hacé clic) para elegir el componente</span>
+        <span id="catalogPopupPinInfo">Usá <b>Flechas</b> y <b>Enter</b> (o arrastrá al lienzo) para colocar</span>
         <span id="catalogPopupCount">0 resultados</span>
       </div>
     </div>
@@ -11349,7 +11606,10 @@ class ProtoSimApp {
     this.activeCategory = 'all';
     this.searchQuery = '';
     this.circuitFilterQuery = '';
-    this.collapsedPaletteSections = new Set();
+    this.catalogDenseView = false;
+    this.isDraggingFromCatalog = false;
+    this.catalogDragType = null;
+    this._loadCatalogPrefs();
     this.activeTool = null;
     this.toolRotation = 0;
 
@@ -11543,9 +11803,22 @@ class ProtoSimApp {
       searchInput.focus();
     });
 
-    // Minimizar / Expandir panel izquierdo y buscador compacto flotante
+    // Minimizar / Expandir panel izquierdo, vista densa y Command Palette
     document.getElementById('btnMinimizePalette')?.addEventListener('click', () => this.toggleLeftPalette(true));
     document.getElementById('btnExpandPalette')?.addEventListener('click', () => this.toggleLeftPalette(false));
+    document.getElementById('btnOpenCommandPalette')?.addEventListener('click', () => {
+      this.openCatalogPopup(searchInput?.value.trim() || '');
+    });
+    const viewBtn = document.getElementById('btnToggleCatalogView');
+    if (viewBtn) {
+      viewBtn.textContent = this.catalogDenseView ? 'Grilla' : 'Lista';
+      viewBtn.addEventListener('click', () => {
+        this.catalogDenseView = !this.catalogDenseView;
+        viewBtn.textContent = this.catalogDenseView ? 'Grilla' : 'Lista';
+        document.getElementById('componentList')?.classList.toggle('dense-list', this.catalogDenseView);
+        this._saveCatalogPrefs();
+      });
+    }
 
     const minSearchInput = document.getElementById('minCatalogSearch');
     if (minSearchInput) {
@@ -12360,9 +12633,236 @@ class ProtoSimApp {
     });
   }
 
-  // Catálogo izquierdo dividido por secciones colapsables + buscador instantáneo
+  // Preferencias del catálogo (Favoritos, Recientes, Secciones Colapsadas y Vista) en localStorage
+  _loadCatalogPrefs() {
+    let favs = ['resistor', 'capacitor', 'dc_voltage'];
+    let recents = ['resistor', 'capacitor', 'led', 'dc_voltage', 'gnd', 'npn'];
+    let collapsed = [];
+    let dense = false;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const rawFav = localStorage.getItem('ncircuitos_fav_comps');
+        if (rawFav) favs = JSON.parse(rawFav);
+        const rawRec = localStorage.getItem('ncircuitos_recent_comps');
+        if (rawRec) recents = JSON.parse(rawRec);
+        const rawCol = localStorage.getItem('ncircuitos_collapsed_cats');
+        if (rawCol) collapsed = JSON.parse(rawCol);
+        dense = localStorage.getItem('ncircuitos_dense_view') === '1';
+      }
+    } catch (_) {
+      /* fallback seguro */
+    }
+    this.favoriteComps = new Set(Array.isArray(favs) ? favs : []);
+    this.recentComps = Array.isArray(recents) ? recents : [];
+    this.collapsedPaletteSections = new Set(Array.isArray(collapsed) ? collapsed : []);
+    this.catalogDenseView = Boolean(dense);
+  }
+
+  _saveCatalogPrefs() {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('ncircuitos_fav_comps', JSON.stringify(Array.from(this.favoriteComps)));
+        localStorage.setItem('ncircuitos_recent_comps', JSON.stringify(this.recentComps.slice(0, 8)));
+        localStorage.setItem('ncircuitos_collapsed_cats', JSON.stringify(Array.from(this.collapsedPaletteSections)));
+        localStorage.setItem('ncircuitos_dense_view', this.catalogDenseView ? '1' : '0');
+      }
+    } catch (_) {
+      /* ignorar si localStorage está restringido */
+    }
+  }
+
+  toggleFavoriteComponent(type) {
+    if (!type || !window.ProtoSim.COMPONENT_LIBRARY[type]) return;
+    if (this.favoriteComps.has(type)) {
+      this.favoriteComps.delete(type);
+    } else {
+      this.favoriteComps.add(type);
+    }
+    this._saveCatalogPrefs();
+    this.renderPalette();
+    const popupModal = document.getElementById('catalogPopupModal');
+    if (popupModal && popupModal.classList.contains('visible')) {
+      const input = document.getElementById('catalogPopupInput');
+      this.renderCatalogPopupGrid(input?.value || '');
+    }
+  }
+
+  recordRecentComponent(type) {
+    if (!type || !window.ProtoSim.COMPONENT_LIBRARY[type]) return;
+    this.recentComps = [type, ...(this.recentComps || []).filter((t) => t !== type)].slice(0, 8);
+    this._saveCatalogPrefs();
+    this.renderQuickAccessBar();
+  }
+
+  // Diccionario de sinónimos, prefijos y términos técnicos para búsqueda inteligente
+  getComponentSynonyms(type) {
+    const SYNONYMS = {
+      gnd: 'tierra masa referencia 0v ground gnd comun',
+      dc_voltage: 'pila bateria fuente continua vcc dc alimentacion tension v',
+      ac_voltage: 'alterna senoidal generador funciones ac señal onda frecuencia',
+      pulse_source: 'pwm pulso cuadrada escalon step clock reloj duty',
+      current_source: 'corriente fuente amperios dc i',
+      net_label: 'etiqueta red nodo puente conexion virtual vcc gnd net label',
+      resistor: 'resistencia resistor ohm ohmios carga r',
+      potentiometer: 'potenciometro trimmer variable cursor divisor vr preset',
+      capacitor: 'condensador capacitor filtro faradio capacidad c',
+      inductor: 'bobina inductancia solenoide choke coil henrio l',
+      transformer: 'transformador trafo bobinado acoplado espiras aislamiento t',
+      lamp: 'lampara bombilla foco luz filamento incandescente lp',
+      ldr: 'fotorresistencia ldr sensor luz lux fotoresistor',
+      thermistor: 'termistor ntc sensor temperatura calor termico grados',
+      buzzer: 'zumbador buzzer sonido alarma parlante timbre acustico bz',
+      diode: 'diodo rectificador silicio schottky 1n4007 1n4148 1n5819 d',
+      zener: 'diodo zener regulador avalancha vz zd',
+      led: 'led diodo luz emisor indicador brillo',
+      npn: 'transistor bjt npn bipolar 2n2222 bc547 tip31 amplificador conmutador q',
+      pnp: 'transistor bjt pnp bipolar 2n3906 bc557 tip32 q',
+      nmos: 'transistor mosfet nmos canal n fet 2n7000 irfz44n m',
+      pmos: 'transistor mosfet pmos canal p fet bs250 irf9540n m',
+      opamp: 'operacional opamp amplificador lm741 tl071 comparador diferencial u',
+      diode_bridge: 'puente diodos graetz rectificador onda completa br',
+      voltage_regulator: 'regulador lineal tension 7805 lm7805 lm317 5v ldo reg',
+      optocoupler: 'optoacoplador pc817 aislador opto acoplador',
+      switch_spst: 'llave interruptor switch tecla corte abierto cerrado spst sw',
+      push_button: 'pulsador boton timbre normalmente abierto na no push',
+      switch_spdt: 'conmutador llave dos vias cambio selector spdt',
+      relay_spdt: 'rele relay bobina electromagnetico contacto spdt rly',
+      logic_in: 'entrada logica bit 0 1 digital switch nivel in',
+      logic_probe: 'sonda logica salida indicador digital bit out',
+      logic_clock: 'reloj digital clock oscilador cuadrado clk',
+      gate_and: 'compuerta puerta and y logica multiplicador',
+      gate_or: 'compuerta puerta or o logica sumador',
+      gate_not: 'compuerta puerta not inversor negador',
+      gate_nand: 'compuerta puerta nand no-y logica',
+      gate_xor: 'compuerta puerta xor or exclusiva',
+      ne555: 'timer temporizador 555 ne555 oscilador astable monoestable pwm ic',
+      seven_seg: 'display 7 segmentos siete digito hex bcd numero led dsp',
+      counter_4bit: 'contador binario 4 bits 4bit divisor frecuencia clk rst q0 q1 q2 q3 cnt',
+      voltmeter: 'voltimetro tester multimetro medidor tension voltaje vm',
+      ammeter: 'amperimetro tester multimetro medidor corriente intensidad am',
+      osc_probe: 'sonda punta prueba osciloscopio canal grafico ch'
+    };
+    return SYNONYMS[type] || '';
+  }
+
+  matchesComponentQuery(def, rawQuery) {
+    if (!rawQuery) return true;
+    const q = rawQuery.trim().toLowerCase();
+    if (!q) return true;
+    const shortcuts = window.ProtoSim.COMPONENT_SHORTCUTS || {};
+    const catObj = (window.ProtoSim.CATEGORIES || []).find((c) => c.id === def.category);
+    const sc = shortcuts[def.type] || '';
+    const prefix = (def.prefix || '').toLowerCase();
+
+    // Si busca exactamente una letra de prefijo (ej: "r", "c", "l", "q", "m", "t", "d", "u", "v")
+    if (q.length === 1 && prefix === q) return true;
+
+    const hay = `${def.name} ${def.shortTag || ''} ${def.type} ${prefix} ${catObj?.name || ''} ${catObj?.fullTitle || ''} tecla ${sc} ${this.getComponentSynonyms(def.type)}`.toLowerCase();
+    const tokens = q.split(/\s+/).filter(Boolean);
+    return tokens.every((tok) => hay.includes(tok));
+  }
+
+  getComponentPinSummary(def) {
+    if (!def || !Array.isArray(def.pins) || def.pins.length === 0) return '';
+    return def.pins.map((p) => p.name || p.id).join(' · ');
+  }
+
+  updatePaletteInfoFooter(type) {
+    const descEl = document.getElementById('paletteInfoDesc');
+    const pinsEl = document.getElementById('paletteInfoPins');
+    if (!descEl || !pinsEl) return;
+    const def = type ? window.ProtoSim.COMPONENT_LIBRARY[type] : null;
+    if (!def) {
+      descEl.textContent = 'Clic o arrastrá al lienzo para insertar';
+      pinsEl.textContent = '';
+      return;
+    }
+    descEl.textContent = `${def.name} — ${def.shortTag || def.prefix || ''}`;
+    const pins = this.getComponentPinSummary(def);
+    pinsEl.textContent = pins ? `Pines: ${pins}` : '';
+  }
+
+  renderQuickAccessBar() {
+    const container = document.getElementById('quickAccessSection');
+    if (!container) return;
+    const lib = window.ProtoSim.COMPONENT_LIBRARY;
+    const combined = [];
+    const seen = new Set();
+
+    // Prioridad 1: Favoritos fijados con estrella
+    for (const t of this.favoriteComps || []) {
+      if (lib[t] && !seen.has(t) && combined.length < 6) {
+        seen.add(t);
+        combined.push({ def: lib[t], isFav: true });
+      }
+    }
+    // Prioridad 2: Recientes colocados en el lienzo
+    for (const t of this.recentComps || []) {
+      if (lib[t] && !seen.has(t) && combined.length < 6) {
+        seen.add(t);
+        combined.push({ def: lib[t], isFav: false });
+      }
+    }
+
+    if (combined.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="quick-access-header">
+        <span>Recientes / Favoritos</span>
+        <span>${this.favoriteComps.size > 0 ? `★ ${this.favoriteComps.size}` : 'Acceso rápido'}</span>
+      </div>
+      <div class="quick-access-strip">
+        ${combined
+          .map(
+            ({ def, isFav }) => `
+          <div class="quick-chip ${this.activeTool === def.type ? 'selected-tool' : ''}" draggable="true" data-quick-type="${def.type}" title="${def.name} (${this.getComponentPinSummary(def)}) — Clic o arrastrar">
+            ${isFav ? '<span class="quick-chip-star">★</span>' : `<span class="quick-chip-prefix">${def.prefix}</span>`}
+            <span class="quick-chip-label">${def.name.replace(/\(.*\)/, '').trim()}</span>
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+    `;
+
+    container.querySelectorAll('[data-quick-type]').forEach((chip) => {
+      const type = chip.dataset.quickType;
+      chip.addEventListener('mouseenter', () => this.updatePaletteInfoFooter(type));
+      chip.addEventListener('mouseleave', () => this.updatePaletteInfoFooter(this.activeTool));
+      chip.addEventListener('click', () => {
+        this.setActiveTool(this.activeTool === type ? null : type);
+      });
+      chip.addEventListener('dragstart', (e) => {
+        this.startCatalogDrag(type, e);
+      });
+    });
+  }
+
+  startCatalogDrag(type, e = null) {
+    if (!type || !window.ProtoSim.COMPONENT_LIBRARY[type]) return;
+    this.isDraggingFromCatalog = true;
+    this.catalogDragType = type;
+    this.setActiveTool(type);
+    if (e && e.dataTransfer) {
+      try {
+        e.dataTransfer.setData('text/plain', type);
+        e.dataTransfer.effectAllowed = 'copy';
+      } catch (_) {
+        /* fallback */
+      }
+    }
+  }
+
+  // Catálogo izquierdo dividido por secciones colapsables + buscador inteligente
   renderPalette() {
     const listEl = document.getElementById('componentList');
+    if (!listEl) return;
+    listEl.classList.toggle('dense-list', Boolean(this.catalogDenseView));
+    this.renderQuickAccessBar();
+
     const shortcuts = window.ProtoSim.COMPONENT_SHORTCUTS || {};
     const categoriesToShow = window.ProtoSim.CATEGORIES.filter(
       (cat) => cat.id !== 'all' && (this.activeCategory === 'all' || cat.id === this.activeCategory)
@@ -12375,9 +12875,7 @@ class ProtoSimApp {
       const items = Object.values(window.ProtoSim.COMPONENT_LIBRARY).filter((def) => {
         if (def.category !== cat.id) return false;
         if (this.searchQuery) {
-          const sc = shortcuts[def.type] || '';
-          const hay = `${def.name} ${def.shortTag} ${def.type} ${cat.name} tecla ${sc}`.toLowerCase();
-          return hay.includes(this.searchQuery);
+          return this.matchesComponentQuery(def, this.searchQuery);
         }
         return true;
       });
@@ -12398,8 +12896,11 @@ class ProtoSimApp {
             ${items
               .map((def) => {
                 const kbd = shortcuts[def.type];
+                const isFav = this.favoriteComps && this.favoriteComps.has(def.type);
+                const pinsTxt = this.getComponentPinSummary(def);
                 return `
-                  <div class="comp-card ${this.activeTool === def.type ? 'selected-tool' : ''}" data-type="${def.type}" title="${def.name}${kbd ? ` (Atajo: Tecla ${kbd})` : ''}">
+                  <div class="comp-card ${this.activeTool === def.type ? 'selected-tool' : ''}" draggable="true" data-type="${def.type}" title="${def.name} • Pines: ${pinsTxt}${kbd ? ` • Atajo: ${kbd}` : ''}">
+                    <button type="button" class="comp-fav-btn ${isFav ? 'active' : ''}" data-fav-type="${def.type}" title="${isFav ? 'Quitar de Favoritos' : 'Fijar en Favoritos'}">${isFav ? '★' : '☆'}</button>
                     ${kbd ? `<span class="comp-shortcut-badge">${kbd}</span>` : ''}
                     <div class="comp-preview">${this.getMiniSVG(def.type)}</div>
                     <div class="comp-name">${def.name}</div>
@@ -12416,14 +12917,15 @@ class ProtoSimApp {
     if (totalMatches === 0) {
       html = `
         <div style="text-align:center;padding:24px 10px;color:var(--text-muted);font-size:12px;">
-          No se encontraron componentes para <b>"${this.searchQuery}"</b>.
+          No se encontraron componentes para <b>"${this.escapeHtml(this.searchQuery)}"</b>.<br/>
+          <span style="font-size:11px;">Probá por sinónimo (ej: <em>bobina, pila, transistor, pwm</em>) o prefijo (<em>R, C, L, Q, M</em>).</span>
         </div>
       `;
     }
 
     listEl.innerHTML = html;
 
-    // Eventos de plegar/expandir sección
+    // Eventos de plegar/expandir sección (persistidos en localStorage)
     listEl.querySelectorAll('[data-toggle-sec]').forEach((hdr) => {
       hdr.addEventListener('click', () => {
         const secId = hdr.dataset.toggleSec;
@@ -12432,19 +12934,39 @@ class ProtoSimApp {
         } else {
           this.collapsedPaletteSections.add(secId);
         }
+        this._saveCatalogPrefs();
         this.renderPalette();
       });
     });
 
-    // Eventos de selección de herramienta de componente
+    // Botón de estrella de Favoritos
+    listEl.querySelectorAll('[data-fav-type]').forEach((starBtn) => {
+      starBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        this.toggleFavoriteComponent(starBtn.dataset.favType);
+      });
+    });
+
+    // Eventos de selección, tooltip informativo en el pie y Drag & Drop hacia el lienzo
     listEl.querySelectorAll('.comp-card').forEach((card) => {
-      card.addEventListener('click', () => {
-        const type = card.dataset.type;
+      const type = card.dataset.type;
+      card.addEventListener('mouseenter', () => {
+        this.updatePaletteInfoFooter(type);
+      });
+      card.addEventListener('mouseleave', () => {
+        this.updatePaletteInfoFooter(this.activeTool);
+      });
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('[data-fav-type]')) return;
         if (this.activeTool === type) {
           this.setActiveTool(null);
         } else {
           this.setActiveTool(type);
         }
+      });
+      card.addEventListener('dragstart', (e) => {
+        this.startCatalogDrag(type, e);
       });
     });
   }
@@ -12533,6 +13055,10 @@ class ProtoSimApp {
     document.querySelectorAll('.comp-card').forEach((card) => {
       card.classList.toggle('selected-tool', card.dataset.type === tool);
     });
+    document.querySelectorAll('.quick-chip').forEach((chip) => {
+      chip.classList.toggle('selected-tool', chip.dataset.quickType === tool);
+    });
+    this.updatePaletteInfoFooter(tool);
   }
 
   initCanvasEvents() {
@@ -12545,6 +13071,44 @@ class ProtoSimApp {
     };
 
     this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Soporte Drag & Drop directo desde el Catálogo hacia el circuitCanvas (con vista previa fantasma alineada a la grilla)
+    this.canvas.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+      const { sx, sy } = getCanvasCoords(e);
+      const world = this.renderer.screenToWorld(sx, sy);
+      this.hoverGrid = { gx: world.gx, gy: world.gy };
+      this.hoverWorld = { wx: world.wx, wy: world.wy };
+      if (this.catalogDragType && this.activeTool !== this.catalogDragType) {
+        this.setActiveTool(this.catalogDragType);
+      }
+    });
+
+    this.canvas.addEventListener('drop', (e) => {
+      e.preventDefault();
+      let droppedType = this.catalogDragType;
+      if (!droppedType && e.dataTransfer) {
+        try {
+          droppedType = e.dataTransfer.getData('text/plain');
+        } catch (_) {
+          /* fallback */
+        }
+      }
+      if (droppedType && window.ProtoSim.COMPONENT_LIBRARY[droppedType]) {
+        const { sx, sy } = getCanvasCoords(e);
+        const world = this.renderer.screenToWorld(sx, sy);
+        this.hoverGrid = { gx: world.gx, gy: world.gy };
+        this.hoverWorld = { wx: world.wx, wy: world.wy };
+        this.saveUndoSnapshot();
+        this.placeComponent(droppedType, world.gx, world.gy, this.toolRotation);
+        if (!e.shiftKey) {
+          this.setActiveTool(null);
+        }
+      }
+      this.isDraggingFromCatalog = false;
+      this.catalogDragType = null;
+    });
 
     this.canvas.addEventListener('mousemove', (e) => {
       const { sx, sy } = getCanvasCoords(e);
@@ -13238,20 +13802,23 @@ class ProtoSimApp {
   renderCatalogPopupGrid(query = '') {
     const grid = document.getElementById('catalogPopupGrid');
     const countBadge = document.getElementById('catalogPopupCount');
+    const pinInfoEl = document.getElementById('catalogPopupPinInfo');
     if (!grid) return;
 
     grid.innerHTML = '';
     const q = (query || '').trim().toLowerCase();
     const lib = window.ProtoSim.COMPONENT_LIBRARY;
-    const catArray = window.ProtoSim.CATEGORIES || [];
     const shortcuts = window.ProtoSim.COMPONENT_SHORTCUTS || {};
 
-    const matches = Object.values(lib).filter((comp) => {
-      if (!q) return true;
-      const catObj = catArray.find((c) => c.id === comp.category);
-      const hay = `${comp.name} ${comp.shortTag || ''} ${comp.type} ${comp.prefix || ''} ${catObj?.name || ''}`.toLowerCase();
-      return hay.includes(q);
-    });
+    const matches = Object.values(lib)
+      .filter((comp) => this.matchesComponentQuery(comp, q))
+      .sort((a, b) => {
+        if (q && (a.prefix || '').toLowerCase() === q && (b.prefix || '').toLowerCase() !== q) return -1;
+        if (q && (b.prefix || '').toLowerCase() === q && (a.prefix || '').toLowerCase() !== q) return 1;
+        const aFav = this.favoriteComps && this.favoriteComps.has(a.type) ? 1 : 0;
+        const bFav = this.favoriteComps && this.favoriteComps.has(b.type) ? 1 : 0;
+        return bFav - aFav;
+      });
 
     this._popupItems = matches;
 
@@ -13259,35 +13826,62 @@ class ProtoSimApp {
       countBadge.textContent = `${matches.length} resultado${matches.length === 1 ? '' : 's'}`;
     }
 
+    const updatePopupFooterInfo = (comp) => {
+      if (!pinInfoEl) return;
+      if (!comp) {
+        pinInfoEl.innerHTML = 'Usá <b>Flechas</b> y <b>Enter</b> (o hacé clic) para elegir el componente';
+        return;
+      }
+      const pins = this.getComponentPinSummary(comp);
+      pinInfoEl.innerHTML = `<b>${this.escapeHtml(comp.name)}</b> (${this.escapeHtml(comp.prefix || '')}) — ${this.escapeHtml(comp.shortTag || '')}${pins ? ` • Pines: <code>${this.escapeHtml(pins)}</code>` : ''}`;
+    };
+
     if (matches.length === 0) {
+      updatePopupFooterInfo(null);
       grid.innerHTML = `
         <div style="grid-column:1/-1;text-align:center;padding:24px 12px;color:var(--text-muted);font-size:12.5px;">
-          No se encontró ningún componente para <strong>"${query}"</strong>.<br/>
-          Probá buscando por nombre (ej: <em>Capacitor, Diodo, NPN, Senoidal</em>) o prefijo (<em>R, C, L, V, Q</em>).
+          No se encontró ningún componente para <strong>"${this.escapeHtml(query)}"</strong>.<br/>
+          Probá buscando por nombre, sinónimo (ej: <em>bobina, pila, transistor, pwm</em>) o prefijo (<em>R, C, L, V, Q, M</em>).
         </div>
       `;
       return;
     }
+
+    updatePopupFooterInfo(matches[this._popupIdx || 0] || matches[0]);
 
     matches.forEach((comp, idx) => {
       const card = document.createElement('div');
       card.className = `catalog-popup-card ${idx === (this._popupIdx || 0) ? 'highlighted' : ''}`;
       card.dataset.type = comp.type;
       const keyTag = shortcuts[comp.type];
+      const isFav = this.favoriteComps && this.favoriteComps.has(comp.type);
 
       card.innerHTML = `
+        <button type="button" class="comp-fav-btn ${isFav ? 'active' : ''}" data-popup-fav="${comp.type}" title="${isFav ? 'Quitar de Favoritos' : 'Fijar en Favoritos'}">${isFav ? '★' : '☆'}</button>
         ${keyTag ? `<span class="comp-shortcut-badge">${keyTag}</span>` : ''}
         <div class="comp-preview">${this.getMiniSVG(comp.type)}</div>
         <div class="comp-name">${comp.name}</div>
         <div class="comp-tag">${comp.shortTag || comp.prefix || ''}</div>
       `;
 
+      const favBtn = card.querySelector('[data-popup-fav]');
+      if (favBtn) {
+        favBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+        favBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          this.toggleFavoriteComponent(comp.type);
+        });
+      }
+
       card.addEventListener('mouseenter', () => {
         this._popupIdx = idx;
         this.highlightPopupCard(false);
+        updatePopupFooterInfo(comp);
       });
 
       const selectCard = (e) => {
+        if (e.target && e.target.closest && e.target.closest('[data-popup-fav]')) return;
         e.stopPropagation();
         this.setActiveTool(comp.type);
         document.getElementById('catalogPopupModal')?.classList.remove('visible');
@@ -13609,6 +14203,7 @@ class ProtoSimApp {
 
     this.components.push(newComp);
     this.trimWiresThroughComponents();
+    this.recordRecentComponent(type);
     this.updateAddGraphDropdown();
     this.renderCircuitFinder();
     this.selectComponent(newComp);
@@ -14144,6 +14739,7 @@ class ProtoSimApp {
     this.components = JSON.parse(JSON.stringify(ex.components));
     this.wires = JSON.parse(JSON.stringify(ex.wires));
     this.undoStack = [];
+    this.redoStack = [];
     this.probedComponents.clear();
     this.pinnedMonitors = [];
 
@@ -15036,6 +15632,21 @@ class ProtoSimApp {
       });
     }
 
+    const clearCommercialModel = () => {
+      if (comp.props && comp.props.commercialModel) {
+        delete comp.props.commercialModel;
+      }
+      if (commercialModelSelect) {
+        if (!commercialModelSelect.querySelector('option[value="custom"]')) {
+          const opt = document.createElement('option');
+          opt.value = 'custom';
+          opt.textContent = 'Personalizado';
+          commercialModelSelect.appendChild(opt);
+        }
+        commercialModelSelect.value = 'custom';
+      }
+    };
+
     body.querySelectorAll('[data-prop-select]').forEach((sel) => {
       sel.addEventListener('change', (e) => {
         const key = sel.dataset.propSelect;
@@ -15044,6 +15655,7 @@ class ProtoSimApp {
         else if (val === 'false') val = false;
         else if (!isNaN(Number(val))) val = Number(val);
         comp.props[key] = val;
+        clearCommercialModel();
         this.updateDynamicMetricsDOM(comp);
       });
     });
@@ -15060,6 +15672,7 @@ class ProtoSimApp {
           val = Math.round(val / mag) * mag;
         }
         comp.props[key] = val;
+        clearCommercialModel();
         const numInput = body.querySelector(`[data-prop-num="${key}"]`);
         if (numInput) numInput.value = Number(val.toPrecision(4));
         const badge = document.getElementById(`badge_${key}`);
@@ -15078,6 +15691,7 @@ class ProtoSimApp {
         const minAllowed = propDef && propDef.min !== undefined ? propDef.min : 0;
         if (!isNaN(val) && (propDef && propDef.min !== undefined ? val >= minAllowed : val > 0)) {
           comp.props[key] = val;
+          clearCommercialModel();
           const badge = document.getElementById(`badge_${key}`);
           if (badge && propDef) {
             badge.textContent = propDef.unit ? f(val, propDef.unit) : `${Math.round(val * 100)}%`;
@@ -15107,6 +15721,7 @@ class ProtoSimApp {
         const key = btn.dataset.presetKey;
         const val = parseFloat(btn.dataset.presetVal);
         comp.props[key] = val;
+        delete comp.props.commercialModel;
         this.updateInspector();
       });
     });
@@ -15505,7 +16120,7 @@ class ProtoSimApp {
       n.name = names.length ? names.join(' = ') : `N${++auto}`;
     }
 
-    const sourceTypes = new Set(['dc_voltage', 'ac_voltage', 'current_source']);
+    const sourceTypes = new Set(['dc_voltage', 'ac_voltage', 'pulse_source', 'current_source']);
     const skipTypes = new Set(['gnd', 'net_label', 'osc_probe']);
     const rows = [];
     let pSources = 0;
