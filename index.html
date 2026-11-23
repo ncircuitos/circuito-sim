@@ -2314,6 +2314,7 @@ body.is-resizing-panel .sidebar-resizer {
               <button class="btn" id="btnToggleProMode" title="Alternar Modo SPICE / PRO: esquemático técnico limpio estilo LTSpice / KiCad">Modo SPICE</button>
               <button class="btn" id="btnOpPoint" title="Tabla de punto de operación DC: tensiones de nodo y corrientes (Shift + P)">Punto DC</button>
               <button class="btn" id="btnShareLink" title="Copiar un link que abre este mismo circuito">Compartir</button>
+              <button class="btn" id="btnExportPng" title="Descargar captura de imagen PNG del circuito">PNG</button>
               <button class="btn" id="btnOpenShortcuts" title="Ver todos los Atajos de Teclado (Tecla ?)">Atajos</button>
               <button class="btn" id="btnExportJson" title="Guardar circuito en archivo .JSON">Guardar</button>
               <button class="btn" id="btnImportJson" title="Cargar circuito desde archivo .JSON">Abrir</button>
@@ -2483,6 +2484,7 @@ body.is-resizing-panel .sidebar-resizer {
           <div class="shortcut-row"><span>Anclar/Quitar Gráfico Derecho</span><span class="kbd-key">G</span></div>
           <div class="shortcut-row"><span>Duplicar seleccionado</span><span class="kbd-key">Ctrl + D</span></div>
           <div class="shortcut-row"><span>Deshacer cambio</span><span class="kbd-key">Ctrl + Z</span></div>
+          <div class="shortcut-row"><span>Rehacer cambio</span><span class="kbd-key">Ctrl + Y / Ctrl+Shift+Z</span></div>
           <div class="shortcut-row"><span>Eliminar seleccionado</span><span class="kbd-key">Supr / Backspace</span></div>
         </div>
 
@@ -2551,6 +2553,7 @@ body.is-resizing-panel .sidebar-resizer {
             </select>
           </label>
           <button class="btn" id="btnRecalcBode" style="padding:4px 10px;font-size:11px;">Recalcular</button>
+          <button class="btn" id="btnExportBodeCsv" style="padding:4px 10px;font-size:11px;" title="Descargar frecuencias, magnitud (dB) y fase (°) en archivo CSV">Exportar CSV</button>
           <button class="btn" id="btnCloseBodeModal" style="padding:4px 10px;font-size:11px;">Cerrar</button>
         </div>
       </div>
@@ -2737,6 +2740,32 @@ const COMPONENT_LIBRARY = {
     ]
   },
 
+  pulse_source: {
+    type: 'pulse_source',
+    name: 'Fuente de Pulso / PWM',
+    shortTag: 'Pulsos / Escalón',
+    category: 'sources',
+    prefix: 'VP',
+    pins: [
+      { id: 'pos', name: '+', x: -2, y: 0 },
+      { id: 'neg', name: '-', x: 2, y: 0 }
+    ],
+    defaults: {
+      vLow: 0,
+      vHigh: 5,
+      frequency: 50,
+      dutyCycle: 50,
+      delay: 0
+    },
+    props: [
+      { key: 'vHigh', label: 'Nivel Alto (VHigh)', unit: 'V', min: -24, max: 48, step: 0.5, presets: [3.3, 5.0, 9.0, 12.0] },
+      { key: 'vLow', label: 'Nivel Bajo (VLow)', unit: 'V', min: -24, max: 24, step: 0.5, presets: [0, -5, -12] },
+      { key: 'frequency', label: 'Frecuencia', unit: 'Hz', min: 1, max: 1000, step: 1, log: true, presets: [10, 50, 100, 500] },
+      { key: 'dutyCycle', label: 'Ciclo de Trabajo (Duty)', unit: '%', min: 5, max: 95, step: 5, presets: [10, 25, 50, 75, 90] },
+      { key: 'delay', label: 'Retardo Inicial (Delay)', unit: 'ms', min: 0, max: 500, step: 5, presets: [0, 5, 10, 50] }
+    ]
+  },
+
   net_label: {
     type: 'net_label',
     name: 'Etiqueta de Red (Net)',
@@ -2840,6 +2869,28 @@ const COMPONENT_LIBRARY = {
     props: [
       { key: 'inductance', label: 'Inductancia', unit: 'H', min: 0.0001, max: 2.0, step: 0.001, log: true, presets: [0.001, 0.01, 0.05, 0.1, 0.5, 1.0] },
       { key: 'maxCurrent', label: 'Corriente Máx.', unit: 'A', min: 0.1, max: 10, step: 0.1 }
+    ]
+  },
+
+  transformer: {
+    type: 'transformer',
+    name: 'Transformador',
+    shortTag: 'Acoplado N2/N1',
+    category: 'passives',
+    prefix: 'T',
+    pins: [
+      { id: 'p1', name: 'P1', x: -2, y: -1 },
+      { id: 'p2', name: 'P2', x: -2, y: 1 },
+      { id: 's1', name: 'S1', x: 2, y: -1 },
+      { id: 's2', name: 'S2', x: 2, y: 1 }
+    ],
+    defaults: {
+      ratio: 0.5,
+      rWinding: 0.05
+    },
+    props: [
+      { key: 'ratio', label: 'Relación de Espiras (N2/N1)', unit: 'x', min: 0.05, max: 10.0, step: 0.05, presets: [0.1, 0.25, 0.5, 1.0, 2.0, 5.0] },
+      { key: 'rWinding', label: 'Resistencia de Devanado', unit: 'Ω', min: 0.01, max: 5.0, step: 0.01, presets: [0.02, 0.05, 0.1, 0.5] }
     ]
   },
 
@@ -3064,9 +3115,32 @@ const COMPONENT_LIBRARY = {
       maxPower: 5.0
     },
     props: [
-      { key: 'vth', label: 'Tensión Umbral (Vth)', unit: 'V', min: 0.8, max: 5.0, step: 0.2, presets: [1.5, 2.0, 3.0] },
+      { key: 'vth', label: 'Tensión Umbral (Vth)', unit: 'V', min: 0.8, max: 5.0, step: 0.1, presets: [1.5, 2.1, 3.0] },
       { key: 'kp', label: 'Transconductancia (Kp)', unit: 'A/V²', min: 0.05, max: 2.0, step: 0.05 },
-      { key: 'maxPower', label: 'Potencia Máx.', unit: 'W', min: 1.0, max: 25.0, step: 1.0 }
+      { key: 'maxPower', label: 'Potencia Máx.', unit: 'W', min: 0.25, max: 25.0, step: 0.25 }
+    ]
+  },
+
+  pmos: {
+    type: 'pmos',
+    name: 'MOSFET Canal-P',
+    shortTag: 'PMOS (IRF9540)',
+    category: 'semiconductors',
+    prefix: 'M',
+    pins: [
+      { id: 'gate', name: 'G', x: -2, y: 0 },
+      { id: 'source', name: 'S', x: 1, y: -2 },
+      { id: 'drain', name: 'D', x: 1, y: 2 }
+    ],
+    defaults: {
+      vth: 2.0,
+      kp: 0.5,
+      maxPower: 5.0
+    },
+    props: [
+      { key: 'vth', label: 'Tensión Umbral (|Vth|)', unit: 'V', min: 0.8, max: 5.0, step: 0.1, presets: [1.5, 2.0, 3.0] },
+      { key: 'kp', label: 'Transconductancia (Kp)', unit: 'A/V²', min: 0.05, max: 2.0, step: 0.05 },
+      { key: 'maxPower', label: 'Potencia Máx.', unit: 'W', min: 0.25, max: 25.0, step: 0.25 }
     ]
   },
 
@@ -3087,7 +3161,7 @@ const COMPONENT_LIBRARY = {
     },
     props: [
       { key: 'vsat', label: 'Tensión Saturación (±)', unit: 'V', min: 5, max: 24, step: 1, presets: [5, 12, 15] },
-      { key: 'gain', label: 'Ganancia Lazo Abierto', unit: 'V/V', min: 100, max: 100000, step: 1000 }
+      { key: 'gain', label: 'Ganancia Lazo Abierto', unit: 'V/V', min: 100, max: 200000, step: 1000 }
     ]
   },
 
@@ -3457,6 +3531,30 @@ const COMPONENT_LIBRARY = {
     ]
   },
 
+  counter_4bit: {
+    type: 'counter_4bit',
+    name: 'Contador Binario 4-Bit',
+    shortTag: 'Contador 0-F (CLK/RST)',
+    category: 'logic',
+    prefix: 'CNT',
+    pins: [
+      { id: 'clk', name: 'CLK', x: -2, y: -1 },
+      { id: 'rst', name: 'RST', x: -2, y: 1 },
+      { id: 'q0', name: 'Q0', x: 2, y: -1 },
+      { id: 'q1', name: 'Q1', x: 2, y: 0 },
+      { id: 'q2', name: 'Q2', x: 2, y: 1 },
+      { id: 'q3', name: 'Q3', x: 0, y: 2 }
+    ],
+    defaults: {
+      highVoltage: 5.0,
+      threshold: 2.5
+    },
+    props: [
+      { key: 'highVoltage', label: 'Tensión Salida (VCC)', unit: 'V', min: 3.3, max: 15, step: 0.1, presets: [3.3, 5.0, 9.0, 12.0] },
+      { key: 'threshold', label: 'Umbral Lógico (CLK/RST)', unit: 'V', min: 1.0, max: 8.0, step: 0.5, presets: [1.5, 2.5, 4.5] }
+    ]
+  },
+
   // ================= INSTRUMENTOS DE MEDICIÓN =================
   voltmeter: {
     type: 'voltmeter',
@@ -3718,6 +3816,9 @@ class CircuitSolver {
       c._vbc = 0;
       c._vgs = 0;
       c._vds = 0;
+      c._count = 0;
+      c._prevClk = 0;
+      c._clkStepTime = -1;
       c.pinVoltages = {};
       c.pinCurrents = {};
     }
@@ -3998,7 +4099,7 @@ class CircuitSolver {
       for (const c of components) {
         const pm = compPinNodes.get(c.id);
         if (!pm) continue;
-        if (c.type === 'dc_voltage' || c.type === 'ac_voltage') {
+        if (c.type === 'dc_voltage' || c.type === 'ac_voltage' || c.type === 'pulse_source') {
           groundNodes.add(pm.neg);
           break;
         } else if (c.type === 'current_source') {
@@ -4176,27 +4277,31 @@ class CircuitSolver {
       if (groundNodes.has(i)) V[i] = 0;
     }
 
-    // Detectar si hay semiconductores no lineales para decidir número de iteraciones Newton-Raphson
+    // Detectar si hay semiconductores no lineales o contadores síncronos para decidir número de iteraciones Newton-Raphson
     let hasNonlinear = false;
+    let hasCounter = false;
     for (let ci = 0; ci < components.length; ci++) {
       const c = components[ci];
+      if (c.burned) continue;
+      if (c.type === 'counter_4bit') {
+        hasCounter = true;
+      }
       if (
-        !c.burned &&
-        (c.type === 'diode' ||
-          c.type === 'led' ||
-          c.type === 'zener' ||
-          c.type === 'diode_bridge' ||
-          c.type === 'optocoupler' ||
-          c.type === 'voltage_regulator' ||
-          c.type === 'npn' ||
-          c.type === 'pnp' ||
-          c.type === 'nmos')
+        c.type === 'diode' ||
+        c.type === 'led' ||
+        c.type === 'zener' ||
+        c.type === 'diode_bridge' ||
+        c.type === 'optocoupler' ||
+        c.type === 'voltage_regulator' ||
+        c.type === 'npn' ||
+        c.type === 'pnp' ||
+        c.type === 'nmos' ||
+        c.type === 'pmos'
       ) {
         hasNonlinear = true;
-        break;
       }
     }
-    const maxIter = hasNonlinear ? 10 : 1;
+    const maxIter = hasNonlinear ? 10 : hasCounter ? 2 : 1;
 
     const G_WIRE = 100000.0; // 10 uOhm por segmento de cable (conductor ideal)
 
@@ -4258,6 +4363,49 @@ class CircuitSolver {
         case 'current_source':
           stampBaseCurrentSource(pm.in, pm.out, Number(p.current) || 0.01);
           break;
+        case 'pulse_source': {
+          const vLow = Number(p.vLow ?? 0);
+          const vHigh = Number(p.vHigh !== undefined ? p.vHigh : 5);
+          const freq = Math.max(0.01, Number(p.frequency) || 50);
+          const duty = Math.max(0.01, Math.min(0.99, Number(p.dutyCycle !== undefined ? p.dutyCycle : 50) / 100));
+          const delaySec = Math.max(0, Number(p.delay || 0)) * 0.001;
+          let vInst = vLow;
+          if (this.simTime >= delaySec) {
+            const period = 1.0 / freq;
+            const phase = ((this.simTime - delaySec) % period) / period;
+            vInst = phase < duty ? vHigh : vLow;
+          }
+          c._lastSourceV = vInst;
+          stampBaseVoltageNorton(pm.pos, pm.neg, vInst, 0.005);
+          break;
+        }
+        case 'transformer': {
+          const a = Math.max(0.01, Number(p.ratio) || 0.5);
+          const rW = Math.max(0.005, Number(p.rWinding) || 0.05);
+          const gS = 1.0 / rW;
+          const gMag = 0.0005;
+          const ag = a * gS;
+          stampBaseConductance(pm.p1, pm.p2, a * a * gS + gMag);
+          stampBaseConductance(pm.s1, pm.s2, gS);
+          stampBaseConductance(pm.s2, 0, 1e-7);
+          if (pm.p1 > 0 && pm.s1 > 0) {
+            baseA[pm.p1 * stride + pm.s1] -= ag;
+            baseA[pm.s1 * stride + pm.p1] -= ag;
+          }
+          if (pm.p1 > 0 && pm.s2 > 0) {
+            baseA[pm.p1 * stride + pm.s2] += ag;
+            baseA[pm.s2 * stride + pm.p1] += ag;
+          }
+          if (pm.p2 > 0 && pm.s1 > 0) {
+            baseA[pm.p2 * stride + pm.s1] += ag;
+            baseA[pm.s1 * stride + pm.p2] += ag;
+          }
+          if (pm.p2 > 0 && pm.s2 > 0) {
+            baseA[pm.p2 * stride + pm.s2] -= ag;
+            baseA[pm.s2 * stride + pm.p2] -= ag;
+          }
+          break;
+        }
         case 'resistor':
           stampBaseConductance(pm.a, pm.b, 1.0 / Math.max(0.01, Number(p.resistance) || 220));
           break;
@@ -4485,6 +4633,30 @@ class CircuitSolver {
             break;
           }
 
+          case 'pmos': {
+            const vth = Math.abs(Number(p.vth) || 2.0);
+            const kp = Number(p.kp) || 0.5;
+            const vsg = (V[pm.source] || 0) - (V[pm.gate] || 0);
+            const vsd = (V[pm.source] || 0) - (V[pm.drain] || 0);
+
+            // Alta impedancia de Gate
+            stampConductance(pm.source, pm.gate, 1e-8);
+
+            if (vsg > vth) {
+              const vov = vsg - vth;
+              // Conductancia canal S-D controlada por V_SG > |V_th|
+              const gSd = Math.min(250.0, kp * vov * 4.0);
+              stampConductance(pm.source, pm.drain, gSd);
+            } else {
+              stampConductance(pm.source, pm.drain, 1e-8);
+            }
+            // Diodo parásito (Body diode D -> S)
+            const bodyD = this.computeDiodeCompanion(-vsd, 0.7);
+            stampConductance(pm.drain, pm.source, bodyD.gEq);
+            stampCurrentSource(pm.drain, pm.source, bodyD.iEq);
+            break;
+          }
+
           case 'opamp': {
             const vsat = Number(p.vsat) || 15;
             const gain = Number(p.gain) || 10000;
@@ -4653,6 +4825,36 @@ class CircuitSolver {
             stampConductance(pm.b3, 0, 1e-6);
             break;
           }
+
+          case 'counter_4bit': {
+            const vHigh = Number(p.highVoltage) || 5.0;
+            const vth = Number(p.threshold) || vHigh * 0.45;
+            stampConductance(pm.clk, 0, 1e-6);
+            stampConductance(pm.rst, 0, 1e-6);
+
+            if (c._count === undefined) c._count = 0;
+            if (c._prevClk === undefined) {
+              c._prevClk = (V[pm.clk] || 0) >= vth ? 1 : 0;
+            }
+            if (iter === 1 && c._clkStepTime !== this.simTime) {
+              c._clkStepTime = this.simTime;
+              const clkHigh = (V[pm.clk] || 0) >= vth ? 1 : 0;
+              const rstHigh = (V[pm.rst] || 0) >= vth ? 1 : 0;
+              if (rstHigh) {
+                c._count = 0;
+              } else if (clkHigh === 1 && c._prevClk === 0) {
+                c._count = (c._count + 1) & 0x0f;
+              }
+              c._prevClk = clkHigh;
+            }
+
+            const cnt = c._count & 0x0f;
+            stampVoltageNorton(pm.q0, 0, cnt & 1 ? vHigh : 0.0, 10.0);
+            stampVoltageNorton(pm.q1, 0, cnt & 2 ? vHigh : 0.0, 10.0);
+            stampVoltageNorton(pm.q2, 0, cnt & 4 ? vHigh : 0.0, 10.0);
+            stampVoltageNorton(pm.q3, 0, cnt & 8 ? vHigh : 0.0, 10.0);
+            break;
+          }
         }
       }
 
@@ -4678,7 +4880,7 @@ class CircuitSolver {
           V[i] = nextV;
         }
       }
-      if (maxDelta < 1e-4) break;
+      if (maxDelta < 1e-4 && (!hasCounter || iter >= 1)) break;
     }
 
     // 4. Actualizar corrientes en sub-segmentos de cables (usando la micro-caída física sobre G_WIRE)
@@ -4786,6 +4988,32 @@ class CircuitSolver {
           c.vDiff = V[pm.out] - V[pm.in];
           c.current = Number(p.current) || 0.01;
           c.power = c.vDiff * c.current;
+          break;
+        }
+
+        case 'pulse_source': {
+          const v1 = V[pm.pos];
+          const v2 = V[pm.neg];
+          const vTarget = c._lastSourceV !== undefined ? c._lastSourceV : (Number(p.vLow) || 0);
+          c.vDiff = v1 - v2;
+          c.current = (vTarget - c.vDiff) / 0.005;
+          c.power = c.vDiff * c.current;
+          break;
+        }
+
+        case 'transformer': {
+          const a = Math.max(0.01, Number(p.ratio) || 0.5);
+          const rW = Math.max(0.005, Number(p.rWinding) || 0.05);
+          const gS = 1.0 / rW;
+          const vPri = (V[pm.p1] || 0) - (V[pm.p2] || 0);
+          const vSec = (V[pm.s1] || 0) - (V[pm.s2] || 0);
+          const iSecOut = gS * (a * vPri - vSec);
+          c._vPri = vPri;
+          c._vSec = vSec;
+          c._iPri = a * iSecOut + vPri * 0.0005;
+          c.vDiff = vSec;
+          c.current = iSecOut;
+          c.power = Math.abs(iSecOut * iSecOut * rW);
           break;
         }
 
@@ -4960,6 +5188,24 @@ class CircuitSolver {
           break;
         }
 
+        case 'pmos': {
+          const vth = Math.abs(Number(p.vth) || 2.0);
+          const kp = Number(p.kp) || 0.5;
+          const vsg = (V[pm.source] || 0) - (V[pm.gate] || 0);
+          const vsd = (V[pm.source] || 0) - (V[pm.drain] || 0);
+          let id = 0;
+          if (vsg > vth) {
+            const gSd = Math.min(250.0, kp * (vsg - vth) * 4.0);
+            id = vsd * gSd;
+          }
+          const bodyD = this.computeDiodeCompanion(-vsd, 0.7);
+          id -= bodyD.id;
+          c.vDiff = vsd;
+          c.current = id;
+          c.power = Math.abs(vsd * id);
+          break;
+        }
+
         case 'voltmeter': {
           c.vDiff = V[pm.pos] - V[pm.neg];
           c.current = 0;
@@ -5062,6 +5308,13 @@ class CircuitSolver {
           break;
         }
 
+        case 'counter_4bit': {
+          c.vDiff = V[pm.q0] || 0;
+          c.current = 0;
+          c.power = 0;
+          break;
+        }
+
         default: {
           const firstPin = Object.values(pm)[0];
           c.vDiff = V[firstPin] || 0;
@@ -5132,7 +5385,8 @@ class CircuitSolver {
       c.type === 'zener' ||
       c.type === 'npn' ||
       c.type === 'pnp' ||
-      c.type === 'nmos'
+      c.type === 'nmos' ||
+      c.type === 'pmos'
     ) {
       const maxP = Number(p.maxPower) || 0.5;
       if (c.power > maxP) {
@@ -5723,10 +5977,39 @@ class CircuitSolver {
             break;
           }
 
-          case 'ac_voltage': {
-            // La primera fuente AC actúa como estímulo (Vin = 1∠0° V, rInt = 0.005 Ω); el resto se apaga (0 V)
+          case 'ac_voltage':
+          case 'pulse_source': {
+            // La primera fuente AC/Pulso actúa como estímulo (Vin = 1∠0° V, rInt = 0.005 Ω); el resto se apaga (0 V)
             const vStim = c === stimulusComp ? 1.0 : 0.0;
             stampVoltageNortonComplex(pm.pos, pm.neg, vStim, 0, 0.005);
+            break;
+          }
+
+          case 'transformer': {
+            const a = Math.max(0.01, Number(p.ratio) || 0.5);
+            const rW = Math.max(0.005, Number(p.rWinding) || 0.05);
+            const gS = 1.0 / rW;
+            const gMag = 0.0005;
+            const ag = a * gS;
+            stampAdmittance(pm.p1, pm.p2, a * a * gS + gMag, 0);
+            stampAdmittance(pm.s1, pm.s2, gS, 0);
+            stampAdmittance(pm.s2, 0, 1e-7, 0);
+            if (pm.p1 > 0 && pm.s1 > 0) {
+              A_real[pm.p1 * stride + pm.s1] -= ag;
+              A_real[pm.s1 * stride + pm.p1] -= ag;
+            }
+            if (pm.p1 > 0 && pm.s2 > 0) {
+              A_real[pm.p1 * stride + pm.s2] += ag;
+              A_real[pm.s2 * stride + pm.p1] += ag;
+            }
+            if (pm.p2 > 0 && pm.s1 > 0) {
+              A_real[pm.p2 * stride + pm.s1] += ag;
+              A_real[pm.s1 * stride + pm.p2] += ag;
+            }
+            if (pm.p2 > 0 && pm.s2 > 0) {
+              A_real[pm.p2 * stride + pm.s2] -= ag;
+              A_real[pm.s2 * stride + pm.p2] -= ag;
+            }
             break;
           }
 
@@ -7064,6 +7347,120 @@ class CircuitRenderer {
         break;
       }
 
+      case 'pulse_source': {
+        ctx.strokeStyle = c1;
+        ctx.beginPath();
+        ctx.moveTo(-40, 0);
+        ctx.lineTo(-18, 0);
+        ctx.stroke();
+
+        ctx.strokeStyle = c2;
+        ctx.beginPath();
+        ctx.moveTo(18, 0);
+        ctx.lineTo(40, 0);
+        ctx.stroke();
+
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : '#10b981';
+        ctx.lineWidth = bodyWidth;
+        ctx.beginPath();
+        ctx.arc(0, 0, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Pulso PWM interno con ciclo de trabajo variable
+        const duty = Math.max(0.1, Math.min(0.9, Number(p.dutyCycle ?? 50) / 100));
+        const pulseW = Math.round(16 * duty);
+        ctx.strokeStyle = isPro ? symStroke : '#34d399';
+        ctx.lineWidth = isPro ? 1.5 : 2.1;
+        ctx.beginPath();
+        ctx.moveTo(-11, 5);
+        ctx.lineTo(-8, 5);
+        ctx.lineTo(-8, -6);
+        ctx.lineTo(-8 + pulseW, -6);
+        ctx.lineTo(-8 + pulseW, 5);
+        ctx.lineTo(11, 5);
+        ctx.stroke();
+
+        // Polaridad +
+        ctx.fillStyle = isPro ? symStroke : '#10b981';
+        ctx.font = 'bold 11px monospace';
+        ctx.fillText('+', -27, -7);
+        drawInternalDots(-40, 40);
+        break;
+      }
+
+      case 'transformer': {
+        const cP1 = vCol(pv.p1 || 0);
+        const cP2 = vCol(pv.p2 || 0);
+        const cS1 = vCol(pv.s1 || 0);
+        const cS2 = vCol(pv.s2 || 0);
+
+        // Terminales primario (-40,-20) y (-40,20)
+        ctx.strokeStyle = cP1;
+        ctx.lineWidth = leadWidth;
+        ctx.beginPath();
+        ctx.moveTo(-40, -20);
+        ctx.lineTo(-14, -20);
+        ctx.stroke();
+
+        ctx.strokeStyle = cP2;
+        ctx.beginPath();
+        ctx.moveTo(-40, 20);
+        ctx.lineTo(-14, 20);
+        ctx.stroke();
+
+        // Terminales secundario (40,-20) y (40,20)
+        ctx.strokeStyle = cS1;
+        ctx.beginPath();
+        ctx.moveTo(40, -20);
+        ctx.lineTo(14, -20);
+        ctx.stroke();
+
+        ctx.strokeStyle = cS2;
+        ctx.beginPath();
+        ctx.moveTo(40, 20);
+        ctx.lineTo(14, 20);
+        ctx.stroke();
+
+        // Bobinado primario (4 arcos verticales a la izquierda)
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = isPro ? 1.6 : 2.3;
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+          const cy = -15 + i * 10;
+          ctx.arc(-14, cy, 5, -Math.PI / 2, Math.PI / 2, false);
+        }
+        ctx.stroke();
+
+        // Bobinado secundario (4 arcos verticales a la derecha)
+        ctx.strokeStyle = isPro ? symStroke : '#a855f7';
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+          const cy = -15 + i * 10;
+          ctx.arc(14, cy, 5, Math.PI / 2, -Math.PI / 2, false);
+        }
+        ctx.stroke();
+
+        // Núcleo magnético central (2 barras verticales paralelas)
+        ctx.strokeStyle = isPro ? symStroke : '#94a3b8';
+        ctx.lineWidth = isPro ? 1.4 : 1.9;
+        ctx.beginPath();
+        ctx.moveTo(-2.5, -20);
+        ctx.lineTo(-2.5, 20);
+        ctx.moveTo(2.5, -20);
+        ctx.lineTo(2.5, 20);
+        ctx.stroke();
+
+        // Puntos de fase (dot convention en P1 y S1)
+        ctx.fillStyle = isPro ? symStroke : '#facc15';
+        ctx.beginPath();
+        ctx.arc(-20, -14, 2.2, 0, Math.PI * 2);
+        ctx.arc(20, -14, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+
       case 'resistor': {
         ctx.strokeStyle = c1;
         ctx.beginPath();
@@ -7421,7 +7818,9 @@ class CircuitRenderer {
         break;
       }
 
-      case 'nmos': {
+      case 'nmos':
+      case 'pmos': {
+        const isPmos = comp.type === 'pmos';
         const cG = vCol(pv.gate || 0);
         const cD = vCol(pv.drain || 0);
         const cS = vCol(pv.source || 0);
@@ -7439,10 +7838,21 @@ class CircuitRenderer {
         ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(-40, 0);
-        ctx.lineTo(-10, 0);
+        ctx.lineTo(isPmos ? -15 : -10, 0);
         ctx.moveTo(-10, -13);
         ctx.lineTo(-10, 13);
         ctx.stroke();
+
+        if (isPmos) {
+          // Burbuja inversora de Gate para PMOS
+          ctx.fillStyle = '#070a10';
+          ctx.strokeStyle = isPro ? symStroke : cG;
+          ctx.lineWidth = isPro ? 1.5 : 1.9;
+          ctx.beginPath();
+          ctx.arc(-12.5, 0, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
 
         // Canal aislado
         ctx.strokeStyle = isPro ? symStroke : '#e2e8f0';
@@ -7452,8 +7862,11 @@ class CircuitRenderer {
         ctx.lineTo(-4, 14);
         ctx.stroke();
 
-        // Drain (20, -40) y Source (20, 40)
-        ctx.strokeStyle = cD;
+        // Terminal superior (20, -40) e inferior (20, 40): NMOS tiene D arriba y S abajo; PMOS tiene S arriba y D abajo
+        const topCol = isPmos ? cS : cD;
+        const botCol = isPmos ? cD : cS;
+
+        ctx.strokeStyle = topCol;
         ctx.lineWidth = leadWidth;
         ctx.beginPath();
         ctx.moveTo(-4, -10);
@@ -7461,12 +7874,29 @@ class CircuitRenderer {
         ctx.lineTo(20, -40);
         ctx.stroke();
 
-        ctx.strokeStyle = cS;
+        ctx.strokeStyle = botCol;
         ctx.beginPath();
         ctx.moveTo(-4, 10);
         ctx.lineTo(20, 10);
         ctx.lineTo(20, 40);
         ctx.stroke();
+
+        // Flecha de canal/sustrato para distinguir visualmente NMOS vs PMOS
+        ctx.fillStyle = isPro ? symStroke : isPmos ? '#f472b6' : '#38bdf8';
+        ctx.beginPath();
+        if (isPmos) {
+          // Flecha saliendo del canal en la rama superior (Source)
+          ctx.moveTo(11, -10);
+          ctx.lineTo(4, -13.5);
+          ctx.lineTo(4, -6.5);
+        } else {
+          // Flecha entrando al canal en la rama inferior (Source)
+          ctx.moveTo(2, 10);
+          ctx.lineTo(9, 6.5);
+          ctx.lineTo(9, 13.5);
+        }
+        ctx.closePath();
+        ctx.fill();
         break;
       }
 
@@ -8277,6 +8707,62 @@ class CircuitRenderer {
         ctx.shadowBlur = 0;
         break;
       }
+
+      case 'counter_4bit': {
+        for (const pin of def.pins) {
+          const px = pin.x * GRID_SIZE;
+          const py = pin.y * GRID_SIZE;
+          ctx.strokeStyle = vCol(pv[pin.id] || 0);
+          ctx.lineWidth = leadWidth;
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(Math.sign(px) * Math.min(Math.abs(px), 24), Math.sign(py) * Math.min(Math.abs(py), 28));
+          ctx.stroke();
+        }
+
+        const cnt = (comp._count || 0) & 0x0f;
+        ctx.fillStyle = '#070a10';
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = bodyWidth;
+        ctx.beginPath();
+        ctx.roundRect(-24, -28, 48, 56, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Símbolo de entrada de reloj por flanco '>' en CLK (-24, -20)
+        ctx.strokeStyle = isPro ? symStroke : '#38bdf8';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(-24, -23);
+        ctx.lineTo(-19, -20);
+        ctx.lineTo(-24, -17);
+        ctx.stroke();
+
+        ctx.font = '7.5px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('CLK', -17, -20);
+        ctx.fillText('RST', -21, 20);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = isPro ? symStroke : cnt & 1 ? '#34d399' : '#64748b';
+        ctx.fillText('Q0', 21, -20);
+        ctx.fillStyle = isPro ? symStroke : cnt & 2 ? '#34d399' : '#64748b';
+        ctx.fillText('Q1', 21, 0);
+        ctx.fillStyle = isPro ? symStroke : cnt & 4 ? '#34d399' : '#64748b';
+        ctx.fillText('Q2', 21, 20);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = isPro ? symStroke : cnt & 8 ? '#34d399' : '#64748b';
+        ctx.fillText('Q3', 0, 22);
+
+        // Valor hexadecimal actual en el centro del contador
+        ctx.fillStyle = isPro ? symStroke : '#facc15';
+        ctx.font = 'bold 12px "JetBrains Mono", monospace';
+        ctx.fillText(cnt.toString(16).toUpperCase(), -1, -2);
+        break;
+      }
     }
   }
 
@@ -8341,7 +8827,10 @@ class CircuitRenderer {
         line2 = `${f(p.amplitude, 'V')} @ ${f(p.frequency, 'Hz', 0)}`;
         break;
       case 'pulse_source':
-        line2 = `${f(p.vHigh, 'V')} @ ${f(p.frequency, 'Hz', 0)}`;
+        line2 = `${f(p.vHigh, 'V')} @ ${f(p.frequency, 'Hz', 0)} (${Math.round(Number(p.dutyCycle ?? 50))}%)`;
+        break;
+      case 'transformer':
+        line2 = `N2/N1 = ${Number(p.ratio || 0.5)}x`;
         break;
       case 'current_source':
         line2 = f(p.current, 'A');
@@ -8401,6 +8890,9 @@ class CircuitRenderer {
         break;
       case 'seven_seg':
         line2 = `HEX: ${(comp._hexDigit || 0).toString(16).toUpperCase()}`;
+        break;
+      case 'counter_4bit':
+        line2 = `Cuenta: ${comp._count || 0} (0x${((comp._count || 0) & 0x0f).toString(16).toUpperCase()})`;
         break;
     }
 
@@ -10849,6 +11341,7 @@ class ProtoSimApp {
     this.components = [];
     this.wires = [];
     this.undoStack = [];
+    this.redoStack = [];
     this.solver = new window.ProtoSim.CircuitSolver();
     this.isRunning = true;
 
@@ -10917,8 +11410,8 @@ class ProtoSimApp {
     requestAnimationFrame(this.loop);
   }
 
-  saveUndoSnapshot() {
-    this.undoStack.push({
+  _captureSnapshot() {
+    return {
       components: this.components.map((c) => ({
         id: c.id,
         type: c.type,
@@ -10939,18 +11432,49 @@ class ProtoSimApp {
         endAnchor: w.endAnchor
       })),
       pinnedMonitors: [...this.pinnedMonitors]
-    });
+    };
+  }
+
+  saveUndoSnapshot(clearRedo = true) {
+    this.undoStack.push(this._captureSnapshot());
     if (this.undoStack.length > 30) {
       this.undoStack.shift();
+    }
+    if (clearRedo) {
+      this.redoStack = [];
     }
   }
 
   undo() {
     if (this.undoStack.length === 0) return;
+    this.redoStack.push(this._captureSnapshot());
+    if (this.redoStack.length > 30) {
+      this.redoStack.shift();
+    }
     const prev = this.undoStack.pop();
     this.components = prev.components;
     this.wires = prev.wires;
     this.pinnedMonitors = prev.pinnedMonitors || [];
+    this.selectedComponents.clear();
+    this.selectedWires.clear();
+    this.selectedComponent = this.components[0] || null;
+    if (this.selectedComponent) this.selectedComponents.add(this.selectedComponent);
+    this.selectedWire = null;
+    this.renderPinnedMonitorsDOM();
+    this.renderCircuitFinder();
+    this.updateInspector();
+  }
+
+  redo() {
+    if (!this.redoStack || this.redoStack.length === 0) return;
+    this.undoStack.push(this._captureSnapshot());
+    if (this.undoStack.length > 30) {
+      this.undoStack.shift();
+    }
+    const next = this.redoStack.pop();
+    this.components = next.components;
+    this.wires = next.wires;
+    this.pinnedMonitors = next.pinnedMonitors || [];
     this.selectedComponents.clear();
     this.selectedWires.clear();
     this.selectedComponent = this.components[0] || null;
@@ -11211,8 +11735,9 @@ class ProtoSimApp {
       if (e.target === shortcutsModal) shortcutsModal.classList.remove('visible');
     });
 
-    // Exportar / Importar JSON
+    // Exportar / Importar JSON y Captura PNG
     document.getElementById('btnExportJson').addEventListener('click', () => this.exportCircuitJSON());
+    document.getElementById('btnExportPng')?.addEventListener('click', () => this.exportCanvasPNG());
     document.getElementById('btnImportJson').addEventListener('click', () => {
       document.getElementById('fileImportInput').click();
     });
@@ -11933,6 +12458,8 @@ class ProtoSimApp {
         return `<svg width="50" height="30" viewBox="-25 -15 50 30"><path d="M-20,0 H-4 M4,0 H20" stroke="#94a3b8" stroke-width="2"/><path d="M-4,-10 V10" stroke="#10b981" stroke-width="2.5"/><path d="M4,-6 V6" stroke="#e2e8f0" stroke-width="3.5"/></svg>`;
       case 'ac_voltage':
         return `<svg width="50" height="30" viewBox="-25 -15 50 30"><circle cx="0" cy="0" r="10" stroke="${stroke}" stroke-width="2" fill="none"/><path d="M-6,0 Q-3,-6 0,0 T6,0" stroke="#22d3ee" stroke-width="1.8" fill="none"/></svg>`;
+      case 'pulse_source':
+        return `<svg width="50" height="30" viewBox="-25 -15 50 30"><circle cx="0" cy="0" r="10" stroke="#10b981" stroke-width="2" fill="none"/><path d="M-6,3 H-3 V-4 H2 V3 H6" stroke="#34d399" stroke-width="1.8" fill="none"/></svg>`;
       case 'resistor':
       case 'potentiometer':
         return `<svg width="54" height="30" viewBox="-27 -15 54 30"><path d="M-24,0 H-15 L-11,-7 L-5,7 L0,-7 L5,7 L11,-7 L15,0 H24" stroke="#10b981" stroke-width="2.2" fill="none"/></svg>`;
@@ -11940,6 +12467,8 @@ class ProtoSimApp {
         return `<svg width="50" height="30" viewBox="-25 -15 50 30"><path d="M-20,0 H-4 M4,0 H20 M-4,-10 V10 M4,-10 V10" stroke="#38bdf8" stroke-width="2.4" fill="none"/></svg>`;
       case 'inductor':
         return `<svg width="54" height="30" viewBox="-27 -15 54 30"><path d="M-22,2 H-16 A4,4 0 0,1 -8,2 A4,4 0 0,1 0,2 A4,4 0 0,1 8,2 A4,4 0 0,1 16,2 H22" stroke="#a855f7" stroke-width="2.2" fill="none"/></svg>`;
+      case 'transformer':
+        return `<svg width="54" height="32" viewBox="-27 -16 54 32"><path d="M-20,-10 H-8 A3.5,3.5 0 0,1 -8,-3 A3.5,3.5 0 0,1 -8,4 A3.5,3.5 0 0,1 -8,11 H-20" stroke="#38bdf8" stroke-width="1.9" fill="none"/><path d="M-1.5,-11 V11 M1.5,-11 V11" stroke="#94a3b8" stroke-width="1.5"/><path d="M20,-10 H8 A3.5,3.5 0 0,0 8,-3 A3.5,3.5 0 0,0 8,4 A3.5,3.5 0 0,0 8,11 H20" stroke="#a855f7" stroke-width="1.9" fill="none"/></svg>`;
       case 'led':
       case 'diode':
       case 'zener':
@@ -11947,7 +12476,8 @@ class ProtoSimApp {
       case 'npn':
       case 'pnp':
       case 'nmos':
-        return `<svg width="50" height="32" viewBox="-25 -16 50 32"><circle cx="2" cy="0" r="12" stroke="#64748b" stroke-width="1.6" fill="none"/><path d="M-18,0 H-4 M-4,-8 V8 M-4,-4 L10,-12 M-4,4 L10,12" stroke="#38bdf8" stroke-width="2" fill="none"/></svg>`;
+      case 'pmos':
+        return `<svg width="50" height="32" viewBox="-25 -16 50 32"><circle cx="2" cy="0" r="12" stroke="#64748b" stroke-width="1.6" fill="none"/><path d="M-18,0 H-4 M-4,-8 V8 M-4,-4 L10,-12 M-4,4 L10,12" stroke="${type === 'pmos' ? '#f472b6' : '#38bdf8'}" stroke-width="2" fill="none"/></svg>`;
       case 'switch_spst':
       case 'push_button':
       case 'switch_spdt':
@@ -11972,6 +12502,8 @@ class ProtoSimApp {
         return `<svg width="54" height="34" viewBox="-27 -17 54 34"><rect x="-18" y="-14" width="36" height="28" rx="4" stroke="#38bdf8" stroke-width="2" fill="rgba(15,23,42,0.8)"/><text x="0" y="3" fill="#e2e8f0" font-size="10" font-weight="700" text-anchor="middle" font-family="monospace">555</text></svg>`;
       case 'seven_seg':
         return `<svg width="40" height="34" viewBox="-20 -17 40 34"><rect x="-13" y="-15" width="26" height="30" rx="3" stroke="#475569" stroke-width="1.8" fill="#050811"/><path d="M-6,-10 H6 M7,-8 V-1 M7,1 V8 M-6,10 H6 M-7,1 V8 M-7,-8 V-1 M-6,0 H6" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+      case 'counter_4bit':
+        return `<svg width="54" height="34" viewBox="-27 -17 54 34"><rect x="-17" y="-14" width="34" height="28" rx="4" stroke="#38bdf8" stroke-width="2" fill="rgba(15,23,42,0.8)"/><path d="M-17,-9 L-12,-6 L-17,-3" stroke="#38bdf8" stroke-width="1.5" fill="none"/><text x="1" y="4" fill="#facc15" font-size="9" font-weight="700" text-anchor="middle" font-family="monospace">4BIT</text></svg>`;
       default:
         return `<svg width="50" height="30" viewBox="-25 -15 50 30"><rect x="-14" y="-9" width="28" height="18" rx="4" stroke="${stroke}" stroke-width="2" fill="none"/><text x="0" y="4" fill="#e2e8f0" font-size="9" text-anchor="middle" font-family="monospace">${type.slice(0, 3).toUpperCase()}</text></svg>`;
     }
@@ -12421,8 +12953,15 @@ class ProtoSimApp {
         return;
       }
 
+      // Ctrl+Y o Ctrl+Shift+Z -> Rehacer
+      if ((e.ctrlKey && keyLower === 'y') || (e.ctrlKey && e.shiftKey && keyLower === 'z')) {
+        e.preventDefault();
+        this.redo();
+        return;
+      }
+
       // Ctrl+Z -> Deshacer
-      if (e.ctrlKey && keyLower === 'z') {
+      if (e.ctrlKey && !e.shiftKey && keyLower === 'z') {
         e.preventDefault();
         this.undo();
         return;
@@ -14309,6 +14848,68 @@ class ProtoSimApp {
       </div>
     `;
 
+    // Selector de Modelos Comerciales (Presets reales) para semiconductores y amplificadores operacionales
+    const COMMERCIAL_MODELS = {
+      diode: [
+        { id: 'generic', label: 'Genérico (0.7V)', props: { vf: 0.7, maxCurrent: 1.0 } },
+        { id: '1N4148', label: '1N4148 (0.72V, 0.3A)', props: { vf: 0.72, maxCurrent: 0.3 } },
+        { id: '1N4007', label: '1N4007 (0.7V, 1A)', props: { vf: 0.7, maxCurrent: 1.0 } },
+        { id: '1N5819', label: '1N5819 Schottky (0.32V, 1A)', props: { vf: 0.32, maxCurrent: 1.0 } }
+      ],
+      npn: [
+        { id: 'generic', label: 'Genérico (β=100)', props: { beta: 100, maxPower: 0.65 } },
+        { id: '2N2222', label: '2N2222 (β=150)', props: { beta: 150, maxPower: 0.65 } },
+        { id: 'BC547', label: 'BC547 (β=250)', props: { beta: 250, maxPower: 0.5 } },
+        { id: 'TIP31', label: 'TIP31 (β=50, 5W)', props: { beta: 50, maxPower: 5.0 } }
+      ],
+      pnp: [
+        { id: 'generic', label: 'Genérico (β=100)', props: { beta: 100, maxPower: 0.65 } },
+        { id: '2N3906', label: '2N3906 (β=150)', props: { beta: 150, maxPower: 0.65 } },
+        { id: 'BC557', label: 'BC557 (β=250)', props: { beta: 250, maxPower: 0.5 } },
+        { id: 'TIP32', label: 'TIP32 (β=50, 5W)', props: { beta: 50, maxPower: 5.0 } }
+      ],
+      nmos: [
+        { id: 'generic', label: 'Genérico (Vth=2.0V, Kp=0.5)', props: { vth: 2.0, kp: 0.5, maxPower: 5.0 } },
+        { id: '2N7000', label: '2N7000 (Vth=2.1V, Kp=0.1)', props: { vth: 2.1, kp: 0.1, maxPower: 0.4 } },
+        { id: 'IRFZ44N', label: 'IRFZ44N (Vth=3.0V, Kp=1.2, 15W)', props: { vth: 3.0, kp: 1.2, maxPower: 15.0 } }
+      ],
+      pmos: [
+        { id: 'generic', label: 'Genérico (|Vth|=2.0V, Kp=0.5)', props: { vth: 2.0, kp: 0.5, maxPower: 5.0 } },
+        { id: 'BS250', label: 'BS250 (|Vth|=2.2V, Kp=0.1)', props: { vth: 2.2, kp: 0.1, maxPower: 0.5 } },
+        { id: 'IRF9540N', label: 'IRF9540N (|Vth|=3.0V, Kp=1.0, 15W)', props: { vth: 3.0, kp: 1.0, maxPower: 15.0 } }
+      ],
+      opamp: [
+        { id: 'generic', label: 'Genérico (gain=10000, ±15V)', props: { gain: 10000, vsat: 15 } },
+        { id: 'LM741', label: 'LM741 (gain=100000, vsat=15V)', props: { gain: 100000, vsat: 15 } },
+        { id: 'TL071', label: 'TL071 (gain=200000, vsat=15V)', props: { gain: 200000, vsat: 15 } }
+      ]
+    };
+
+    const modelsForType = COMMERCIAL_MODELS[comp.type];
+    if (modelsForType) {
+      let currentModelId = comp.props.commercialModel || '';
+      if (!currentModelId) {
+        const matched = modelsForType.find((m) =>
+          Object.entries(m.props).every(([k, v]) => Math.abs((Number(comp.props[k]) || 0) - v) < 1e-4)
+        );
+        currentModelId = matched ? matched.id : 'custom';
+      }
+      html += `
+        <div class="prop-group">
+          <div class="prop-label-row">
+            <span>Modelo comercial</span>
+            <span class="prop-val-badge">${currentModelId === 'custom' || currentModelId === 'generic' ? 'Estándar' : currentModelId}</span>
+          </div>
+          <select class="select-input" id="commercialModelSelect" style="width:100%;">
+            ${modelsForType
+              .map((m) => `<option value="${m.id}" ${currentModelId === m.id ? 'selected' : ''}>${m.label}</option>`)
+              .join('')}
+            ${currentModelId === 'custom' ? `<option value="custom" selected>Personalizado</option>` : ''}
+          </select>
+        </div>
+      `;
+    }
+
     for (const prop of def.props) {
       const curVal = comp.props[prop.key];
       if (prop.type === 'text') {
@@ -14408,6 +15009,19 @@ class ProtoSimApp {
         comp.name = e.target.value || def.prefix;
         this.renderPinnedMonitorsDOM();
         this.renderCircuitFinder();
+      });
+    }
+
+    const commercialModelSelect = document.getElementById('commercialModelSelect');
+    if (commercialModelSelect && modelsForType) {
+      commercialModelSelect.addEventListener('change', (e) => {
+        const chosen = modelsForType.find((m) => m.id === e.target.value);
+        if (chosen) {
+          comp.props.commercialModel = chosen.id;
+          Object.assign(comp.props, chosen.props);
+          this.updateInspector();
+          this.updateDynamicMetricsDOM(comp);
+        }
       });
     }
 
@@ -14565,6 +15179,22 @@ class ProtoSimApp {
     a.download = 'circuito_proto.json';
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  exportCanvasPNG() {
+    if (!this.canvas || !this.renderer) return;
+    this.renderer.render(this);
+    if (typeof this.canvas.toDataURL !== 'function') {
+      this.showToast('Captura PNG no disponible en este entorno');
+      return null;
+    }
+    const dataUrl = this.canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'circuito_ncircuitos.png';
+    if (typeof a.click === 'function') a.click();
+    this.showToast('Captura PNG del esquemático descargada');
+    return dataUrl;
   }
 
   importCircuitJSON(e) {
@@ -15016,6 +15646,7 @@ class ProtoSimApp {
     };
 
     recalcBtn?.addEventListener('click', triggerRecalc);
+    document.getElementById('btnExportBodeCsv')?.addEventListener('click', () => this.exportBodeCSV());
     fMinInput?.addEventListener('change', triggerRecalc);
     fMaxInput?.addEventListener('change', triggerRecalc);
     ptsSelect?.addEventListener('change', triggerRecalc);
@@ -15064,6 +15695,48 @@ class ProtoSimApp {
 
   closeBodeModal() {
     document.getElementById('bodeModal')?.classList.remove('visible');
+  }
+
+  exportBodeCSV() {
+    let sweep = this._lastBodeSweep;
+    if (!sweep || sweep.length === 0) {
+      sweep = this.runBodePlotSweep();
+    }
+    if (!sweep || sweep.length === 0) {
+      this.showToast('No hay datos de Bode AC para exportar');
+      return '';
+    }
+    const probes = sweep.probes || [];
+    const freqs = sweep.frequencies || sweep.map((r) => r.freqHz);
+    const headers = ['Frecuencia_Hz'];
+    for (const p of probes) {
+      const safeLbl = String(p.label || p.id || 'CH').replace(/[,;\r\n"]/g, '_');
+      headers.push(`${safeLbl}_Magnitud_dB`, `${safeLbl}_Fase_deg`);
+    }
+    const lines = [headers.join(',')];
+    for (let i = 0; i < freqs.length; i++) {
+      const cols = [Number(freqs[i]).toPrecision(6)];
+      for (const p of probes) {
+        const mag = p.magnitudesDb && p.magnitudesDb[i] !== undefined ? Number(p.magnitudesDb[i]).toFixed(4) : '0';
+        const ph = p.phasesDeg && p.phasesDeg[i] !== undefined ? Number(p.phasesDeg[i]).toFixed(2) : '0';
+        cols.push(mag, ph);
+      }
+      lines.push(cols.join(','));
+    }
+    const csvContent = lines.join('\n');
+    try {
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'bode_ac_ncircuitos.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (_) {
+      // Fallback en entornos de prueba sin Blob/URL
+    }
+    this.showToast('CSV de Diagrama de Bode exportado');
+    return csvContent;
   }
 
   runBodePlotSweep(fMin = null, fMax = null, pointsPerDecade = null) {
